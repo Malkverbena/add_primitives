@@ -116,6 +116,7 @@ func update_menu():
 	popup_menu.add_item('Add Cube')
 	popup_menu.add_item('Add Plane')
 	popup_menu.add_item('Add Cylinder')
+	popup_menu.add_item('Add Sphere')
 	
 	popup_menu.add_separator()
 	#popup_menu.add_item('Immediate Geometry')
@@ -129,7 +130,7 @@ func _popup_signal(id):
 	if command == 'Add Plane':
 		if experimental_builder:
 			StaticMeshBuilder.begin(4)
-			StaticMeshBuilder.add_quad(exp_build_plane(Vector3(2,0,0), Vector3(0,0,2), Vector3(-1,0,-1)), true)
+			StaticMeshBuilder.add_quad(exp_build_plane_verts(Vector3(2,0,0), Vector3(0,0,2), Vector3(-1,0,-1)), true)
 			StaticMeshBuilder.generate_normals()
 		
 			exp_add_mesh(StaticMeshBuilder.commit())
@@ -146,7 +147,7 @@ func _popup_signal(id):
 		else:
 			var box = build_box()
 			surface_tool(box)
-		
+	
 	elif command == 'Add Cylinder':
 		if experimental_builder:
 			var cylinder = exp_build_cylinder(2, 16)
@@ -155,9 +156,15 @@ func _popup_signal(id):
 			var cylinder = build_cylinder(16, 2)
 			surface_tool(cylinder)
 	
+	elif command == 'Add Sphere':
+		if experimental_builder:
+			var sphere = exp_build_sphere(2, 16)
+			exp_add_mesh(sphere)
+		else:
+			pass
+	
 	elif command == 'Add Heigthmap':
 		if experimental_builder:
-			print('--')
 			var heigthmap = exp_build_heigthmap()
 			exp_add_mesh(heigthmap)
 		else:
@@ -178,13 +185,12 @@ func _popup_signal(id):
 			remove_child(SettingsWindow)
 			add_child(SettingsWindow)
 		
-		var window_size = get_tree().get_root().get_rect()
-		
 		SettingsWindow.popup_centered()
 		
 		var check_button = SettingsWindow.get_node('ExperimentalBuilder')
 		check_button.set_pressed(experimental_builder)
 		var close_button = SettingsWindow.get_node('close_button')
+		
 		if not check_button.is_connected('toggled', self, '_experimental_builder'):
 			check_button.connect('toggled', self, '_experimental_builder')
 		if not close_button.is_connected('pressed', self, '_ok_button'):
@@ -199,7 +205,6 @@ func _experimental_builder(pressed):
 
 func _ok_button():
 	SettingsWindow.hide()
-	
 #Procedual algorithms
 
 func exp_build_plane_verts(width_dir, length_dir, offset = Vector3(0,0,0)):
@@ -230,7 +235,7 @@ func exp_build_box(offset = Vector3(0,0,0)):
 	StaticMeshBuilder.clear()
 	return mesh
 
-func exp_build_circle_verts(pos, segments):
+func exp_build_circle_verts(pos, segments, radius = 1):
 	var radians_circle = PI * 2
 	
 	var circle_verts = []
@@ -244,7 +249,8 @@ func exp_build_circle_verts(pos, segments):
 	
 	return circle_verts
 
-func exp_build_cylinder(heigth, segments, caps = true):
+func exp_build_cylinder(heigth, segments, cuts = 1, caps = true):
+	#cuts = 1 means no cut
 	var circle = exp_build_circle_verts(Vector3(0,float(heigth)/2,0), 16)
 	
 	StaticMeshBuilder.begin(4)
@@ -258,9 +264,63 @@ func exp_build_cylinder(heigth, segments, caps = true):
 		StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[0], circle[segments - 1]])
 		StaticMeshBuilder.add_tri([min_pos * 0.5, circle[0] + min_pos, circle[segments - 1] + min_pos], true)
 	
+	var next_cut = Vector3(0, float(heigth)/cuts, 0) + min_pos
+	
+	for i in range(cuts):
+		for idx in range(segments - 1):
+			StaticMeshBuilder.add_quad([circle[idx] + min_pos, circle[idx + 1] + next_cut,\
+			                            circle[idx] + next_cut, circle[idx + 1] + min_pos], true)
+		StaticMeshBuilder.add_quad([circle[0] + min_pos, circle[segments - 1] + next_cut,\
+		                            circle[0] + next_cut, circle[segments - 1] + min_pos])
+		
+		min_pos = next_cut
+		next_cut.y += float(heigth)/cuts
+	
+	StaticMeshBuilder.generate_normals()
+	var mesh = StaticMeshBuilder.commit()
+	StaticMeshBuilder.clear()
+	
+	return mesh
+
+func exp_build_sphere(radius, segments, cuts = 8):
+	var angle_inc = PI/cuts
+	var caps_center = Vector3(0,float(-radius)/2,0)
+	
+	var circle = exp_build_circle_verts(Vector3(0,0,0), 16)
+	
+	var radius = Vector3(sin(angle_inc), 0, sin(angle_inc))
+	var pos
+	
+	StaticMeshBuilder.begin(4)
+	
 	for idx in range(segments - 1):
-		StaticMeshBuilder.add_quad([circle[idx] + min_pos, circle[idx + 1], circle[idx], circle[idx + 1] + min_pos], true)
-	StaticMeshBuilder.add_quad([circle[0] + min_pos, circle[segments - 1], circle[0], circle[segments - 1] + min_pos])
+		pos = Vector3(0,-cos(angle_inc),0)
+		StaticMeshBuilder.add_tri([caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius) + pos])
+		pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0)
+		StaticMeshBuilder.add_tri([-caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius + pos)], true)
+	
+	pos = Vector3(0,-cos(angle_inc),0)
+	StaticMeshBuilder.add_tri([caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos], true)
+	pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0)
+	StaticMeshBuilder.add_tri([-caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos])
+	
+	pos = Vector3(0,-cos(angle_inc),0)
+	for i in range(cuts - 1):
+		radius = Vector3(sin(angle_inc * i), 0, sin(angle_inc * i))
+		var next_radius = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
+		
+		var next_pos = Vector3(0,-cos(angle_inc * (i + 1)), 0)
+		for idx in range(segments - 1):
+			StaticMeshBuilder.add_quad([(circle[idx] * radius) + pos,\
+			                            (circle[idx + 1] * next_radius) + next_pos,\
+			                            (circle[idx] * next_radius) + next_pos,\
+			                            (circle[idx + 1] * radius) + pos], true)
+		StaticMeshBuilder.add_quad([(circle[0] * radius) + pos,\
+		                            (circle[segments - 1] * next_radius) + next_pos,\
+		                            (circle[0] * next_radius) + next_pos,\
+		                            (circle[segments - 1] * radius) + pos])
+		
+		pos = next_pos
 	
 	StaticMeshBuilder.generate_normals()
 	var mesh = StaticMeshBuilder.commit()
