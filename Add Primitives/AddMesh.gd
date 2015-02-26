@@ -135,7 +135,8 @@ func _popup_signal(id):
 	if command == 'Add Plane':
 		if experimental_builder:
 			StaticMeshBuilder.begin(4)
-			StaticMeshBuilder.add_quad(exp_build_plane_verts(Vector3(2,0,0), Vector3(0,0,2), Vector3(-1,0,-1)), true)
+			StaticMeshBuilder.add_quad(exp_build_plane_verts(Vector3(2,0,0), Vector3(0,0,2), Vector3(-1,0,-1)),\
+			                           [Vector2(1,1), Vector2(0,0), Vector2(0,1), Vector2(1,0)], true)
 			StaticMeshBuilder.generate_normals()
 		
 			exp_add_mesh(StaticMeshBuilder.commit())
@@ -239,6 +240,9 @@ func _add_mesh_popup(window, mesh):
 	settings.set_column_title(1, 'Value')
 	settings.set_column_titles_visible(true)
 	
+	var check_button = window.get_node('Smooth')
+	check_button.set_pressed(true)
+	
 	var parameters = []
 	
 	var refresh = window.get_node('Refresh')
@@ -310,7 +314,14 @@ func _refresh():
 	
 	
 #Procedual algorithms
-
+func _rotate_uv(uv_coords):
+	var uv_temp = uv_coords
+	uv_temp.append(uv_coords[1])
+	uv_temp.append(uv_coords[0])
+	uv_temp.append(uv_coords[3])
+	uv_temp.append(uv_coords[2])
+	return uv_temp
+	
 func exp_build_plane_verts(width_dir, length_dir, offset = Vector3(0,0,0)):
 	var verts = []
 	verts.append(Vector3(0,0,0) + offset)
@@ -327,12 +338,20 @@ func exp_build_box(offset = Vector3(0,0,0)):
 	
 	StaticMeshBuilder.begin(4)
 	
-	StaticMeshBuilder.add_quad(exp_build_plane_verts(foward_dir, rigth_dir, offset))
-	StaticMeshBuilder.add_quad(exp_build_plane_verts(rigth_dir, up_dir, offset))
-	StaticMeshBuilder.add_quad(exp_build_plane_verts(up_dir, foward_dir, offset))
-	StaticMeshBuilder.add_quad(exp_build_plane_verts(-rigth_dir, -foward_dir, -offset))
-	StaticMeshBuilder.add_quad(exp_build_plane_verts(-up_dir, -rigth_dir, -offset))
-	StaticMeshBuilder.add_quad(exp_build_plane_verts(-foward_dir, -up_dir, -offset))
+	var uv_coords = [Vector2(0,0), Vector2(1,1), Vector2(1,0), Vector2(0,1)]
+	
+	StaticMeshBuilder.add_quad(exp_build_plane_verts(foward_dir, rigth_dir, offset),\
+	                           uv_coords)
+	StaticMeshBuilder.add_quad(exp_build_plane_verts(rigth_dir, up_dir, offset),\
+	                           [uv_coords[3], uv_coords[2], uv_coords[0], uv_coords[1]])
+	StaticMeshBuilder.add_quad(exp_build_plane_verts(up_dir, foward_dir, offset),\
+	                           [uv_coords[1], uv_coords[0], uv_coords[3], uv_coords[2]])
+	StaticMeshBuilder.add_quad(exp_build_plane_verts(-rigth_dir, -foward_dir, -offset),\
+	                           [uv_coords[2], uv_coords[3], uv_coords[1], uv_coords[0]])
+	StaticMeshBuilder.add_quad(exp_build_plane_verts(-up_dir, -rigth_dir, -offset),\
+	                           uv_coords)
+	StaticMeshBuilder.add_quad(exp_build_plane_verts(-foward_dir, -up_dir, -offset),\
+	                           [uv_coords[2], uv_coords[3], uv_coords[1], uv_coords[0]])
 	
 	StaticMeshBuilder.generate_normals()
 	var mesh = StaticMeshBuilder.commit()
@@ -356,19 +375,18 @@ func exp_build_circle_verts(pos, segments, radius = 1):
 func exp_build_cylinder(heigth, segments, cuts = 1, smooth = true, caps = true):
 	#cuts = 1 means no cut
 	var circle = exp_build_circle_verts(Vector3(0,float(heigth)/2,0), segments)
+	var min_pos = Vector3(0,heigth * -1,0)
 	
 	StaticMeshBuilder.begin(4)
 	
-	var min_pos = Vector3(0,heigth * -1,0)
-	
-	StaticMeshBuilder.add_smooth_group(false)
-	
 	if caps:
+		StaticMeshBuilder.add_smooth_group(false)
 		for idx in range(segments - 1):
 			StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[idx + 1], circle[idx]])
-			StaticMeshBuilder.add_tri([min_pos * 0.5, circle[idx + 1] + min_pos, circle[idx] + min_pos], true)
+			StaticMeshBuilder.add_tri([min_pos * 0.5, circle[idx + 1] + min_pos, circle[idx] + min_pos], null, true)
+			
 		StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[0], circle[segments - 1]])
-		StaticMeshBuilder.add_tri([min_pos * 0.5, circle[0] + min_pos, circle[segments - 1] + min_pos], true)
+		StaticMeshBuilder.add_tri([min_pos * 0.5, circle[0] + min_pos, circle[segments - 1] + min_pos], null, true)
 	
 	var next_cut = Vector3(0, float(heigth)/cuts, 0) + min_pos
 	
@@ -377,13 +395,12 @@ func exp_build_cylinder(heigth, segments, cuts = 1, smooth = true, caps = true):
 	for i in range(cuts):
 		for idx in range(segments - 1):
 			StaticMeshBuilder.add_quad([circle[idx] + min_pos, circle[idx + 1] + next_cut,\
-			                            circle[idx] + next_cut, circle[idx + 1] + min_pos], true)
+			                            circle[idx] + next_cut, circle[idx + 1] + min_pos], null, true)
 		StaticMeshBuilder.add_quad([circle[0] + min_pos, circle[segments - 1] + next_cut,\
-		                            circle[0] + next_cut, circle[segments - 1] + min_pos])
-		
+		                            circle[0] + next_cut, circle[segments - 1] + min_pos], null)
 		min_pos = next_cut
 		next_cut.y += float(heigth)/cuts
-	
+		
 	StaticMeshBuilder.generate_normals()
 	var mesh = StaticMeshBuilder.commit()
 	StaticMeshBuilder.clear()
@@ -406,10 +423,10 @@ func exp_build_sphere(radius, segments, cuts = 8, smooth = true):
 		pos = Vector3(0,-cos(angle_inc),0)
 		StaticMeshBuilder.add_tri([caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius) + pos])
 		pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0)
-		StaticMeshBuilder.add_tri([-caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius + pos)], true)
+		StaticMeshBuilder.add_tri([-caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius + pos)], null, true)
 	
 	pos = Vector3(0,-cos(angle_inc),0)
-	StaticMeshBuilder.add_tri([caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos], true)
+	StaticMeshBuilder.add_tri([caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos], null, true)
 	pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0)
 	StaticMeshBuilder.add_tri([-caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos])
 	
@@ -423,7 +440,7 @@ func exp_build_sphere(radius, segments, cuts = 8, smooth = true):
 			StaticMeshBuilder.add_quad([(circle[idx] * radius) + pos,\
 			                            (circle[idx + 1] * next_radius) + next_pos,\
 			                            (circle[idx] * next_radius) + next_pos,\
-			                            (circle[idx + 1] * radius) + pos], true)
+			                            (circle[idx + 1] * radius) + pos], null, true)
 		StaticMeshBuilder.add_quad([(circle[0] * radius) + pos,\
 		                            (circle[segments - 1] * next_radius) + next_pos,\
 		                            (circle[0] * next_radius) + next_pos,\
