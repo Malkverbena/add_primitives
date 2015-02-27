@@ -22,3 +22,6 @@
 extends MeshInstance
 
 export(ImageTexture) var heigthmap
+export(float, 0.01, 10, 0.01) var factor = 5
+export(int, 1, 150) var res = 32
+export(int, 1, 100) var size = 50

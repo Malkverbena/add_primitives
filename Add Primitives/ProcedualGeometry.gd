@@ -35,6 +35,8 @@ var current_heigthmap
 
 var heigthmaps = []
 var images = []
+var h_values = []
+var material
 var counter = 0
 
 func _enter_tree():
@@ -46,6 +48,8 @@ func _enter_tree():
 	
 	SettingsWindow = preload("Windows/SettingsWindow.xml").instance()
 	AddMeshPopup = preload("Windows/AddMeshPopup.xml").instance()
+	
+	material = preload("Core/Heigthmap/material.mtl")
 	
 	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, toolbar_menu)
 	popup_menu.connect('item_pressed', self, '_popup_signal')
@@ -115,14 +119,16 @@ func _popup_signal(id):
 	
 	elif command == 'Add Heigthmap':
 		if experimental_builder:
-			_add_mesh_popup(AddMeshPopup, 'heigthmap')
-			
 			if Heigthmap:
 				heigthmaps.append(exp_build_heigthmap(null))
 				images.append(null)
+				h_values.append([])
+				heigthmaps[counter].set_material_override(material.duplicate())
 				exp_add_heigthmap(heigthmaps[counter])
 				
 				counter += 1
+				
+				#_add_mesh_popup(AddMeshPopup, 'heigthmap')
 				
 			if not is_processing():
 				set_process(true)
@@ -235,16 +241,16 @@ func _add_mesh_popup(window, mesh):
 		parameters.append(settings.create_item(parameters[0]))
 		_update_tree_range(parameters[3], 'Segments', 16, 3)
 	
-	elif mesh == 'heigthmap':
-		current_mesh = 'heigthmap'
-		parameters.append(settings.create_item())
-		parameters[0].set_text(0, 'Heigthmap')
-		parameters.append(settings.create_item(parameters[0]))
-		_update_tree_range(parameters[1], 'Range', 5, 1)
-		parameters.append(settings.create_item(parameters[0]))
-		_update_tree_range(parameters[2], 'Size', 50, 1)
-		parameters.append(settings.create_item(parameters[0]))
-		_update_tree_range(parameters[3], 'Resolution', 32, 1, 100, 1)
+	#elif mesh == 'heigthmap':
+	#	current_mesh = 'heigthmap'
+	#	parameters.append(settings.create_item())
+	#	parameters[0].set_text(0, 'Heigthmap')
+	#	parameters.append(settings.create_item(parameters[0]))
+	#	_update_tree_range(parameters[1], 'Range', 5, 1)
+	#	parameters.append(settings.create_item(parameters[0]))
+	#	_update_tree_range(parameters[2], 'Size', 50, 1)
+	#	parameters.append(settings.create_item(parameters[0]))
+	#	_update_tree_range(parameters[3], 'Resolution', 32, 1, 100, 1)
 		
 func _refresh():
 	var settings = AddMeshPopup.get_node('Settings')
@@ -285,21 +291,19 @@ func _refresh():
 		values.append(parameters.get_range(1))
 		mesh_temp = exp_build_cone(values[0], values[1], values[2], smooth)
 	
-	elif current_mesh == 'heigthmap':
-		var parameters = root.get_children()
-		values.append(parameters.get_range(1))
-		parameters = parameters.get_next()
-		values.append(parameters.get_range(1))
-		parameters = parameters.get_next()
-		values.append(parameters.get_range(1))
-		mesh_temp = exp_build_heigthmap(values[1], values[2], values[0], smooth)
+	#elif current_mesh == 'heigthmap':
+	#	var parameters = root.get_children()
+	#	values.append(parameters.get_range(1))
+	#	parameters = parameters.get_next()
+	#	values.append(parameters.get_range(1))
+	#	parameters = parameters.get_next()
+	#	values.append(parameters.get_range(1))
+	#	mesh_temp = exp_build_heigthmap(null, values[1], values[2], values[0], smooth)
+	#	g_values = values
+	#	g_values.append(smooth)
 	
-	if current_mesh != 'heigthmap':
-		if mesh_instance.get_mesh() != null:
-			mesh_instance.set_mesh(mesh_temp)
-	else:
-		if heigthmap.get_mesh() != null:
-			heigthmap.set_mesh(mesh_temp)
+	if mesh_instance.get_mesh() != null:
+		mesh_instance.set_mesh(mesh_temp)
 	
 	mesh_temp == null
 
@@ -312,9 +316,12 @@ func _process(delta):
 			counter -= 1
 			
 	for j in range(counter):
-		if heigthmaps[j].heigthmap != images[j]:
+		if heigthmaps[j].heigthmap != images[j] or \
+		   (h_values[j][0] != heigthmaps[j].factor or h_values[j][1] != heigthmaps[j].res or h_values[j][2] != heigthmaps[j].size):
 			images[j] = heigthmaps[j].heigthmap
-			var heigthmap_temp = exp_build_heigthmap(heigthmaps[j].heigthmap)
+			h_values[j] = [heigthmaps[j].factor, heigthmaps[j].res, heigthmaps[j].size]
+			var heigthmap_temp = exp_build_heigthmap(heigthmaps[j].heigthmap, h_values[j][2],\
+			                                         h_values[j][1], h_values[j][0])
 			heigthmaps[j].set_mesh(heigthmap_temp.get_mesh())
 	
 	if counter == 0:
