@@ -34,6 +34,8 @@ var experimental_builder = false
 var current_mesh
 var mesh_instance
 
+var heigthmap
+
 #MeshData class, it's function is generate and store the mesh arrays
 
 class MeshData:
@@ -102,7 +104,7 @@ class MeshData:
 
 func _init():
 	print("PLUGIN INIT")
-
+	
 func _enter_tree():
 	toolbar_menu = MenuButton.new()
 	toolbar_menu.set_text('Add Mesh')
@@ -111,17 +113,19 @@ func _enter_tree():
 	update_menu()
 	
 	StaticMeshBuilder = preload("StaticMeshBuilder.gd").new()
-	SettingsWindow = preload("SettingsWindow.xml").instance()
-	AddMeshPopup = preload("AddMeshPopup.xml").instance()
+	
+	SettingsWindow = preload("Windows/SettingsWindow.xml").instance()
+	AddMeshPopup = preload("Windows/AddMeshPopup.xml").instance()
 	
 	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, toolbar_menu)
 	popup_menu.connect('item_pressed', self, '_popup_signal')
-
+	
 func update_menu():
 	popup_menu.add_item('Add Cube')
 	popup_menu.add_item('Add Plane')
 	popup_menu.add_item('Add Cylinder')
 	popup_menu.add_item('Add Sphere')
+	popup_menu.add_item('Add Cone')
 	
 	popup_menu.add_separator()
 	#popup_menu.add_item('Immediate Geometry')
@@ -157,7 +161,7 @@ func _popup_signal(id):
 	elif command == 'Add Cylinder':
 		if experimental_builder:
 			_add_mesh_popup(AddMeshPopup, 'cylinder')
-			var cylinder = exp_build_cylinder(2, 16)
+			var cylinder = exp_build_cylinder(1, 2, 16)
 			exp_add_mesh(cylinder)
 		else:
 			var cylinder = build_cylinder(16, 2)
@@ -166,16 +170,24 @@ func _popup_signal(id):
 	elif command == 'Add Sphere':
 		if experimental_builder:
 			_add_mesh_popup(AddMeshPopup, 'sphere')
-			var sphere = exp_build_sphere(2, 16)
+			var sphere = exp_build_sphere(1, 16)
 			exp_add_mesh(sphere)
+		else:
+			pass
+	
+	elif command == 'Add Cone':
+		if experimental_builder:
+			_add_mesh_popup(AddMeshPopup, 'cone')
+			var cone = exp_build_cone(1, 2, 12, 4)
+			exp_add_mesh(cone)
 		else:
 			pass
 	
 	elif command == 'Add Heigthmap':
 		if experimental_builder:
 			_add_mesh_popup(AddMeshPopup, 'heigthmap')
-			var heigthmap = exp_build_heigthmap()
-			exp_add_mesh(heigthmap)
+			var terrain = exp_build_heigthmap()
+			exp_add_mesh(terrain)
 		else:
 			var heigthmap = build_heigthmap()
 			surface_tool(heigthmap)
@@ -216,11 +228,11 @@ func _ok_button():
 	SettingsWindow.hide()
 
 #Add mesh popup
-func _update_tree_range(tree_item, text, value, _min, _max = 100):
+func _update_tree_range(tree_item, text, value, _min, _max = 100, step = 1):
 	tree_item.set_text(0, text)
 	tree_item.set_cell_mode(1, 2)
 	tree_item.set_range(1, value)
-	tree_item.set_range_config(1, _min, 100.0, 1)
+	tree_item.set_range_config(1, _min, 100.0, step)
 	tree_item.set_editable(1, true)
 
 func _add_mesh_popup(window, mesh):
@@ -254,27 +266,46 @@ func _add_mesh_popup(window, mesh):
 		parameters.append(settings.create_item())
 		parameters[0].set_text(0, 'Cylinder')
 		parameters.append(settings.create_item(parameters[0]))
-		_update_tree_range(parameters[1], 'Segments', 16, 3)
+		_update_tree_range(parameters[1], 'Radius', 1, 0.1, 100, 0.1)
 		parameters.append(settings.create_item(parameters[0]))
-		_update_tree_range(parameters[2], 'Cuts', 1, 1)
+		_update_tree_range(parameters[2], 'Heigth', 2, 0.1, 100, 0.1)
+		parameters.append(settings.create_item(parameters[0]))
+		_update_tree_range(parameters[3], 'Segments', 16, 3)
+		parameters.append(settings.create_item(parameters[0]))
+		_update_tree_range(parameters[4], 'Cuts', 1, 1)
 	
 	elif mesh == 'sphere':
 		current_mesh = 'sphere'
 		parameters.append(settings.create_item())
 		parameters[0].set_text(0, 'Sphere')
 		parameters.append(settings.create_item(parameters[0]))
-		_update_tree_range(parameters[1], 'Segments', 16, 3)
+		_update_tree_range(parameters[1], 'Radius', 1, 0.1, 100, 0.1)
 		parameters.append(settings.create_item(parameters[0]))
-		_update_tree_range(parameters[2], 'Cuts', 8, 3)
+		_update_tree_range(parameters[2], 'Segments', 16, 3)
+		parameters.append(settings.create_item(parameters[0]))
+		_update_tree_range(parameters[3], 'Cuts', 8, 3)
+	
+	elif mesh == 'cone':
+		current_mesh = 'cone'
+		parameters.append(settings.create_item())
+		parameters[0].set_text(0, 'Cone')
+		parameters.append(settings.create_item(parameters[0]))
+		_update_tree_range(parameters[1], 'Radius', 1, 0.1, 100, 0.1)
+		parameters.append(settings.create_item(parameters[0]))
+		_update_tree_range(parameters[2], 'Heigth', 2, 0.1, 100, 0.1)
+		parameters.append(settings.create_item(parameters[0]))
+		_update_tree_range(parameters[3], 'Segments', 16, 3)
 	
 	elif mesh == 'heigthmap':
 		current_mesh = 'heigthmap'
 		parameters.append(settings.create_item())
 		parameters[0].set_text(0, 'Heigthmap')
 		parameters.append(settings.create_item(parameters[0]))
-		_update_tree_range(parameters[1], 'Resolution', 32, 1)
+		_update_tree_range(parameters[1], 'Range', 5, 1)
 		parameters.append(settings.create_item(parameters[0]))
-		_update_tree_range(parameters[2], 'Range', 5, 1)
+		_update_tree_range(parameters[2], 'Size', 50, 1)
+		parameters.append(settings.create_item(parameters[0]))
+		_update_tree_range(parameters[3], 'Resolution', 32, 1)
 		
 func _refresh():
 	var settings = AddMeshPopup.get_node('Settings')
@@ -291,21 +322,38 @@ func _refresh():
 		values.append(parameters.get_range(1))
 		parameters = parameters.get_next()
 		values.append(parameters.get_range(1))
-		mesh_temp = exp_build_cylinder(2, int(values[0]), int(values[1]), smooth)
+		parameters = parameters.get_next()
+		values.append(parameters.get_range(1))
+		parameters = parameters.get_next()
+		values.append(parameters.get_range(1))
+		mesh_temp = exp_build_cylinder(values[0], values[1], values[2], values[3], smooth)
 	
 	elif current_mesh == 'sphere':
 		var parameters = root.get_children()
 		values.append(parameters.get_range(1))
 		parameters = parameters.get_next()
 		values.append(parameters.get_range(1))
-		mesh_temp = exp_build_sphere(2, int(values[0]), int(values[1]), smooth)
+		parameters = parameters.get_next()
+		values.append(parameters.get_range(1))
+		mesh_temp = exp_build_sphere(values[0], values[1], values[2], smooth)
+		
+	elif current_mesh == 'cone':
+		var parameters = root.get_children()
+		values.append(parameters.get_range(1))
+		parameters = parameters.get_next()
+		values.append(parameters.get_range(1))
+		parameters = parameters.get_next()
+		values.append(parameters.get_range(1))
+		mesh_temp = exp_build_cone(values[0], values[1], values[2], smooth)
 	
 	elif current_mesh == 'heigthmap':
 		var parameters = root.get_children()
 		values.append(parameters.get_range(1))
 		parameters = parameters.get_next()
 		values.append(parameters.get_range(1))
-		mesh_temp = exp_build_heigthmap(50, int(values[0]), int(values[1]), smooth)
+		parameters = parameters.get_next()
+		values.append(parameters.get_range(1))
+		mesh_temp = exp_build_heigthmap(values[1], values[2], values[0], smooth)
 	
 	if mesh_instance.get_mesh() != null:
 		mesh_instance.set_mesh(mesh_temp)
@@ -314,14 +362,6 @@ func _refresh():
 	
 	
 #Procedual algorithms
-func _rotate_uv(uv_coords):
-	var uv_temp = uv_coords
-	uv_temp.append(uv_coords[1])
-	uv_temp.append(uv_coords[0])
-	uv_temp.append(uv_coords[3])
-	uv_temp.append(uv_coords[2])
-	return uv_temp
-	
 func exp_build_plane_verts(width_dir, length_dir, offset = Vector3(0,0,0)):
 	var verts = []
 	verts.append(Vector3(0,0,0) + offset)
@@ -360,6 +400,7 @@ func exp_build_box(offset = Vector3(0,0,0)):
 
 func exp_build_circle_verts(pos, segments, radius = 1):
 	var radians_circle = PI * 2
+	var _radius = Vector3(radius, 1, radius)
 	
 	var circle_verts = []
 	
@@ -368,36 +409,42 @@ func exp_build_circle_verts(pos, segments, radius = 1):
 		var x = cos(angle)
 		var z = sin(angle)
 		
-		circle_verts.append(Vector3(x, 0, z) + pos)
+		var vector = Vector3(x, 0, z)
+		
+		circle_verts.append((vector * _radius) + pos)
 	
 	return circle_verts
 
-func exp_build_cylinder(heigth, segments, cuts = 1, smooth = true, caps = true):
+func exp_build_cylinder(radius, heigth, segments, cuts = 1, smooth = true, caps = true):
 	#cuts = 1 means no cut
-	var circle = exp_build_circle_verts(Vector3(0,float(heigth)/2,0), segments)
+	var circle = exp_build_circle_verts(Vector3(0,float(heigth)/2,0), segments, radius)
 	var min_pos = Vector3(0,heigth * -1,0)
 	
 	StaticMeshBuilder.begin(4)
+	
+	var uv_coords
 	
 	if caps:
 		StaticMeshBuilder.add_smooth_group(false)
 		for idx in range(segments - 1):
 			StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[idx + 1], circle[idx]])
 			StaticMeshBuilder.add_tri([min_pos * 0.5, circle[idx + 1] + min_pos, circle[idx] + min_pos], null, true)
-			
+		
 		StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[0], circle[segments - 1]])
 		StaticMeshBuilder.add_tri([min_pos * 0.5, circle[0] + min_pos, circle[segments - 1] + min_pos], null, true)
 	
 	var next_cut = Vector3(0, float(heigth)/cuts, 0) + min_pos
+	
+	uv_coords = [Vector2(0, 0), Vector2(1, 1), Vector2(1, 0), Vector2(0, 1)]
 	
 	StaticMeshBuilder.add_smooth_group(smooth)
 	
 	for i in range(cuts):
 		for idx in range(segments - 1):
 			StaticMeshBuilder.add_quad([circle[idx] + min_pos, circle[idx + 1] + next_cut,\
-			                            circle[idx] + next_cut, circle[idx + 1] + min_pos], null, true)
+			                            circle[idx] + next_cut, circle[idx + 1] + min_pos], uv_coords, true)
 		StaticMeshBuilder.add_quad([circle[0] + min_pos, circle[segments - 1] + next_cut,\
-		                            circle[0] + next_cut, circle[segments - 1] + min_pos], null)
+		                            circle[0] + next_cut, circle[segments - 1] + min_pos], uv_coords)
 		min_pos = next_cut
 		next_cut.y += float(heigth)/cuts
 		
@@ -407,11 +454,11 @@ func exp_build_cylinder(heigth, segments, cuts = 1, smooth = true, caps = true):
 	
 	return mesh
 
-func exp_build_sphere(radius, segments, cuts = 8, smooth = true):
+func exp_build_sphere(s_radius, segments, cuts = 8, smooth = true):
 	var angle_inc = PI/cuts
-	var caps_center = Vector3(0,float(-radius)/2,0)
+	var caps_center = Vector3(0,-s_radius,0)
 	
-	var circle = exp_build_circle_verts(Vector3(0,0,0), segments)
+	var circle = exp_build_circle_verts(Vector3(0,0,0), segments, s_radius)
 	
 	var radius = Vector3(sin(angle_inc), 0, sin(angle_inc))
 	var pos
@@ -420,22 +467,22 @@ func exp_build_sphere(radius, segments, cuts = 8, smooth = true):
 	StaticMeshBuilder.add_smooth_group(smooth)
 	
 	for idx in range(segments - 1):
-		pos = Vector3(0,-cos(angle_inc),0)
+		pos = Vector3(0,-cos(angle_inc),0) * s_radius
 		StaticMeshBuilder.add_tri([caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius) + pos])
-		pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0)
+		pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0) * s_radius
 		StaticMeshBuilder.add_tri([-caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius + pos)], null, true)
 	
-	pos = Vector3(0,-cos(angle_inc),0)
+	pos = Vector3(0,-cos(angle_inc),0) * s_radius
 	StaticMeshBuilder.add_tri([caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos], null, true)
-	pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0)
+	pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0) * s_radius
 	StaticMeshBuilder.add_tri([-caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos])
 	
-	pos = Vector3(0,-cos(angle_inc),0)
+	pos = Vector3(0,-cos(angle_inc),0) * s_radius
 	for i in range(cuts - 1):
 		radius = Vector3(sin(angle_inc * i), 0, sin(angle_inc * i))
 		var next_radius = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
 		
-		var next_pos = Vector3(0,-cos(angle_inc * (i + 1)), 0)
+		var next_pos = Vector3(0,-cos(angle_inc * (i + 1)), 0) * s_radius
 		for idx in range(segments - 1):
 			StaticMeshBuilder.add_quad([(circle[idx] * radius) + pos,\
 			                            (circle[idx + 1] * next_radius) + next_pos,\
@@ -454,26 +501,60 @@ func exp_build_sphere(radius, segments, cuts = 8, smooth = true):
 	
 	return mesh
 
+func exp_build_cone(radius, heigth, segments = 12, smooth = true):
+	var center_top = Vector3(0, heigth * 0.5, 0)
+	var min_pos = Vector3(0, heigth * -0.5, 0)
+	
+	var circle = exp_build_circle_verts(min_pos, segments, radius)
+	
+	StaticMeshBuilder.begin(4)
+	
+	StaticMeshBuilder.add_smooth_group(smooth)
+	for idx in range(segments - 1):
+		StaticMeshBuilder.add_tri([center_top, circle[idx + 1], circle[idx]])
+	StaticMeshBuilder.add_tri([center_top, circle[0], circle[segments - 1]])
+	
+	StaticMeshBuilder.add_smooth_group(false)
+	for idx in range(segments - 1):
+		StaticMeshBuilder.add_tri([min_pos, circle[idx], circle[idx + 1]])
+	StaticMeshBuilder.add_tri([min_pos, circle[segments - 1], circle[0]])
+	
+	StaticMeshBuilder.generate_normals()
+	var mesh = StaticMeshBuilder.commit()
+	StaticMeshBuilder.clear()
+	
+	return mesh
+	
 func exp_build_heigthmap(size = 50, res = 32, _range = 5, smooth = true):
-	var origin = Vector3(-25,0,-25)
+	var origin = Vector3(-size/2,0,-size/2)
 	var res_size = float(size)/res
+	
+	var image = preload("Heigthmap.png").get_data()
 	
 	var verts = []
 	
 	for i in range(res + 1):
 		verts.append([])
 		for j in range(res + 1):
-			verts[i] += [Vector3(i * res_size, randf(_range), j * res_size)]
+			var vert_heigth = image.get_pixel((image.get_height() -1) * (float(i)/res),\
+			 (image.get_width() -1) * (float(j)/res))
+			verts[i] += [Vector3(i * res_size, vert_heigth.gray() * _range, j * res_size)]
 	
 	StaticMeshBuilder.begin(4)
 	StaticMeshBuilder.add_smooth_group(smooth)
 	
+	var uv_coords
+	
 	for i in range(res):
 		for j in range(res):
+			uv_coords = [Vector2(1 + i, 0 + j)/res, Vector2(0 + i, 1 + j)/res,\
+			             Vector2(0 + i, 0 + j)/res, Vector2(1 + i, 1 + j)/res]
+			
 			StaticMeshBuilder.add_quad([verts[i+1][j] + origin,\
 			                            verts[i][j+1] + origin,\
 			                            verts[i][j] + origin,\
-			                            verts[i+1][j+1] + origin], true)
+			                            verts[i+1][j+1] + origin],\
+			                            uv_coords ,true)
 	
 	StaticMeshBuilder.generate_normals()
 	var mesh = StaticMeshBuilder.commit()
@@ -605,8 +686,6 @@ func build_heigthmap(size = 50, res = 32):
 #		root.add_child(mesh_instance)
 #		mesh_instance.set_owner(root)
 
-#Immediate Geometry, still experimental
-
 func exp_add_mesh(mesh):
 	mesh_instance = MeshInstance.new()
 	mesh_instance.set_mesh(mesh)
@@ -625,8 +704,9 @@ func exp_add_mesh(mesh):
 		else:
 			root.add_child(mesh_instance)
 			mesh_instance.set_owner(root)
-	
-	
+
+#Immediate Geometry, still experimental
+
 func immediate_geometry(mesh):
 	var immediate_geo = ImmediateGeometry.new()
 	#Here it create a new texture to nescessary to add geometry
@@ -698,9 +778,10 @@ func surface_tool(mesh):
 			mesh_instance.set_owner(root)
 		
 func _exit_tree():
-	StaticMeshBuilder = null
+	SettingsWindow = null
+	AddMeshPopup = null
+	
 	popup_menu.free()
 	popup_menu = null
 	toolbar_menu.free()
 	toolbar_menu = null
-
