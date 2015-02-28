@@ -60,6 +60,7 @@ func update_menu():
 	popup_menu.add_item('Add Cylinder')
 	popup_menu.add_item('Add Sphere')
 	popup_menu.add_item('Add Cone')
+	popup_menu.add_item('Add Capsule')
 	
 	popup_menu.add_separator()
 	#popup_menu.add_item('Immediate Geometry')
@@ -114,6 +115,14 @@ func _popup_signal(id):
 			_add_mesh_popup(AddMeshPopup, 'cone')
 			var cone = exp_build_cone(1, 2, 12, 4)
 			exp_add_mesh(cone)
+		else:
+			pass
+	
+	elif command == 'Add Capsule':
+		if experimental_builder:
+			_add_mesh_popup(AddMeshPopup, 'capsule')
+			var capsule = exp_build_capsule(1, 16, 1)
+			exp_add_mesh(capsule)
 		else:
 			pass
 	
@@ -241,6 +250,17 @@ func _add_mesh_popup(window, mesh):
 		parameters.append(settings.create_item(parameters[0]))
 		_update_tree_range(parameters[3], 'Segments', 16, 3)
 	
+	elif mesh == 'capsule':
+		current_mesh = 'capsule'
+		parameters.append(settings.create_item())
+		parameters[0].set_text(0, 'Capsule')
+		parameters.append(settings.create_item(parameters[0]))
+		_update_tree_range(parameters[1], 'C. Heigth', 1, 0.1, 100, 0.1)
+		parameters.append(settings.create_item(parameters[0]))
+		_update_tree_range(parameters[2], 'Segments', 16, 3)
+		parameters.append(settings.create_item(parameters[0]))
+		_update_tree_range(parameters[3], 'Cuts', 8, 3)
+	
 	#elif mesh == 'heigthmap':
 	#	current_mesh = 'heigthmap'
 	#	parameters.append(settings.create_item())
@@ -290,6 +310,15 @@ func _refresh():
 		parameters = parameters.get_next()
 		values.append(parameters.get_range(1))
 		mesh_temp = exp_build_cone(values[0], values[1], values[2], smooth)
+	
+	elif current_mesh == 'capsule':
+		var parameters = root.get_children()
+		values.append(parameters.get_range(1))
+		parameters = parameters.get_next()
+		values.append(parameters.get_range(1))
+		parameters = parameters.get_next()
+		values.append(parameters.get_range(1))
+		mesh_temp = exp_build_capsule(1, values[1], values[0], values[2], smooth)
 	
 	#elif current_mesh == 'heigthmap':
 	#	var parameters = root.get_children()

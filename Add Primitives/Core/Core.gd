@@ -1,22 +1,22 @@
-# Copyright (c) 2015 Franklin Sobrinho.                 
+# Copyright (c) 2015 Franklin Sobrinho.
                                                                        
-# Permission is hereby granted, free of charge, to any person obtaining 
+# Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without 
-# limitation the rights to use, copy, modify, merge, publish,   
-# distribute, sublicense, and/or sell copies of the Software, and to    
-# permit persons to whom the Software is furnished to do so, subject to 
-# the following conditions:                                             
+# to deal in the Software without restriction, including without
+# limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to 
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
                                                                        
-# The above copyright notice and this permission notice shall be        
-# included in all copies or substantial portions of the Software.       
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
                                                                        
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,    
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF  
 # MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  
-# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  
-# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 tool
@@ -159,29 +159,40 @@ func exp_build_cylinder(radius, heigth, segments, cuts = 1, smooth = true, caps 
 	
 	StaticMeshBuilder.begin(4)
 	
-	var uv_coords
+	#var uv_coords = [Vector2(0, 0), Vector2(1, 1), Vector2(1, 0)]
 	
 	if caps:
 		StaticMeshBuilder.add_smooth_group(false)
 		for idx in range(segments - 1):
-			StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[idx + 1], circle[idx]])
+			StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[idx + 1], circle[idx]], null)
 			StaticMeshBuilder.add_tri([min_pos * 0.5, circle[idx + 1] + min_pos, circle[idx] + min_pos], null, true)
 		
-		StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[0], circle[segments - 1]])
+		StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[0], circle[segments - 1]], null)
 		StaticMeshBuilder.add_tri([min_pos * 0.5, circle[0] + min_pos, circle[segments - 1] + min_pos], null, true)
 	
 	var next_cut = Vector3(0, float(heigth)/cuts, 0) + min_pos
 	
-	uv_coords = [Vector2(0, 0), Vector2(1, 1), Vector2(1, 0), Vector2(0, 1)]
-	
 	StaticMeshBuilder.add_smooth_group(smooth)
+	
+	#var uv_offset = Vector2(0.5,0.5)
 	
 	for i in range(cuts):
 		for idx in range(segments - 1):
+			#uv_coords = [(Vector2(float(i), float(idx)/segments)/2) + uv_offset,\
+			#             (Vector2(float(i+1), float(idx+1)/segments)/2) + uv_offset,\
+			#             (Vector2(float(i+1), float(idx)/segments)/2) + uv_offset,\
+			#             (Vector2(float(i), float(idx+1)/segments)/2) + uv_offset]
+			
 			StaticMeshBuilder.add_quad([circle[idx] + min_pos, circle[idx + 1] + next_cut,\
-			                            circle[idx] + next_cut, circle[idx + 1] + min_pos], uv_coords, true)
+			                            circle[idx] + next_cut, circle[idx + 1] + min_pos], null, true)
+		
+		#uv_coords = [(Vector2(1, 1)/2) + uv_offset,\
+		#             (Vector2(float(cuts - 1)/cuts, float(segments - 1)/segments)/2) + uv_offset,\
+		#             (Vector2(float(cuts - 1)/cuts, 1)/2) + uv_offset,\
+		#             (Vector2(1, float(segments - 1)/segments)/2) + uv_offset]
+		
 		StaticMeshBuilder.add_quad([circle[0] + min_pos, circle[segments - 1] + next_cut,\
-		                            circle[0] + next_cut, circle[segments - 1] + min_pos], uv_coords)
+		                            circle[0] + next_cut, circle[segments - 1] + min_pos], null)
 		min_pos = next_cut
 		next_cut.y += float(heigth)/cuts
 		
@@ -261,7 +272,81 @@ func exp_build_cone(radius, heigth, segments = 12, smooth = true):
 	StaticMeshBuilder.clear()
 	
 	return mesh
+
+func exp_build_capsule(s_radius, segments, c_heigth = 2, cuts = 8, smooth = true):
+	var angle_inc = PI/cuts
+	var caps_center = Vector3(0,(s_radius + c_heigth),0)
 	
+	var circle = exp_build_circle_verts(Vector3(0,0,0), segments, s_radius)
+	
+	var radius = Vector3(sin(angle_inc), 0, sin(angle_inc))
+	var pos
+	
+	StaticMeshBuilder.begin(4)
+	StaticMeshBuilder.add_smooth_group(smooth)
+	
+	for idx in range(segments - 1):
+		pos = Vector3(0,-cos(angle_inc) - c_heigth,0) * s_radius
+		StaticMeshBuilder.add_tri([-caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius) + pos])
+		pos = Vector3(0,-cos(angle_inc * (cuts - 1)) + c_heigth,0) * s_radius
+		StaticMeshBuilder.add_tri([caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius + pos)], null, true)
+	
+	pos = Vector3(0,-cos(angle_inc) - c_heigth,0) * s_radius
+	StaticMeshBuilder.add_tri([-caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos], null, true)
+	pos = Vector3(0,-cos(angle_inc * (cuts - 1)) + c_heigth,0) * s_radius
+	StaticMeshBuilder.add_tri([caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos])
+	
+	pos = Vector3(0,-cos(angle_inc) + c_heigth,0) * s_radius
+	
+	for i in range((cuts - 2)/2):
+		radius = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
+		var next_radius = Vector3(sin(angle_inc * (i + 2)), 0, sin(angle_inc * (i + 2)))
+		
+		var next_pos
+		
+		next_pos = Vector3(0, -cos(angle_inc * (i + 2)) - c_heigth, 0) * s_radius
+		
+		if i == 0:
+			pos = Vector3(0,-cos(angle_inc) - c_heigth,0) * s_radius
+		
+		for idx in range(segments - 1):
+			StaticMeshBuilder.add_quad([(circle[idx] * radius) + pos,\
+			                            (circle[idx + 1] * next_radius) + next_pos,\
+			                            (circle[idx] * next_radius) + next_pos,\
+			                            (circle[idx + 1] * radius) + pos], null, true)
+		StaticMeshBuilder.add_quad([(circle[0] * radius) + pos,\
+		                            (circle[segments - 1] * next_radius) + next_pos,\
+		                            (circle[0] * next_radius) + next_pos,\
+		                            (circle[segments - 1] * radius) + pos])
+		pos = next_pos
+		
+	for i in range(((cuts - 2)/2), cuts - 1):
+		radius = Vector3(sin(angle_inc * i), 0, sin(angle_inc * i))
+		
+		var next_radius = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
+		
+		if i == ((cuts - 2)/2):
+			radius = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
+		
+		var next_pos = Vector3(0, -cos(angle_inc * (i + 1)) + c_heigth, 0) * s_radius
+		
+		for idx in range(segments - 1):
+			StaticMeshBuilder.add_quad([(circle[idx] * radius) + pos,\
+			                            (circle[idx + 1] * next_radius) + next_pos,\
+			                            (circle[idx] * next_radius) + next_pos,\
+			                            (circle[idx + 1] * radius) + pos], null, true)
+		StaticMeshBuilder.add_quad([(circle[0] * radius) + pos,\
+		                            (circle[segments - 1] * next_radius) + next_pos,\
+		                            (circle[0] * next_radius) + next_pos,\
+		                            (circle[segments - 1] * radius) + pos])
+		pos = next_pos
+	
+	StaticMeshBuilder.generate_normals()
+	var mesh = StaticMeshBuilder.commit()
+	StaticMeshBuilder.clear()
+	
+	return mesh
+
 func exp_build_heigthmap(_heigthmap, size = 50, res = 32, _range = 5, smooth = true):
 	var origin = Vector3(-size/2,0,-size/2)
 	var res_size = float(size)/res
