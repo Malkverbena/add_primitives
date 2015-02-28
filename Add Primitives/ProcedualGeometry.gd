@@ -70,6 +70,7 @@ func update_menu():
 
 func _popup_signal(id):
 	var command = popup_menu.get_item_text(popup_menu.get_item_index(id))
+	var root = get_tree().get_edited_scene_root()
 	
 	if command == 'Add Plane':
 		if experimental_builder:
@@ -95,34 +96,37 @@ func _popup_signal(id):
 	
 	elif command == 'Add Cylinder':
 		if experimental_builder:
-			_add_mesh_popup(AddMeshPopup, 'cylinder')
 			var cylinder = exp_build_cylinder(1, 2, 16)
 			exp_add_mesh(cylinder)
+			_add_mesh_popup(AddMeshPopup, 'cylinder')
 		else:
 			var cylinder = build_cylinder(16, 2)
 			surface_tool(cylinder)
 	
 	elif command == 'Add Sphere':
 		if experimental_builder:
-			_add_mesh_popup(AddMeshPopup, 'sphere')
 			var sphere = exp_build_sphere(1, 16)
 			exp_add_mesh(sphere)
+			if root != null:
+				_add_mesh_popup(AddMeshPopup, 'sphere')
 		else:
 			pass
 	
 	elif command == 'Add Cone':
 		if experimental_builder:
-			_add_mesh_popup(AddMeshPopup, 'cone')
 			var cone = exp_build_cone(1, 2, 12, 4)
 			exp_add_mesh(cone)
+			if root != null:
+				_add_mesh_popup(AddMeshPopup, 'cone')
 		else:
 			pass
 	
 	elif command == 'Add Capsule':
 		if experimental_builder:
-			_add_mesh_popup(AddMeshPopup, 'capsule')
 			var capsule = exp_build_capsule(1, 16, 1)
 			exp_add_mesh(capsule)
+			if root != null:
+				_add_mesh_popup(AddMeshPopup, 'capsule')
 		else:
 			pass
 	
@@ -206,8 +210,10 @@ func _add_mesh_popup(window, mesh):
 	settings.set_column_title(1, 'Value')
 	settings.set_column_titles_visible(true)
 	
-	var check_button = window.get_node('Smooth')
-	check_button.set_pressed(true)
+	var check_smooth = window.get_node('Smooth')
+	check_smooth.set_pressed(true)
+	var check_reverse = window.get_node('Reverse')
+	check_reverse.set_pressed(false)
 	
 	var parameters = []
 	
@@ -274,9 +280,11 @@ func _add_mesh_popup(window, mesh):
 		
 func _refresh():
 	var settings = AddMeshPopup.get_node('Settings')
-	var check_button = AddMeshPopup.get_node('Smooth')
+	var check_smooth = AddMeshPopup.get_node('Smooth')
+	var check_reverse = AddMeshPopup.get_node('Reverse')
 	
-	var smooth = check_button.is_pressed()
+	var smooth = check_smooth.is_pressed()
+	var reverse = check_reverse.is_pressed()
 	
 	var root = settings.get_root()
 	var values = []
@@ -291,7 +299,7 @@ func _refresh():
 		values.append(parameters.get_range(1))
 		parameters = parameters.get_next()
 		values.append(parameters.get_range(1))
-		mesh_temp = exp_build_cylinder(values[0], values[1], values[2], values[3], smooth)
+		mesh_temp = exp_build_cylinder(values[0], values[1], values[2], values[3], smooth, reverse)
 	
 	elif current_mesh == 'sphere':
 		var parameters = root.get_children()
@@ -300,7 +308,7 @@ func _refresh():
 		values.append(parameters.get_range(1))
 		parameters = parameters.get_next()
 		values.append(parameters.get_range(1))
-		mesh_temp = exp_build_sphere(values[0], values[1], values[2], smooth)
+		mesh_temp = exp_build_sphere(values[0], values[1], values[2], smooth, reverse)
 		
 	elif current_mesh == 'cone':
 		var parameters = root.get_children()
@@ -309,7 +317,7 @@ func _refresh():
 		values.append(parameters.get_range(1))
 		parameters = parameters.get_next()
 		values.append(parameters.get_range(1))
-		mesh_temp = exp_build_cone(values[0], values[1], values[2], smooth)
+		mesh_temp = exp_build_cone(values[0], values[1], values[2], smooth, reverse)
 	
 	elif current_mesh == 'capsule':
 		var parameters = root.get_children()
@@ -318,7 +326,7 @@ func _refresh():
 		values.append(parameters.get_range(1))
 		parameters = parameters.get_next()
 		values.append(parameters.get_range(1))
-		mesh_temp = exp_build_capsule(1, values[1], values[0], values[2], smooth)
+		mesh_temp = exp_build_capsule(1, values[1], values[0], values[2], smooth, reverse)
 	
 	#elif current_mesh == 'heigthmap':
 	#	var parameters = root.get_children()

@@ -135,7 +135,7 @@ func exp_build_box(offset = Vector3(0,0,0)):
 	StaticMeshBuilder.clear()
 	return mesh
 
-func exp_build_circle_verts(pos, segments, radius = 1):
+func exp_build_circle_verts(pos, segments, radius = 1, rotation = null):
 	var radians_circle = PI * 2
 	var _radius = Vector3(radius, 1, radius)
 	
@@ -152,7 +152,7 @@ func exp_build_circle_verts(pos, segments, radius = 1):
 	
 	return circle_verts
 
-func exp_build_cylinder(radius, heigth, segments, cuts = 1, smooth = true, caps = true):
+func exp_build_cylinder(radius, heigth, segments, cuts = 1, smooth = true, reverse = false, caps = true):
 	#cuts = 1 means no cut
 	var circle = exp_build_circle_verts(Vector3(0,float(heigth)/2,0), segments, radius)
 	var min_pos = Vector3(0,heigth * -1,0)
@@ -164,11 +164,11 @@ func exp_build_cylinder(radius, heigth, segments, cuts = 1, smooth = true, caps 
 	if caps:
 		StaticMeshBuilder.add_smooth_group(false)
 		for idx in range(segments - 1):
-			StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[idx + 1], circle[idx]], null)
-			StaticMeshBuilder.add_tri([min_pos * 0.5, circle[idx + 1] + min_pos, circle[idx] + min_pos], null, true)
+			StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[idx + 1], circle[idx]], null, reverse)
+			StaticMeshBuilder.add_tri([min_pos * 0.5, circle[idx + 1] + min_pos, circle[idx] + min_pos], null, not reverse)
 		
-		StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[0], circle[segments - 1]], null)
-		StaticMeshBuilder.add_tri([min_pos * 0.5, circle[0] + min_pos, circle[segments - 1] + min_pos], null, true)
+		StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[0], circle[segments - 1]], null, reverse)
+		StaticMeshBuilder.add_tri([min_pos * 0.5, circle[0] + min_pos, circle[segments - 1] + min_pos], null, not reverse)
 	
 	var next_cut = Vector3(0, float(heigth)/cuts, 0) + min_pos
 	
@@ -184,7 +184,7 @@ func exp_build_cylinder(radius, heigth, segments, cuts = 1, smooth = true, caps 
 			#             (Vector2(float(i), float(idx+1)/segments)/2) + uv_offset]
 			
 			StaticMeshBuilder.add_quad([circle[idx] + min_pos, circle[idx + 1] + next_cut,\
-			                            circle[idx] + next_cut, circle[idx + 1] + min_pos], null, true)
+			                            circle[idx] + next_cut, circle[idx + 1] + min_pos], null, not reverse)
 		
 		#uv_coords = [(Vector2(1, 1)/2) + uv_offset,\
 		#             (Vector2(float(cuts - 1)/cuts, float(segments - 1)/segments)/2) + uv_offset,\
@@ -192,7 +192,7 @@ func exp_build_cylinder(radius, heigth, segments, cuts = 1, smooth = true, caps 
 		#             (Vector2(1, float(segments - 1)/segments)/2) + uv_offset]
 		
 		StaticMeshBuilder.add_quad([circle[0] + min_pos, circle[segments - 1] + next_cut,\
-		                            circle[0] + next_cut, circle[segments - 1] + min_pos], null)
+		                            circle[0] + next_cut, circle[segments - 1] + min_pos], null, reverse)
 		min_pos = next_cut
 		next_cut.y += float(heigth)/cuts
 		
@@ -202,7 +202,7 @@ func exp_build_cylinder(radius, heigth, segments, cuts = 1, smooth = true, caps 
 	
 	return mesh
 
-func exp_build_sphere(s_radius, segments, cuts = 8, smooth = true):
+func exp_build_sphere(s_radius, segments, cuts = 8, smooth = true, reverse = false):
 	var angle_inc = PI/cuts
 	var caps_center = Vector3(0,-s_radius,0)
 	
@@ -216,30 +216,36 @@ func exp_build_sphere(s_radius, segments, cuts = 8, smooth = true):
 	
 	for idx in range(segments - 1):
 		pos = Vector3(0,-cos(angle_inc),0) * s_radius
-		StaticMeshBuilder.add_tri([caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius) + pos])
-		pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0) * s_radius
-		StaticMeshBuilder.add_tri([-caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius + pos)], null, true)
-	
-	pos = Vector3(0,-cos(angle_inc),0) * s_radius
-	StaticMeshBuilder.add_tri([caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos], null, true)
-	pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0) * s_radius
-	StaticMeshBuilder.add_tri([-caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos])
-	
-	pos = Vector3(0,-cos(angle_inc),0) * s_radius
-	for i in range(cuts - 1):
-		radius = Vector3(sin(angle_inc * i), 0, sin(angle_inc * i))
-		var next_radius = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
+		StaticMeshBuilder.add_tri([caps_center, (circle[idx] * radius) + pos,\
+		                          (circle[idx + 1] * radius) + pos], null, reverse)
 		
-		var next_pos = Vector3(0,-cos(angle_inc * (i + 1)), 0) * s_radius
+		pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0) * s_radius
+		StaticMeshBuilder.add_tri([-caps_center, (circle[idx] * radius) + pos,\
+		                          (circle[idx + 1] * radius + pos)], null, not reverse)
+	
+	pos = Vector3(0,-cos(angle_inc),0) * s_radius
+	StaticMeshBuilder.add_tri([caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos],\
+	                           null, not reverse)
+	
+	pos = Vector3(0,-cos(angle_inc * (cuts - 1)),0) * s_radius
+	StaticMeshBuilder.add_tri([-caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos],\
+	                           null, reverse)
+	
+	pos = Vector3(0,-cos(angle_inc),0) * s_radius
+	for i in range(cuts - 2):
+		radius = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
+		var next_radius = Vector3(sin(angle_inc * (i + 2)), 0, sin(angle_inc * (i + 2)))
+		
+		var next_pos = Vector3(0,-cos(angle_inc * (i + 2)), 0) * s_radius
 		for idx in range(segments - 1):
 			StaticMeshBuilder.add_quad([(circle[idx] * radius) + pos,\
 			                            (circle[idx + 1] * next_radius) + next_pos,\
 			                            (circle[idx] * next_radius) + next_pos,\
-			                            (circle[idx + 1] * radius) + pos], null, true)
+			                            (circle[idx + 1] * radius) + pos], null, not reverse)
 		StaticMeshBuilder.add_quad([(circle[0] * radius) + pos,\
 		                            (circle[segments - 1] * next_radius) + next_pos,\
 		                            (circle[0] * next_radius) + next_pos,\
-		                            (circle[segments - 1] * radius) + pos])
+		                            (circle[segments - 1] * radius) + pos], null, reverse)
 		
 		pos = next_pos
 	
@@ -249,7 +255,7 @@ func exp_build_sphere(s_radius, segments, cuts = 8, smooth = true):
 	
 	return mesh
 
-func exp_build_cone(radius, heigth, segments = 12, smooth = true):
+func exp_build_cone(radius, heigth, segments = 12, smooth = true, reverse = false):
 	var center_top = Vector3(0, heigth * 0.5, 0)
 	var min_pos = Vector3(0, heigth * -0.5, 0)
 	
@@ -259,13 +265,13 @@ func exp_build_cone(radius, heigth, segments = 12, smooth = true):
 	
 	StaticMeshBuilder.add_smooth_group(smooth)
 	for idx in range(segments - 1):
-		StaticMeshBuilder.add_tri([center_top, circle[idx + 1], circle[idx]])
-	StaticMeshBuilder.add_tri([center_top, circle[0], circle[segments - 1]])
+		StaticMeshBuilder.add_tri([center_top, circle[idx + 1], circle[idx]], null, reverse)
+	StaticMeshBuilder.add_tri([center_top, circle[0], circle[segments - 1]], null, reverse)
 	
 	StaticMeshBuilder.add_smooth_group(false)
 	for idx in range(segments - 1):
-		StaticMeshBuilder.add_tri([min_pos, circle[idx], circle[idx + 1]])
-	StaticMeshBuilder.add_tri([min_pos, circle[segments - 1], circle[0]])
+		StaticMeshBuilder.add_tri([min_pos, circle[idx], circle[idx + 1]], null, reverse)
+	StaticMeshBuilder.add_tri([min_pos, circle[segments - 1], circle[0]], null, reverse)
 	
 	StaticMeshBuilder.generate_normals()
 	var mesh = StaticMeshBuilder.commit()
@@ -273,7 +279,7 @@ func exp_build_cone(radius, heigth, segments = 12, smooth = true):
 	
 	return mesh
 
-func exp_build_capsule(s_radius, segments, c_heigth = 2, cuts = 8, smooth = true):
+func exp_build_capsule(s_radius, segments, c_heigth = 2, cuts = 8, smooth = true, reverse = false):
 	var angle_inc = PI/cuts
 	var caps_center = Vector3(0,(s_radius + c_heigth),0)
 	
@@ -287,14 +293,14 @@ func exp_build_capsule(s_radius, segments, c_heigth = 2, cuts = 8, smooth = true
 	
 	for idx in range(segments - 1):
 		pos = Vector3(0,-cos(angle_inc) - c_heigth,0) * s_radius
-		StaticMeshBuilder.add_tri([-caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius) + pos])
+		StaticMeshBuilder.add_tri([-caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius) + pos], null, reverse)
 		pos = Vector3(0,-cos(angle_inc * (cuts - 1)) + c_heigth,0) * s_radius
-		StaticMeshBuilder.add_tri([caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius + pos)], null, true)
+		StaticMeshBuilder.add_tri([caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius + pos)], null, not reverse)
 	
 	pos = Vector3(0,-cos(angle_inc) - c_heigth,0) * s_radius
-	StaticMeshBuilder.add_tri([-caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos], null, true)
+	StaticMeshBuilder.add_tri([-caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos], null, not reverse)
 	pos = Vector3(0,-cos(angle_inc * (cuts - 1)) + c_heigth,0) * s_radius
-	StaticMeshBuilder.add_tri([caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos])
+	StaticMeshBuilder.add_tri([caps_center, (circle[0] * radius) + pos, (circle[segments - 1] * radius) + pos], null, reverse)
 	
 	pos = Vector3(0,-cos(angle_inc) + c_heigth,0) * s_radius
 	
@@ -313,11 +319,11 @@ func exp_build_capsule(s_radius, segments, c_heigth = 2, cuts = 8, smooth = true
 			StaticMeshBuilder.add_quad([(circle[idx] * radius) + pos,\
 			                            (circle[idx + 1] * next_radius) + next_pos,\
 			                            (circle[idx] * next_radius) + next_pos,\
-			                            (circle[idx + 1] * radius) + pos], null, true)
+			                            (circle[idx + 1] * radius) + pos], null, not reverse)
 		StaticMeshBuilder.add_quad([(circle[0] * radius) + pos,\
 		                            (circle[segments - 1] * next_radius) + next_pos,\
 		                            (circle[0] * next_radius) + next_pos,\
-		                            (circle[segments - 1] * radius) + pos])
+		                            (circle[segments - 1] * radius) + pos], null, reverse)
 		pos = next_pos
 		
 	for i in range(((cuts - 2)/2), cuts - 1):
@@ -334,11 +340,11 @@ func exp_build_capsule(s_radius, segments, c_heigth = 2, cuts = 8, smooth = true
 			StaticMeshBuilder.add_quad([(circle[idx] * radius) + pos,\
 			                            (circle[idx + 1] * next_radius) + next_pos,\
 			                            (circle[idx] * next_radius) + next_pos,\
-			                            (circle[idx + 1] * radius) + pos], null, true)
+			                            (circle[idx + 1] * radius) + pos], null, not reverse)
 		StaticMeshBuilder.add_quad([(circle[0] * radius) + pos,\
 		                            (circle[segments - 1] * next_radius) + next_pos,\
 		                            (circle[0] * next_radius) + next_pos,\
-		                            (circle[segments - 1] * radius) + pos])
+		                            (circle[segments - 1] * radius) + pos], null, reverse)
 		pos = next_pos
 	
 	StaticMeshBuilder.generate_normals()
@@ -589,8 +595,6 @@ func immediate_geometry(mesh):
 		else:
 			root.add_child(immediate_geo)
 			immediate_geo.set_owner(root)
-
-#Main function to add geometry, all the plugin engine is based on it
 
 func surface_tool(mesh):
 	var mesh_instance = MeshInstance.new()
