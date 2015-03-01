@@ -24,6 +24,7 @@ extends "Core/Core.gd"
 
 var toolbar_menu
 var popup_menu
+var text_editor
 
 var SettingsWindow
 var AddMeshPopup
@@ -39,6 +40,23 @@ var h_values = []
 var material
 var counter = 0
 
+var resource_loader
+var _shader
+
+func _init():
+	_shader = ["uniform float factor;\n",\
+              "\n",\
+              "uniform texture heigthmap;\n",\
+              "uniform texture high;\n",\
+              "uniform texture low;\n",\
+              "\n",\
+              "vec3 mask = tex(heigthmap, UV).xyz;\n",\
+              "vec3 first_map = tex(low, UV).xyz;\n",\
+              "vec3 second_map = tex(high, UV).xyz;\n",\
+              "\n",\
+              "DIFFUSE = mix(first_map, second_map, mask/factor);"]
+	      
+
 func _enter_tree():
 	toolbar_menu = MenuButton.new()
 	toolbar_menu.set_text('Add Mesh')
@@ -46,17 +64,23 @@ func _enter_tree():
 	
 	update_menu()
 	
-	SettingsWindow = preload("Windows/SettingsWindow.xml").instance()
-	AddMeshPopup = preload("Windows/AddMeshPopup.xml").instance()
+	resource_loader = ResourcePreloader.new()
 	
-	material = preload("Core/Heigthmap/material.mtl")
+	resource_loader.add_resource('settings_window', preload("Windows/SettingsWindow.xml"))
+	resource_loader.add_resource('add_mesh_popup', preload("Windows/AddMeshPopup.xml"))
+	resource_loader.add_resource('text_editor', preload("Windows/TextEditor.xml"))
+	
+	SettingsWindow = resource_loader.get_resource('settings_window').instance()
+	AddMeshPopup = resource_loader.get_resource('add_mesh_popup').instance()
+	
+	text_editor = resource_loader.get_resource('text_editor').instance()
 	
 	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, toolbar_menu)
 	popup_menu.connect('item_pressed', self, '_popup_signal')
 
 func update_menu():
-	popup_menu.add_item('Add Cube')
 	popup_menu.add_item('Add Plane')
+	popup_menu.add_item('Add Cube')
 	popup_menu.add_item('Add Cylinder')
 	popup_menu.add_item('Add Sphere')
 	popup_menu.add_item('Add Cone')
@@ -65,6 +89,8 @@ func update_menu():
 	popup_menu.add_separator()
 	#popup_menu.add_item('Immediate Geometry')
 	popup_menu.add_item('Add Heigthmap')
+	popup_menu.add_separator()
+	popup_menu.add_check_item('Custom Mesh')
 	popup_menu.add_separator()
 	popup_menu.add_item('Settings')
 
@@ -136,12 +162,20 @@ func _popup_signal(id):
 				heigthmaps.append(exp_build_heigthmap(null))
 				images.append(null)
 				h_values.append([])
-				heigthmaps[counter].set_material_override(material.duplicate())
+				
+				var shr = ''
+				var shader = MaterialShader.new()
+				var material = ShaderMaterial.new()
+				for i in _shader:
+					shr += i
+				shader.set_code('', shr, '')
+				material.set_shader(shader)
+				
+				heigthmaps[counter].set_material_override(material)
 				exp_add_heigthmap(heigthmaps[counter])
 				
 				counter += 1
 				
-				#_add_mesh_popup(AddMeshPopup, 'heigthmap')
 				
 			if not is_processing():
 				set_process(true)
@@ -174,6 +208,57 @@ func _popup_signal(id):
 			check_button.connect('toggled', self, '_experimental_builder')
 		if not close_button.is_connected('pressed', self, '_ok_button'):
 			close_button.connect('pressed', self, '_ok_button')
+	
+	elif command == 'Custom Mesh':
+		var text_edit = text_editor.get_node('TabContainer/TextEdit')
+		var button_array = text_editor.get_node('Menu')
+		button_array.connect('button_selected', self, '_run_script')
+		
+		if not text_edit.is_syntax_coloring_enabled():
+			text_edit.set_syntax_coloring(true)
+		
+		var idx = popup_menu.get_item_index(id)
+		if not text_editor.is_inside_tree():
+			var path = preload("Core/CustomMesh.gd").get_path()
+			var file = File.new()
+			
+			file.open(path, 1)
+			text_edit.set_text(file.get_as_text())
+			file.close()
+			add_custom_control(3, text_editor)
+			
+		else:
+			text_editor.free()
+			text_editor = preload("Windows/TextEditor.xml").instance()
+		
+
+#Run Script
+func _run_script(button):
+	var menu = text_editor.get_node('Menu')
+	var text_edit = text_editor.get_node('TabContainer/TextEdit')
+	
+	if menu.get_button_text(button) == 'Run':
+		resource_loader.add_resource('custom_mesh', preload("Core/CustomMesh.gd"))
+		var path = resource_loader.get_resource('custom_mesh').get_path()
+		path = path.substr(0, path.find_last('/'))
+		var file = File.new()
+		
+		if file.file_exists(path + '/CustomMesh.gd'):
+			file.open(path + '/CustomMesh.gd', 2)
+			file.store_string(text_edit.get_text())
+			file.close()
+			
+			file.open(path + '/CustomMesh.gd', 1)
+			var source_code = file.get_as_text()
+			file.close()
+			
+			var custom_mesh = resource_loader.get_resource('custom_mesh').new()
+			var mesh = custom_mesh.build_mesh()
+			custom_mesh.free()
+			
+			resource_loader.remove_resource('custom_mesh')
+			
+			exp_add_mesh(mesh)
 
 #Settings
 func _experimental_builder(pressed):
@@ -267,17 +352,6 @@ func _add_mesh_popup(window, mesh):
 		parameters.append(settings.create_item(parameters[0]))
 		_update_tree_range(parameters[3], 'Cuts', 8, 3)
 	
-	#elif mesh == 'heigthmap':
-	#	current_mesh = 'heigthmap'
-	#	parameters.append(settings.create_item())
-	#	parameters[0].set_text(0, 'Heigthmap')
-	#	parameters.append(settings.create_item(parameters[0]))
-	#	_update_tree_range(parameters[1], 'Range', 5, 1)
-	#	parameters.append(settings.create_item(parameters[0]))
-	#	_update_tree_range(parameters[2], 'Size', 50, 1)
-	#	parameters.append(settings.create_item(parameters[0]))
-	#	_update_tree_range(parameters[3], 'Resolution', 32, 1, 100, 1)
-		
 func _refresh():
 	var settings = AddMeshPopup.get_node('Settings')
 	var check_smooth = AddMeshPopup.get_node('Smooth')
@@ -366,9 +440,10 @@ func _process(delta):
 		set_process(false)
 
 func _exit_tree():
-	SettingsWindow = null
-	AddMeshPopup = null
-	
+	resource_loader.free()
+	resource_loader = null
+	text_editor.free()
+	text_editor = null
 	popup_menu.free()
 	popup_menu = null
 	toolbar_menu.free()
