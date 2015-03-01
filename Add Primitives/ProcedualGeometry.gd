@@ -252,13 +252,17 @@ func _run_script(button):
 			var source_code = file.get_as_text()
 			file.close()
 			
-			var custom_mesh = resource_loader.get_resource('custom_mesh').new()
+			var custom_mesh = load(path + '/CustomMesh.gd')
+			
+			custom_mesh.set_source_code(source_code)
+			custom_mesh.reload()
+			
+			custom_mesh = custom_mesh.new()
 			var mesh = custom_mesh.build_mesh()
-			custom_mesh.free()
 			
 			resource_loader.remove_resource('custom_mesh')
-			
 			exp_add_mesh(mesh)
+			
 
 #Settings
 func _experimental_builder(pressed):
