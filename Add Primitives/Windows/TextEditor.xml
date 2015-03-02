@@ -3,7 +3,7 @@
 	<main_resource>
 		<dictionary name="_bundled" shared="false">
 			<string> "names" </string>
-			<string_array  len="40">
+			<string_array  len="36">
 				<string> "PanelContainer" </string>
 				<string> "VSplitContainer" </string>
 				<string> "_import_path" </string>
@@ -11,6 +11,7 @@
 				<string> "visibility/opacity" </string>
 				<string> "visibility/self_opacity" </string>
 				<string> "visibility/light_mask" </string>
+				<string> "margin/top" </string>
 				<string> "margin/right" </string>
 				<string> "margin/bottom" </string>
 				<string> "focus_neighbour/left" </string>
@@ -37,28 +38,23 @@
 				<string> "button/1/icon" </string>
 				<string> "button/selected" </string>
 				<string> "TabContainer" </string>
-				<string> "margin/top" </string>
 				<string> "tab_align" </string>
 				<string> "tabs_visible" </string>
-				<string> "TextEdit" </string>
-				<string> "anchor/right" </string>
-				<string> "anchor/bottom" </string>
-				<string> "margin/left" </string>
 			</string_array>
 			<string> "version" </string>
 			<int> 1 </int>
 			<string> "conn_count" </string>
 			<int> 0 </int>
 			<string> "node_count" </string>
-			<int> 4 </int>
+			<int> 3 </int>
 			<string> "variants" </string>
-			<array  len="19" shared="false">
+			<array  len="16" shared="false">
 				<node_path> "" </node_path>
 				<bool> True </bool>
 				<real> 1 </real>
 				<int> 1 </int>
 				<real> 550 </real>
-				<real> 460 </real>
+				<real> 461 </real>
 				<bool> False </bool>
 				<int> 2 </int>
 				<int> 0 </int>
@@ -70,11 +66,11 @@
 							<string> "pixel_snap" </string>
 							<bool> False </bool>
 							<string> "zoom" </string>
-							<real> 1 </real>
+							<real> 1.360374 </real>
 							<string> "use_snap" </string>
 							<bool> True </bool>
 							<string> "ofs" </string>
-							<vector2> -195.282, -239.601 </vector2>
+							<vector2> -99.8981, -197.102 </vector2>
 							<string> "snap" </string>
 							<int> 10 </int>
 						</dictionary>
@@ -182,16 +178,13 @@
 					<string> "2D" </string>
 				</dictionary>
 				<real> 21 </real>
-				<real> -1 </real>
+				<real> 50 </real>
 				<string> "Run" </string>
 				<resource name=""></resource>				<string> "File" </string>
-				<real> 4 </real>
-				<real> 31 </real>
-				<real> -50 </real>
-				<int> 3 </int>
+				<real> 460 </real>
 			</array>
 			<string> "nodes" </string>
-			<int_array  len="194"> 				-1, -1, 1, 0, -1, 20, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 5, 9, 0, 10, 0, 11, 0, 12, 0, 13, 6, 14, 1, 15, 7, 16, 7, 17, 2, 18, 8, 19, 6, 20, 6, 21, 9, 0, 0, 0, 23, 22, -1, 24, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 10, 9, 0, 10, 0, 11, 0, 12, 0, 13, 6, 14, 1, 15, 7, 16, 7, 17, 2, 24, 7, 25, 11, 26, 8, 27, 12, 28, 13, 29, 14, 30, 13, 31, 8, 0, 0, 0, 32, 32, -1, 19, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 33, 10, 7, 4, 8, 5, 9, 0, 10, 0, 11, 0, 12, 0, 13, 6, 14, 1, 15, 7, 16, 7, 17, 2, 34, 3, 35, 1, 0, 2, 0, 36, 36, -1, 20, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 37, 3, 38, 3, 39, 15, 33, 16, 7, 15, 8, 17, 9, 0, 10, 0, 11, 0, 12, 0, 13, 6, 14, 1, 15, 18, 16, 18, 17, 2, 0 </int_array>
+			<int_array  len="149"> 				-1, -1, 1, 0, -1, 21, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 2, 8, 4, 9, 5, 10, 0, 11, 0, 12, 0, 13, 0, 14, 6, 15, 1, 16, 7, 17, 7, 18, 2, 19, 8, 20, 6, 21, 6, 22, 9, 0, 0, 0, 24, 23, -1, 24, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 8, 4, 9, 10, 10, 0, 11, 0, 12, 0, 13, 0, 14, 6, 15, 1, 16, 7, 17, 7, 18, 2, 25, 7, 26, 11, 27, 8, 28, 12, 29, 13, 30, 14, 31, 13, 32, 8, 0, 0, 0, 33, 33, -1, 19, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 10, 8, 4, 9, 15, 10, 0, 11, 0, 12, 0, 13, 0, 14, 6, 15, 1, 16, 7, 17, 7, 18, 2, 34, 3, 35, 1, 0 </int_array>
 			<string> "conns" </string>
 			<int_array  len="0"> 				 </int_array>
 		</dictionary>

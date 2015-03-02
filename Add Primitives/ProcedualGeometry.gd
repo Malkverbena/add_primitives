@@ -43,6 +43,9 @@ var counter = 0
 var resource_loader
 var _shader
 
+var custom_meshes = []
+var script_to_reload
+
 func _init():
 	_shader = ["uniform float factor;\n",\
               "\n",\
@@ -77,6 +80,12 @@ func _enter_tree():
 	
 	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, toolbar_menu)
 	popup_menu.connect('item_pressed', self, '_popup_signal')
+
+func _get_plugins_folder():
+	var path = OS.get_data_dir()
+	path = path.substr(0, path.find_last('/'))
+	path = path.substr(0, path.find_last('/'))
+	return path
 
 func update_menu():
 	popup_menu.add_item('Add Plane')
@@ -210,59 +219,132 @@ func _popup_signal(id):
 			close_button.connect('pressed', self, '_ok_button')
 	
 	elif command == 'Custom Mesh':
-		var text_edit = text_editor.get_node('TabContainer/TextEdit')
 		var button_array = text_editor.get_node('Menu')
-		button_array.connect('button_selected', self, '_run_script')
-		
-		if not text_edit.is_syntax_coloring_enabled():
-			text_edit.set_syntax_coloring(true)
+		if not button_array.is_connected('button_selected', self, '_sel_script'):
+			button_array.connect('button_selected', self, '_sel_script')
 		
 		var idx = popup_menu.get_item_index(id)
+		
+		#if not text_editor.is_inside_tree():
+		var dir = Directory.new()
+		var file = File.new()
+		var path = _get_plugins_folder()
+		
 		if not text_editor.is_inside_tree():
-			var path = preload("Core/CustomMesh.gd").get_path()
-			var file = File.new()
-			
-			file.open(path, 1)
-			text_edit.set_text(file.get_as_text())
-			file.close()
-			add_custom_control(3, text_editor)
+			if dir.dir_exists(path + '/plugins/Add Primitives/Custom Meshes'):
+				path += '/plugins/Add Primitives/Custom Meshes'
+				if dir.file_exists(path + '/StaticMeshBuilder.gd'):
+					add_custom_control(3, text_editor)
+				else:
+					path = path.substr(0, path.find_last('/'))
+					if dir.file_exists(path + '/Core/StaticMeshBuilder.gd'):
+						var paste_folder = path + '/Custom Meshes/StaticMeshBuilder.gd'
+						dir.copy(path + '/Core/StaticMeshBuilder.gd', paste_folder)
+					else:
+						pass
 			
 		else:
 			text_editor.free()
 			text_editor = preload("Windows/TextEditor.xml").instance()
 		
 
-#Run Script
-func _run_script(button):
+#Script Selection
+func _sel_script(button):
 	var menu = text_editor.get_node('Menu')
-	var text_edit = text_editor.get_node('TabContainer/TextEdit')
 	
-	if menu.get_button_text(button) == 'Run':
-		resource_loader.add_resource('custom_mesh', preload("Core/CustomMesh.gd"))
-		var path = resource_loader.get_resource('custom_mesh').get_path()
-		path = path.substr(0, path.find_last('/'))
-		var file = File.new()
+	if menu.get_button_text(button) == 'File':
+		var file_dialog = FileDialog.new()
+		if not file_dialog.is_inside_tree():
+			add_child(file_dialog)
+		file_dialog.set_mode(0)
+		file_dialog.set_access(2)
 		
-		if file.file_exists(path + '/CustomMesh.gd'):
-			file.open(path + '/CustomMesh.gd', 2)
-			file.store_string(text_edit.get_text())
-			file.close()
-			
-			file.open(path + '/CustomMesh.gd', 1)
-			var source_code = file.get_as_text()
-			file.close()
-			
-			var custom_mesh = load(path + '/CustomMesh.gd')
-			
-			custom_mesh.set_source_code(source_code)
-			custom_mesh.reload()
-			
-			custom_mesh = custom_mesh.new()
-			var mesh = custom_mesh.build_mesh()
-			
-			resource_loader.remove_resource('custom_mesh')
-			exp_add_mesh(mesh)
-			
+		file_dialog.set_title('Select a Script')
+		file_dialog.set_size(Vector2(280, 360))
+		file_dialog.add_filter("*.gd ; GDScript")
+		
+		file_dialog.set_current_dir(_get_plugins_folder() + '/plugins/Add Primitives/Custom Meshes')
+		file_dialog.set_current_path(_get_plugins_folder() + '/plugins/Add Primitives/Custom Meshes')
+		
+		if file_dialog.is_hidden():
+			file_dialog.show()
+			file_dialog.popup_centered()
+		else:
+			file_dialog.popup_centered()
+		
+		if not file_dialog.is_connected("file_selected", self, "_open_script"):
+			file_dialog.connect("file_selected", self, "_open_script")
+	
+	elif menu.get_button_text(button) == 'Run':
+		_run_script()
+		
+#Open Script and Run Script
+func _open_script(path):
+	var file = File.new()
+	var file_name = path.substr(path.find_last('/') + 1, path.length() - 1)
+	
+	var text_edit = TextEdit.new()
+	text_edit.set_name(file_name)
+	
+	file.open(path, 1)
+	text_edit.set_text(file.get_as_text())
+	file.close()
+	
+	var tab_container = text_editor.get_node('TabContainer')
+	if custom_meshes.find(path) < 0:
+		custom_meshes.append(path)
+		if not text_edit.is_a_parent_of(tab_container):
+			tab_container.add_child(text_edit)
+	else:
+		var conf_dialog = ConfirmationDialog.new()
+		if not conf_dialog.is_inside_tree():
+			add_child(conf_dialog)
+		
+		conf_dialog.set_size(Vector2(200, 80))
+		conf_dialog.set_text("This script was already loaded,\n reload?")
+		
+		if conf_dialog.is_hidden():
+			conf_dialog.show()
+			conf_dialog.popup_centered()
+		else:
+			conf_dialog.popup_centered()
+		
+		if not conf_dialog.is_connected("confirmed", self, "_reload_script"):
+			conf_dialog.connect("confirmed", self, "_reload_script")
+			script_to_reload = path
+		
+
+func _reload_script():
+	var file = File.new()
+	var node = script_to_reload.substr(script_to_reload.find_last('/') + 1, script_to_reload.length() - 1)
+	
+	var text_edit = text_editor.get_node('TabContainer/' + node)
+	
+	file.open(script_to_reload, 1)
+	text_edit.set_text(file.get_as_text())
+	file.close()
+
+func _run_script():
+	var tab_container = text_editor.get_node('TabContainer')
+	var current_tab = tab_container.get_current_tab()
+	var text_edit = tab_container.get_node(tab_container.get_tab_title(current_tab))
+	
+	var file = File.new()
+	
+	if file.file_exists(custom_meshes[current_tab]):
+		file.open(custom_meshes[current_tab], 3)
+		file.store_string(text_edit.get_text())
+		var source_code = file.get_as_text()
+		file.close()
+		
+		var custom_script = load(custom_meshes[current_tab])
+		
+		custom_script.reload()
+		
+		custom_script = custom_script.new()
+		var mesh = custom_script.build_mesh()
+		
+		exp_add_mesh(mesh)
 
 #Settings
 func _experimental_builder(pressed):
