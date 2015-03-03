@@ -416,7 +416,11 @@ func _add_custom_mesh(id):
 		var script = load(custom_mesh_scripts[command])
 		script = script.new()
 		if script.has_method('build_mesh'):
-			var mesh = script.build_mesh('default')
+			var mesh
+			if not has_method('mesh_parameters'):
+				mesh = script.build_mesh()
+			else:
+				mesh = script.build_mesh('default')
 			exp_add_mesh(mesh)
 			
 			if script.has_method('mesh_parameters'):
