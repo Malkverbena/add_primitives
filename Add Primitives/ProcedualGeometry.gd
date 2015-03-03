@@ -417,7 +417,7 @@ func _add_custom_mesh(id):
 		script = script.new()
 		if script.has_method('build_mesh'):
 			var mesh
-			if not has_method('mesh_parameters'):
+			if not script.has_method('mesh_parameters'):
 				mesh = script.build_mesh()
 			else:
 				mesh = script.build_mesh('default')
@@ -525,8 +525,7 @@ func _add_mesh_popup(window, mesh):
 		var script = load(custom_mesh_scripts[mesh]).new()
 		
 		parameters = []
-		
-		parameters = script.mesh_parameters(settings)
+		script.mesh_parameters(settings)
 		
 func _refresh():
 	var settings = AddMeshPopup.get_node('Settings')
