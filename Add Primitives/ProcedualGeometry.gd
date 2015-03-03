@@ -44,6 +44,7 @@ var resource_loader
 var _shader
 
 var custom_meshes = []
+var custom_mesh_scripts = {}
 var script_to_reload
 
 func _init():
@@ -58,7 +59,6 @@ func _init():
               "vec3 second_map = tex(high, UV).xyz;\n",\
               "\n",\
               "DIFFUSE = mix(first_map, second_map, mask/factor);"]
-	      
 
 func _enter_tree():
 	toolbar_menu = MenuButton.new()
@@ -88,6 +88,16 @@ func _get_plugins_folder():
 	return path
 
 func update_menu():
+	var custom_meshes_submenu = PopupMenu.new()
+	custom_meshes_submenu.set_name('custom_meshes')
+	popup_menu.add_child(custom_meshes_submenu)
+	
+	popup_menu.clear()
+	custom_meshes_submenu.clear()
+	
+	print(popup_menu.get_item_count())
+	print(custom_meshes_submenu.get_item_count())
+	
 	popup_menu.add_item('Add Plane')
 	popup_menu.add_item('Add Cube')
 	popup_menu.add_item('Add Cylinder')
@@ -99,9 +109,28 @@ func update_menu():
 	#popup_menu.add_item('Immediate Geometry')
 	popup_menu.add_item('Add Heigthmap')
 	popup_menu.add_separator()
+	popup_menu.add_submenu_item('Custom Meshes', 'custom_meshes')
+	popup_menu.add_separator()
 	popup_menu.add_check_item('Custom Mesh')
 	popup_menu.add_separator()
 	popup_menu.add_item('Settings')
+	
+	if not custom_meshes_submenu.is_connected("item_pressed", self, "_add_custom_mesh"):
+		custom_meshes_submenu.connect("item_pressed", self, "_add_custom_mesh")
+	
+	var dir = Directory.new()
+	var path_to_config = _get_plugins_folder() + '/plugins/Add Primitives/Custom Meshes/Register.txt'
+	var config_file = ConfigFile.new()
+	if dir.file_exists(path_to_config):
+		config_file.load(path_to_config)
+		
+		for key in config_file.get_section_keys('Custom Scripts'):
+			custom_mesh_scripts['Add ' + key.substr(0, key.find_last('.'))] = config_file.get_value('Custom Scripts', key)
+			key = key.substr(0, key.find_last('.'))
+			var instance = load(custom_mesh_scripts['Add ' + key]).new()
+			
+			if instance.has_method('add_to_menu'):
+				instance.add_to_menu(popup_menu, key)
 
 func _popup_signal(id):
 	var command = popup_menu.get_item_text(popup_menu.get_item_index(id))
@@ -278,7 +307,7 @@ func _sel_script(button):
 	elif menu.get_button_text(button) == 'Run':
 		_run_script()
 		
-#Open Script and Run Script
+#Open, reload, and run script
 func _open_script(path):
 	var file = File.new()
 	var file_name = path.substr(path.find_last('/') + 1, path.length() - 1)
@@ -326,8 +355,13 @@ func _reload_script():
 
 func _run_script():
 	var tab_container = text_editor.get_node('TabContainer')
-	var current_tab = tab_container.get_current_tab()
-	var text_edit = tab_container.get_node(tab_container.get_tab_title(current_tab))
+	
+	var current_tab
+	var text_edit
+	
+	if tab_container.get_child_count() > 0:
+		current_tab = tab_container.get_current_tab()
+		text_edit = tab_container.get_node(tab_container.get_tab_title(current_tab))
 	
 	var file = File.new()
 	
@@ -342,10 +376,54 @@ func _run_script():
 		custom_script.reload()
 		
 		custom_script = custom_script.new()
-		var mesh = custom_script.build_mesh()
 		
-		exp_add_mesh(mesh)
+		if custom_script.has_method('build_mesh'):
+			var mesh = custom_script.build_mesh()
+			exp_add_mesh(mesh)
+			
+		if custom_script.has_method('add_to_menu') and not custom_script.has_method('register'):
+			var name = text_edit.get_name()
+			name = name.substr(0, name.find_last('.'))
+			custom_script.add_to_menu(popup_menu, name)
+			
+			if not custom_mesh_scripts.has('Add ' + name):
+				custom_mesh_scripts['Add ' + name] = custom_meshes[current_tab]
+				
+		if custom_script.has_method('register'):
+			var path_to_config = _get_plugins_folder() + '/plugins/Add Primitives/Custom Meshes'
+			
+			var config_file = ConfigFile.new()
+			
+			if file.file_exists(path_to_config + '/Register.txt'):
+				config_file.load(path_to_config + '/Register.txt')
+			else:
+				file.open(path_to_config + '/Register.txt', 2)
+				file.store_string('[Custom Scripts]\n')
+				file.close()
+				
+				config_file.load(path_to_config + '/Register.txt')
+			
+			config_file.set_value('Custom Scripts', text_edit.get_name(), custom_meshes[current_tab])
+			config_file.save(path_to_config + '/Register.txt')
+			
+			update_menu()
 
+func _add_custom_mesh(id):
+	var submenu = popup_menu.get_node('custom_meshes')
+	var command = submenu.get_item_text(submenu.get_item_index(id))
+	
+	if custom_mesh_scripts.has(command):
+		var script = load(custom_mesh_scripts[command])
+		script = script.new()
+		if script.has_method('build_mesh'):
+			var mesh = script.build_mesh('default')
+			exp_add_mesh(mesh)
+			
+			if script.has_method('mesh_parameters'):
+				_add_mesh_popup(AddMeshPopup, command)
+		else:
+			pass
+	
 #Settings
 func _experimental_builder(pressed):
 	if not pressed:
@@ -438,6 +516,14 @@ func _add_mesh_popup(window, mesh):
 		parameters.append(settings.create_item(parameters[0]))
 		_update_tree_range(parameters[3], 'Cuts', 8, 3)
 	
+	elif custom_mesh_scripts.has(mesh):
+		current_mesh = mesh
+		var script = load(custom_mesh_scripts[mesh]).new()
+		
+		parameters = []
+		
+		parameters = script.mesh_parameters(settings)
+		
 func _refresh():
 	var settings = AddMeshPopup.get_node('Settings')
 	var check_smooth = AddMeshPopup.get_node('Smooth')
@@ -488,16 +574,17 @@ func _refresh():
 		values.append(parameters.get_range(1))
 		mesh_temp = exp_build_capsule(1, values[1], values[0], values[2], smooth, reverse)
 	
-	#elif current_mesh == 'heigthmap':
-	#	var parameters = root.get_children()
-	#	values.append(parameters.get_range(1))
-	#	parameters = parameters.get_next()
-	#	values.append(parameters.get_range(1))
-	#	parameters = parameters.get_next()
-	#	values.append(parameters.get_range(1))
-	#	mesh_temp = exp_build_heigthmap(null, values[1], values[2], values[0], smooth)
-	#	g_values = values
-	#	g_values.append(smooth)
+	elif custom_mesh_scripts.has(current_mesh):
+		root = root.get_children()
+		while true:
+			values.append(root.get_range(1))
+			root = root.get_next()
+			if root == null:
+				break
+		print(values)
+		
+		var custom_build = load(custom_mesh_scripts[current_mesh]).new()
+		mesh_temp = custom_build.build_mesh(values, smooth, reverse)
 	
 	if mesh_instance.get_mesh() != null:
 		mesh_instance.set_mesh(mesh_temp)
