@@ -95,9 +95,6 @@ func update_menu():
 	popup_menu.clear()
 	custom_meshes_submenu.clear()
 	
-	print(popup_menu.get_item_count())
-	print(custom_meshes_submenu.get_item_count())
-	
 	popup_menu.add_item('Add Plane')
 	popup_menu.add_item('Add Cube')
 	popup_menu.add_item('Add Cylinder')
@@ -584,8 +581,7 @@ func _refresh():
 			root = root.get_next()
 			if root == null:
 				break
-		print(values)
-		
+				
 		var custom_build = load(custom_mesh_scripts[current_mesh]).new()
 		mesh_temp = custom_build.build_mesh(values, smooth, reverse)
 	
@@ -612,7 +608,6 @@ func _process(delta):
 			heigthmaps[j].set_mesh(heigthmap_temp.get_mesh())
 	
 	if counter == 0:
-		print('Not processing')
 		set_process(false)
 
 func _exit_tree():

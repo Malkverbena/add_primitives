@@ -155,44 +155,65 @@ func exp_build_circle_verts(pos, segments, radius = 1, rotation = null):
 func exp_build_cylinder(radius, heigth, segments, cuts = 1, smooth = true, reverse = false, caps = true):
 	#cuts = 1 means no cut
 	var circle = exp_build_circle_verts(Vector3(0,float(heigth)/2,0), segments, radius)
+	var circle_uv = exp_build_circle_verts(Vector3(0,float(heigth)/2,0), segments, 1)
 	var min_pos = Vector3(0,heigth * -1,0)
 	
-	StaticMeshBuilder.begin(4)
+	var uv_coords
 	
-	#var uv_coords = [Vector2(0, 0), Vector2(1, 1), Vector2(1, 0)]
+	StaticMeshBuilder.begin(4)
 	
 	if caps:
 		StaticMeshBuilder.add_smooth_group(false)
 		for idx in range(segments - 1):
-			StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[idx + 1], circle[idx]], null, reverse)
-			StaticMeshBuilder.add_tri([min_pos * 0.5, circle[idx + 1] + min_pos, circle[idx] + min_pos], null, not reverse)
+			uv_coords = [Vector2(0.25, 0.25),\
+			             Vector2(0.25 + (circle_uv[idx + 1].x * 0.25), 0.25 + (circle_uv[idx + 1].z * 0.25)),\
+			             Vector2(0.25 + (circle_uv[idx].x * 0.25), 0.25 + (circle_uv[idx].z * 0.25))]
+			
+			StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[idx + 1], circle[idx]], uv_coords, reverse)
+			
+			uv_coords = [Vector2(0.75, 0.25),\
+			             Vector2(0.75 + (circle_uv[idx + 1].x * 0.25), 0.25 + (circle_uv[idx + 1].z * 0.25)),\
+			             Vector2(0.75 + (circle_uv[idx].x * 0.25), 0.25 + (circle_uv[idx].z * 0.25))]
+			
+			StaticMeshBuilder.add_tri([min_pos * 0.5, circle[idx + 1] + min_pos, circle[idx] + min_pos], uv_coords, not reverse)
 		
-		StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[0], circle[segments - 1]], null, reverse)
-		StaticMeshBuilder.add_tri([min_pos * 0.5, circle[0] + min_pos, circle[segments - 1] + min_pos], null, not reverse)
+		uv_coords = [Vector2(0.25, 0.25),\
+			         Vector2(0.25 + (circle_uv[0].x * 0.25), 0.25 + (circle_uv[0].z * 0.25)),\
+			         Vector2(0.25 + (circle_uv[segments - 1].x * 0.25), 0.25 + (circle_uv[segments - 1].z * 0.25))]
+		
+		StaticMeshBuilder.add_tri([Vector3(0,float(heigth)/2,0), circle[0], circle[segments - 1]], uv_coords, reverse)
+		
+		uv_coords = [Vector2(0.75, 0.25),\
+			         Vector2(0.75 + (circle_uv[0].x * 0.25), 0.25 + (circle_uv[0].z * 0.25)),\
+			         Vector2(0.75 + (circle_uv[segments - 1].x * 0.25), 0.25 + (circle_uv[segments - 1].z * 0.25))]
+			
+		StaticMeshBuilder.add_tri([min_pos * 0.5, circle[0] + min_pos, circle[segments - 1] + min_pos], uv_coords, not reverse)
 	
 	var next_cut = Vector3(0, float(heigth)/cuts, 0) + min_pos
+	var uv_offset = Vector2(0, 0.5)
 	
 	StaticMeshBuilder.add_smooth_group(smooth)
 	
-	#var uv_offset = Vector2(0.5,0.5)
-	
 	for i in range(cuts):
 		for idx in range(segments - 1):
-			#uv_coords = [(Vector2(float(i), float(idx)/segments)/2) + uv_offset,\
-			#             (Vector2(float(i+1), float(idx+1)/segments)/2) + uv_offset,\
-			#             (Vector2(float(i+1), float(idx)/segments)/2) + uv_offset,\
-			#             (Vector2(float(i), float(idx+1)/segments)/2) + uv_offset]
+			uv_coords = [Vector2(float(idx)/segments, (float(i)/cuts)/2)  + uv_offset,\
+			             Vector2(float(idx+1)/segments, (float(i+1)/cuts)/2)  + uv_offset,\
+			             Vector2(float(idx)/segments, (float(i+1)/cuts)/2) + uv_offset,\
+			             Vector2(float(idx+1)/segments, (float(i)/cuts)/2) + uv_offset]
 			
 			StaticMeshBuilder.add_quad([circle[idx] + min_pos, circle[idx + 1] + next_cut,\
-			                            circle[idx] + next_cut, circle[idx + 1] + min_pos], null, not reverse)
+			                            circle[idx] + next_cut, circle[idx + 1] + min_pos], uv_coords, not reverse)
+			
+			
+		uv_coords = [(Vector2(float(segments - 1)/segments, (float(i)/cuts)/2) + uv_offset),\
+		             (Vector2(1.0, (float(i+1)/cuts)/2) + uv_offset),\
+		             (Vector2(float(segments - 1)/segments, (float(i+1)/cuts)/2) + uv_offset),\
+		             (Vector2(1.0, (float(i)/cuts)/2) + uv_offset)]
+		             
+		StaticMeshBuilder.add_quad([circle[segments - 1] + min_pos, circle[0] + next_cut,\
+		                            circle[segments - 1] + next_cut, circle[0] + min_pos], uv_coords, not reverse)
 		
-		#uv_coords = [(Vector2(1, 1)/2) + uv_offset,\
-		#             (Vector2(float(cuts - 1)/cuts, float(segments - 1)/segments)/2) + uv_offset,\
-		#             (Vector2(float(cuts - 1)/cuts, 1)/2) + uv_offset,\
-		#             (Vector2(1, float(segments - 1)/segments)/2) + uv_offset]
 		
-		StaticMeshBuilder.add_quad([circle[0] + min_pos, circle[segments - 1] + next_cut,\
-		                            circle[0] + next_cut, circle[segments - 1] + min_pos], null, reverse)
 		min_pos = next_cut
 		next_cut.y += float(heigth)/cuts
 		
@@ -260,18 +281,37 @@ func exp_build_cone(radius, heigth, segments = 12, smooth = true, reverse = fals
 	var min_pos = Vector3(0, heigth * -0.5, 0)
 	
 	var circle = exp_build_circle_verts(min_pos, segments, radius)
+	var circle_uv = exp_build_circle_verts(min_pos, segments, 1)
+	
+	var uv_coords
 	
 	StaticMeshBuilder.begin(4)
 	
 	StaticMeshBuilder.add_smooth_group(smooth)
 	for idx in range(segments - 1):
-		StaticMeshBuilder.add_tri([center_top, circle[idx + 1], circle[idx]], null, reverse)
-	StaticMeshBuilder.add_tri([center_top, circle[0], circle[segments - 1]], null, reverse)
+		uv_coords = [Vector2(0.25, 0.5),\
+			         Vector2(0.25 + (circle_uv[idx + 1].x * 0.25), 0.5 + (circle_uv[idx + 1].z * 0.25)),\
+			         Vector2(0.25 + (circle_uv[idx].x * 0.25), 0.5 + (circle_uv[idx].z * 0.25))]
+			
+		StaticMeshBuilder.add_tri([center_top, circle[idx + 1], circle[idx]], uv_coords, reverse)
+		
+	uv_coords = [Vector2(0.25, 0.5),\
+			     Vector2(0.25 + (circle_uv[0].x * 0.25), 0.5 + (circle_uv[0].z * 0.25)),\
+			     Vector2(0.25 + (circle_uv[segments - 1].x * 0.25), 0.5 + (circle_uv[segments - 1].z * 0.25))]
+			
+	StaticMeshBuilder.add_tri([center_top, circle[0], circle[segments - 1]], uv_coords, reverse)
 	
 	StaticMeshBuilder.add_smooth_group(false)
 	for idx in range(segments - 1):
-		StaticMeshBuilder.add_tri([min_pos, circle[idx], circle[idx + 1]], null, reverse)
-	StaticMeshBuilder.add_tri([min_pos, circle[segments - 1], circle[0]], null, reverse)
+		uv_coords = [Vector2(0.75, 0.5),\
+			         Vector2(0.75 + (circle_uv[idx + 1].x * 0.25), 0.5 + (circle_uv[idx + 1].z * 0.25)),\
+			         Vector2(0.75 + (circle_uv[idx].x * 0.25), 0.5 + (circle_uv[idx].z * 0.25))]
+		StaticMeshBuilder.add_tri([min_pos, circle[idx], circle[idx + 1]], uv_coords, reverse)
+		
+	uv_coords = [Vector2(0.75, 0.5),\
+			     Vector2(0.75 + (circle_uv[0].x * 0.25), 0.5 + (circle_uv[0].z * 0.25)),\
+			     Vector2(0.75 + (circle_uv[segments - 1].x * 0.5), 0.25 + (circle_uv[segments - 1].z * 0.25))]
+	StaticMeshBuilder.add_tri([min_pos, circle[segments - 1], circle[0]], uv_coords, reverse)
 	
 	StaticMeshBuilder.generate_normals()
 	var mesh = StaticMeshBuilder.commit()
