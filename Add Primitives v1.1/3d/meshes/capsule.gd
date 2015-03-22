@@ -1,98 +1,86 @@
 extends "builder/mesh_builder.gd"
 
-func build_circle_verts(pos, segments, radius = 1, rotation = null):
-	var radians_circle = PI * 2
-	var _radius = Vector3(radius, 1, radius)
-	
-	var circle_verts = []
-	
-	for i in range(segments):
-		var angle = radians_circle * i/segments
-		var x = cos(angle)
-		var z = sin(angle)
-		
-		var vector = Vector3(x, 0, z)
-		
-		circle_verts.append((vector * _radius) + pos)
-	
-	return circle_verts
-
 func build_mesh(params, smooth = false, reverse = false):
 	if params == 'default':
 		params = [1, 1, 16, 8]
 	else:
 		params = [1] + params
+	
+	var rd = params[0]    #Sphere Radius
+	var h = params[1]    #Height
+	var s = params[2]    #Segments
+	var c = params[3]    #Cuts
 		
-	var angle_inc = PI/params[3]
-	var caps_center = Vector3(0,(params[0] + params[1]),0)
+	var angle_inc = PI/c
+	var cc = Vector3(0,(rd + h),0)    #Caps Center
 	
-	var circle = build_circle_verts(Vector3(0,0,0), params[2], params[0])
+	var circle = build_circle_verts(Vector3(0,0,0), s, rd)
 	
-	var radius = Vector3(sin(angle_inc), 0, sin(angle_inc))
-	var pos
+	var r = Vector3(sin(angle_inc), 0, sin(angle_inc))    #Radius
+	var p    #Positions
 	
 	begin(4)
 	add_smooth_group(smooth)
 	
-	for idx in range(params[2] - 1):
-		pos = Vector3(0,-cos(angle_inc) - params[1],0) * params[0]
-		add_tri([(circle[idx + 1] * radius) + pos, (circle[idx] * radius) + pos, -caps_center], null, reverse)
-		pos = Vector3(0,-cos(angle_inc * (params[3] - 1)) + params[1],0) * params[0]
-		add_tri([caps_center, (circle[idx] * radius) + pos, (circle[idx + 1] * radius + pos)], null, reverse)
+	for idx in range(s - 1):
+		p = Vector3(0,-cos(angle_inc) - h,0) * rd
+		add_tri([(circle[idx + 1] * r) + p, (circle[idx] * r) + p, -cc], null, reverse)
+		p = Vector3(0,-cos(angle_inc * (c - 1)) + h,0) * rd
+		add_tri([cc, (circle[idx] * r) + p, (circle[idx + 1] * r + p)], null, reverse)
 	
-	pos = Vector3(0,-cos(angle_inc) - params[1],0) * params[0]
-	add_tri([(circle[0] * radius) + pos, (circle[params[2] - 1] * radius) + pos, -caps_center], null, reverse)
+	p = Vector3(0,-cos(angle_inc) - h,0) * rd
+	add_tri([(circle[0] * r) + p, (circle[s - 1] * r) + p, -cc], null, reverse)
 	
-	pos = Vector3(0,-cos(angle_inc * (params[3] - 1)) + params[1],0) * params[0]
-	add_tri([caps_center, (circle[params[2] - 1] * radius) + pos, (circle[0] * radius) + pos], null, reverse)
+	p = Vector3(0,-cos(angle_inc * (c - 1)) + h,0) * rd
+	add_tri([cc, (circle[s - 1] * r) + p, (circle[0] * r) + p], null, reverse)
 	
-	pos = Vector3(0,-cos(angle_inc) + params[1],0) * params[0]
+	p = Vector3(0,-cos(angle_inc) + h,0) * rd
 	
-	for i in range((params[3] - 2)/2):
-		radius = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
-		var next_radius = Vector3(sin(angle_inc * (i + 2)), 0, sin(angle_inc * (i + 2)))
+	for i in range((c - 2)/2):
+		r = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
+		var nr = Vector3(sin(angle_inc * (i + 2)), 0, sin(angle_inc * (i + 2)))    #Next Radius
 		
-		var next_pos
+		var np    #Next Pos
 		
-		next_pos = Vector3(0, -cos(angle_inc * (i + 2)) - params[1], 0) * params[0]
+		np = Vector3(0, -cos(angle_inc * (i + 2)) - h, 0) * rd
 		
 		if i == 0:
-			pos = Vector3(0,-cos(angle_inc) - params[1],0) * params[0]
+			p = Vector3(0,-cos(angle_inc) - h,0) * rd
 		
-		for idx in range(params[2] - 1):
-			add_quad([(circle[idx+1] * radius) + pos,\
-			          (circle[idx+1] * next_radius) + next_pos,\
-			          (circle[idx] * next_radius) + next_pos,\
-			          (circle[idx] * radius) + pos], null, reverse)
+		for idx in range(s - 1):
+			add_quad([(circle[idx+1] * r) + p,\
+			          (circle[idx+1] * nr) + np,\
+			          (circle[idx] * nr) + np,\
+			          (circle[idx] * r) + p], null, reverse)
 			
-		add_quad([(circle[0] * radius) + pos,\
-		          (circle[0] * next_radius) + next_pos,\
-		          (circle[params[2] - 1] * next_radius) + next_pos,\
-		          (circle[params[2] - 1] * radius) + pos], null, reverse)
-		pos = next_pos
+		add_quad([(circle[0] * r) + p,\
+		          (circle[0] * nr) + np,\
+		          (circle[s - 1] * nr) + np,\
+		          (circle[s - 1] * r) + p], null, reverse)
+		p = np
 		
-	for i in range(((params[3] - 2)/2), params[3] - 1):
-		radius = Vector3(sin(angle_inc * i), 0, sin(angle_inc * i))
+	for i in range(((c - 2)/2), c - 1):
+		r = Vector3(sin(angle_inc * i), 0, sin(angle_inc * i))
 		
-		var next_radius = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
+		var nr = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
 		
-		if i == ((params[3] - 2)/2):
-			radius = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
+		if i == ((c - 2)/2):
+			r = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
 		
-		var next_pos = Vector3(0, -cos(angle_inc * (i + 1)) + params[1], 0) * params[0]
+		var np = Vector3(0, -cos(angle_inc * (i + 1)) + h, 0) * rd
 		
-		for idx in range(params[2] - 1):
-			add_quad([(circle[idx+1] * radius) + pos,\
-			          (circle[idx+1] * next_radius) + next_pos,\
-			          (circle[idx] * next_radius) + next_pos,\
-			          (circle[idx] * radius) + pos], null, reverse)
+		for idx in range(s - 1):
+			add_quad([(circle[idx+1] * r) + p,\
+			          (circle[idx+1] * nr) + np,\
+			          (circle[idx] * nr) + np,\
+			          (circle[idx] * r) + p], null, reverse)
 			
-		add_quad([(circle[0] * radius) + pos,\
-		          (circle[0] * next_radius) + next_pos,\
-		          (circle[params[2] - 1] * next_radius) + next_pos,\
-		          (circle[params[2] - 1] * radius) + pos], null, reverse)
+		add_quad([(circle[0] * r) + p,\
+		          (circle[0] * nr) + np,\
+		          (circle[s - 1] * nr) + np,\
+		          (circle[s - 1] * r) + p], null, reverse)
 		
-		pos = next_pos
+		p = np
 	
 	generate_normals()
 	var mesh = commit()
@@ -100,21 +88,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 	return mesh
 	
-func add_tree_range(tree_item, text, value, _min = 1, _max = 100, step = 1):
-	tree_item.set_text(0, text)
-	tree_item.set_cell_mode(1, 2)
-	tree_item.set_range(1, value)
-	tree_item.set_range_config(1, _min, _max, step)
-	tree_item.set_editable(1, true)
-	
-func mesh_parameters(settings, name):
-	var parameters = []
-	parameters.append(settings.create_item())
-	parameters[0].set_text(0, 'Capsule')
-	parameters.append(settings.create_item(parameters[0]))
-	add_tree_range(parameters[1], 'C. Heigth', 1, 0.1, 100, 0.1)
-	parameters.append(settings.create_item(parameters[0]))
-	add_tree_range(parameters[2], 'Segments', 16, 3)
-	parameters.append(settings.create_item(parameters[0]))
-	add_tree_range(parameters[3], 'Cuts', 8, 3)
-	
+func mesh_parameters(settings):
+	add_tree_range(settings, 'C. Heigth', 1, 0.1, 100, 0.1)
+	add_tree_range(settings, 'Segments', 16, 3)
+	add_tree_range(settings, 'Cuts', 8, 4, 100, 2)

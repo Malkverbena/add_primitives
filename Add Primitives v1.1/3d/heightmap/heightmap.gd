@@ -49,7 +49,7 @@ func update_heightmap(heightmap, size, res, factor):
 				var col = get_child(0)
 				#Get current static body parameters
 				var parameters = []
-				parameters.append(col.get_linear_velocity())
+				parameters.append(col.get_constant_linear_velocity())
 				parameters.append(col.get_constant_angular_velocity())
 				parameters.append(col.get_friction())
 				parameters.append(col.get_bounce())
@@ -59,7 +59,7 @@ func update_heightmap(heightmap, size, res, factor):
 				
 				var col = get_child(0)
 				#Set old static body parameters to new one
-				col.set_linear_velocity(parameters[0])
+				col.set_constant_linear_velocity(parameters[0])
 				col.set_constant_angular_velocity(parameters[1])
 				col.set_friction(parameters[2])
 				col.set_bounce(parameters[3])

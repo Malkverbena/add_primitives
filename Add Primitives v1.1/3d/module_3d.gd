@@ -152,21 +152,27 @@ func add_mesh_popup(key):
 		
 		var settings = window.get_node('Settings')
 		settings.clear()
+		settings.set_hide_root(true)
 		settings.set_columns(2)
 		settings.set_column_title(0, 'Parameter')
 		settings.set_column_title(1, 'Value')
 		settings.set_column_titles_visible(true)
 		
+		settings.set_column_min_width(0, 2)
+		
 		var smooth_button = window.get_node('Smooth')
 		var reverse_button = window.get_node('Reverse')
 		
-		var refresh_button = window.get_node('Refresh')
-		if not refresh_button.is_connected('pressed', self, 'update_mesh'):
-			refresh_button.connect('pressed', self, 'update_mesh', [key, settings, smooth_button, reverse_button])
+		if not settings.is_connected('item_edited', self, 'update_mesh'):
+			settings.connect('item_edited', self, 'update_mesh', [key, settings, smooth_button, reverse_button])
+		if not smooth_button.is_connected('pressed', self, 'update_mesh'):
+			smooth_button.connect('pressed', self, 'update_mesh', [key, settings, smooth_button, reverse_button])
+		if not reverse_button.is_connected('pressed', self, 'update_mesh'):
+			reverse_button.connect('pressed', self, 'update_mesh', [key, settings, smooth_button, reverse_button])
 		
 		var script = load(mesh_scripts[key]).new()
 		
-		script.mesh_parameters(settings, key)
+		script.mesh_parameters(settings)
 		
 		if not window.is_inside_tree():
 			add_child(window)
@@ -190,8 +196,16 @@ func update_mesh(key, settings, smooth_button = null, reverse_button = null):
 		reverse = reverse_button.is_pressed()
 	
 	var next_range = root.get_children()
+	
 	while true:
-		values.append(next_range.get_range(1))
+		var cell = next_range.get_cell_mode(1)
+		if cell == 0:
+			values.append(next_range.get_text(1))
+		elif cell == 1:
+			values.append(next_range.is_checked(1))
+		elif cell == 2:
+			values.append(next_range.get_range(1))
+		
 		next_range = next_range.get_next()
 		if next_range == null:
 			break
