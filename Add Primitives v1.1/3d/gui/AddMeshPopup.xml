@@ -3,7 +3,7 @@
 	<main_resource>
 		<dictionary name="_bundled" shared="false">
 			<string> "names" </string>
-			<string_array  len="35">
+			<string_array  len="45">
 				<string> "WindowDialog" </string>
 				<string> "_import_path" </string>
 				<string> "visibility/visible" </string>
@@ -26,6 +26,14 @@
 				<string> "popup/exclusive" </string>
 				<string> "window/title" </string>
 				<string> "__meta__" </string>
+				<string> "tab" </string>
+				<string> "TabContainer" </string>
+				<string> "tab_align" </string>
+				<string> "tabs_visible" </string>
+				<string> "Parameters" </string>
+				<string> "Container" </string>
+				<string> "anchor/right" </string>
+				<string> "anchor/bottom" </string>
 				<string> "Settings" </string>
 				<string> "Tree" </string>
 				<string> "Smooth" </string>
@@ -39,15 +47,17 @@
 				<string> "clip_text" </string>
 				<string> "align" </string>
 				<string> "Reverse" </string>
+				<string> "Transform" </string>
+				<string> "Dialog" </string>
 			</string_array>
 			<string> "version" </string>
 			<int> 1 </int>
 			<string> "conn_count" </string>
 			<int> 0 </int>
 			<string> "node_count" </string>
-			<int> 4 </int>
+			<int> 8 </int>
 			<string> "variants" </string>
-			<array  len="23" shared="false">
+			<array  len="29" shared="false">
 				<node_path> "" </node_path>
 				<bool> True </bool>
 				<real> 1 </real>
@@ -55,13 +65,22 @@
 				<real> 10 </real>
 				<real> 25 </real>
 				<real> 210 </real>
-				<real> 205 </real>
+				<real> 225 </real>
 				<bool> False </bool>
 				<int> 2 </int>
 				<string> "Add Mesh" </string>
 				<dictionary  shared="false">
 					<string> "__editor_plugin_states__" </string>
 					<dictionary  shared="false">
+						<string> "Script" </string>
+						<dictionary  shared="false">
+							<string> "current" </string>
+							<int> 0 </int>
+							<string> "sources" </string>
+							<array  len="1" shared="false">
+								<string> "res://Add Primitives v1.1/3d/module_3d.gd" </string>
+							</array>
+						</dictionary>
 						<string> "2D" </string>
 						<dictionary  shared="false">
 							<string> "pixel_snap" </string>
@@ -73,7 +92,7 @@
 							<string> "snap_vec" </string>
 							<vector2> 5, 5 </vector2>
 							<string> "ofs" </string>
-							<vector2> -251.171, -22.5646 </vector2>
+							<vector2> -191.968, -22.5646 </vector2>
 						</dictionary>
 						<string> "3D" </string>
 						<dictionary  shared="false">
@@ -180,17 +199,23 @@
 				</dictionary>
 				<real> 5 </real>
 				<real> 195 </real>
-				<real> 125 </real>
+				<real> 4 </real>
+				<real> 31 </real>
+				<real> -1 </real>
+				<real> 181 </real>
+				<real> 104 </real>
+				<real> 109 </real>
 				<real> 130 </real>
-				<real> 151 </real>
 				<string> "Smooth" </string>
 				<resource name=""></resource>				<int> 0 </int>
+				<real> 134 </real>
 				<real> 155 </real>
-				<real> 176 </real>
 				<string> "Reverse Normals" </string>
+				<real> 180 </real>
+				<real> 154 </real>
 			</array>
 			<string> "nodes" </string>
-			<int_array  len="210"> 				-1, -1, 0, 0, -1, 21, 1, 0, 2, 1, 3, 2, 4, 2, 5, 3, 6, 4, 7, 5, 8, 6, 9, 7, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 19, 8, 20, 10, 21, 11, 0, 0, 0, 23, 22, -1, 18, 1, 0, 2, 1, 3, 2, 4, 2, 5, 3, 6, 12, 7, 12, 8, 13, 9, 14, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 0, 0, 0, 25, 24, -1, 26, 1, 0, 2, 1, 3, 2, 4, 2, 5, 3, 6, 12, 7, 15, 8, 13, 9, 16, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 26, 8, 27, 1, 28, 8, 29, 17, 30, 18, 31, 8, 32, 8, 33, 19, 0, 0, 0, 25, 34, -1, 26, 1, 0, 2, 1, 3, 2, 4, 2, 5, 3, 6, 12, 7, 20, 8, 13, 9, 21, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 26, 8, 27, 1, 28, 8, 29, 22, 30, 18, 31, 8, 32, 8, 33, 19, 0 </int_array>
+			<int_array  len="390"> 				-1, -1, 0, 0, -1, 21, 1, 0, 2, 1, 3, 2, 4, 2, 5, 3, 6, 4, 7, 5, 8, 6, 9, 7, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 19, 1, 20, 10, 21, 11, 0, 0, 0, 23, 22, -1, 20, 1, 0, 2, 1, 3, 2, 4, 2, 5, 3, 6, 12, 7, 12, 8, 13, 9, 13, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 24, 3, 25, 1, 0, 1, 0, 27, 26, -1, 20, 1, 0, 2, 1, 3, 2, 4, 2, 5, 3, 28, 3, 29, 3, 6, 14, 7, 15, 8, 14, 9, 14, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 0, 2, 0, 31, 30, -1, 18, 1, 0, 2, 1, 3, 2, 4, 2, 5, 3, 6, 2, 7, 16, 8, 17, 9, 18, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 0, 2, 0, 33, 32, -1, 26, 1, 0, 2, 1, 3, 2, 4, 2, 5, 3, 6, 2, 7, 19, 8, 17, 9, 20, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 34, 8, 35, 1, 36, 8, 37, 21, 38, 22, 39, 8, 40, 8, 41, 23, 0, 2, 0, 33, 42, -1, 26, 1, 0, 2, 1, 3, 2, 4, 2, 5, 3, 6, 2, 7, 24, 8, 17, 9, 25, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 34, 8, 35, 1, 36, 8, 37, 26, 38, 22, 39, 8, 40, 8, 41, 23, 0, 1, 0, 27, 43, -1, 20, 1, 0, 2, 8, 3, 2, 4, 2, 5, 3, 28, 3, 29, 3, 6, 14, 7, 15, 8, 14, 9, 14, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 0, 6, 0, 31, 44, -1, 16, 1, 0, 2, 1, 3, 2, 4, 2, 5, 3, 8, 27, 9, 28, 10, 0, 11, 0, 12, 0, 13, 0, 14, 8, 15, 1, 16, 9, 17, 9, 18, 2, 0 </int_array>
 			<string> "conns" </string>
 			<int_array  len="0"> 				 </int_array>
 		</dictionary>

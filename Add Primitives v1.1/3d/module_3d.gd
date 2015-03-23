@@ -1,24 +1,3 @@
-# Copyright (c) 2015 Franklin Sobrinho.                 
-                                                                       
-# Permission is hereby granted, free of charge, to any person obtaining 
-# a copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without 
-# limitation the rights to use, copy, modify, merge, publish,   
-# distribute, sublicense, and/or sell copies of the Software, and to    
-# permit persons to whom the Software is furnished to do so, subject to 
-# the following conditions:                                             
-                                                                       
-# The above copyright notice and this permission notice shall be        
-# included in all copies or substantial portions of the Software.       
-                                                                       
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  
-# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  
-# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     
-# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 extends EditorPlugin
 
 var spatial_menu
@@ -164,14 +143,51 @@ func popup_signal(id):
 				
 			if mesh != null:
 				add_mesh_instance(mesh)
+				
+func transform_dialog(tree):
+	tree.clear()
+	tree.set_hide_root(true)
+	tree.set_columns(2)
+	tree.set_column_titles_visible(true)
+	tree.set_column_title(0, 'Axis')
+	tree.set_column_title(1, 'Value')
 	
+	var root = tree.create_item()
+	
+	var translate = tree.create_item(root)
+	translate.set_text(0, 'Translate')
+	var rotate = tree.create_item(root)
+	rotate.set_text(0, 'Rotation')
+	var scale = tree.create_item(root)
+	scale.set_text(0, 'Scale')
+	
+	var axis = ['x', 'y', 'z']
+	
+	var item = root.get_children()
+	
+	while true:
+		for a in axis:
+			var i = tree.create_item(item)
+			i.set_text(0, a)
+			i.set_cell_mode(1, 2)
+			if item.get_text(0) != 'Scale':
+				i.set_range(1, 0)
+			else:
+				i.set_range(1, 1)
+			i.set_range_config(1, -100, 100, 0.1)
+			i.set_editable(1, true)
+		item = item.get_next()
+		
+		if not item:
+			break
+			
 func add_mesh_popup(key):
 	var dir = extra_modules['directory_utilites']
 	
 	if dir.file_exists(get_plugins_folder() + '/Add Primitives v1.1/3d/gui/AddMeshPopup.xml'):
 		var window = load(get_plugins_folder() + '/Add Primitives v1.1/3d/gui/AddMeshPopup.xml').instance()
 		
-		var settings = window.get_node('Settings')
+		var settings = window.get_node('tab/Parameters/Settings')
 		settings.clear()
 		settings.set_hide_root(true)
 		settings.set_columns(2)
@@ -181,8 +197,8 @@ func add_mesh_popup(key):
 		
 		settings.set_column_min_width(0, 2)
 		
-		var smooth_button = window.get_node('Smooth')
-		var reverse_button = window.get_node('Reverse')
+		var smooth_button = window.get_node('tab/Parameters/Smooth')
+		var reverse_button = window.get_node('tab/Parameters/Reverse')
 		
 		if not settings.is_connected('item_edited', self, 'update_mesh'):
 			settings.connect('item_edited', self, 'update_mesh', [key, settings, smooth_button, reverse_button])
@@ -190,6 +206,13 @@ func add_mesh_popup(key):
 			smooth_button.connect('pressed', self, 'update_mesh', [key, settings, smooth_button, reverse_button])
 		if not reverse_button.is_connected('pressed', self, 'update_mesh'):
 			reverse_button.connect('pressed', self, 'update_mesh', [key, settings, smooth_button, reverse_button])
+		
+		var dialog = window.get_node('tab/Transform/Dialog')
+		
+		transform_dialog(dialog)
+		
+		if not dialog.is_connected('item_edited', self, 'transform_mesh'):
+			dialog.connect('item_edited', self, 'transform_mesh', [dialog])
 		
 		var script = load(mesh_scripts[key]).new()
 		
@@ -237,6 +260,34 @@ func update_mesh(key, settings, smooth_button = null, reverse_button = null):
 	if mesh.get_type() == 'Mesh':
 		mesh_instance.set_mesh(mesh)
 		
+func transform_mesh(dialog):
+	var val = []
+	var transform = []
+	
+	var root = dialog.get_root()
+	
+	var item = root.get_children()
+	
+	while true:
+		var child = item.get_children()
+		
+		for i in range(3):
+			val.append(child.get_range(1))
+			
+			child = child.get_next()
+			
+		transform.append(Vector3(val[0], val[1], val[2]))
+		val.clear()
+		
+		item = item.get_next()
+		
+		if not item:
+			break
+			
+	mesh_instance.set_translation(transform[0])
+	mesh_instance.set_rotation(transform[1])
+	mesh_instance.set_scale(transform[2])
+	
 func add_mesh_instance(mesh):
 	mesh_instance = MeshInstance.new()
 	mesh_instance.set_mesh(mesh)
