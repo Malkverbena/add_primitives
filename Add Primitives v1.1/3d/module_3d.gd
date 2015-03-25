@@ -1,34 +1,36 @@
-# Copyright (c) 2015 Franklin Sobrinho.                 
-                                                                       
-# Permission is hereby granted, free of charge, to any person obtaining 
-# a copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without 
-# limitation the rights to use, copy, modify, merge, publish,   
-# distribute, sublicense, and/or sell copies of the Software, and to    
-# permit persons to whom the Software is furnished to do so, subject to 
-# the following conditions:                                             
-                                                                       
-# The above copyright notice and this permission notice shall be        
-# included in all copies or substantial portions of the Software.       
-                                                                       
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  
-# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  
-# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     
-# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#==============================================================================#
+# Copyright (c) 2015 Franklin Sobrinho.                                        #
+#                                                                              #                                                   
+# Permission is hereby granted, free of charge, to any person obtaining        #
+# a copy of this software and associated documentation files (the "Software"), #
+# to deal in the Software without restriction, including without               #
+# limitation the rights to use, copy, modify, merge, publish,                  #
+# distribute, sublicense, and/or sell copies of the Software, and to           #
+# permit persons to whom the Software is furnished to do so, subject to        #
+# the following conditions:                                                    #
+#                                                                              #
+# The above copyright notice and this permission notice shall be               #
+# included in all copies or substantial portions of the Software.              #
+#                                                                              #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,              #
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF           #
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.       #
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY         #
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,         #
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE            #
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                       #
+#==============================================================================#
 
 extends EditorPlugin
 
-var spatial_menu
+var hbox
 var mesh_instance
 
 var mesh_scripts = {}
 var extra_modules = {}
 
 #Utilites
-func get_plugins_folder():
+static func get_plugins_folder():
 	var path = OS.get_data_dir()
 	path = path.substr(0, path.find_last('/'))
 	path = path.substr(0, path.find_last('/'))
@@ -55,8 +57,7 @@ func get_spatial_node():
 					return node
 	return null
 	
-#To be used like _enter_tree()
-func _init():
+func _enter_tree():
 	print("3D MODULE INIT")
 	
 	extra_modules['directory_utilites'] =\
@@ -66,19 +67,30 @@ func _init():
 	
 	register_module(extra_modules['heightmap_module'])
 	
-	spatial_menu = MenuButton.new()
+	hbox = HBoxContainer.new()
+	hbox.set_name("hbox")
+	
+	var separator = VSeparator.new()
+	var spatial_menu = MenuButton.new()
 	spatial_menu.set_name('spatial_toolbar_menu')
-	spatial_menu.set_text("Add Mesh")
+	
+	var icon = load(get_plugins_folder() + '/Add Primitives v1.1/3d/icons/icon_mesh_instance_add.png')
+	spatial_menu.set_button_icon(icon)
+	
+	hbox.add_child(spatial_menu)
+	hbox.add_child(separator)
 	
 	update_menu()
 	
-	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, spatial_menu)
+	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, hbox)
+	
+	hbox.get_parent().move_child(hbox, 6)
 	
 func register_module(module):
 	add_child(module)
 	
 func update_menu():
-	var popup_menu = spatial_menu.get_popup()
+	var popup_menu = hbox.get_node('spatial_toolbar_menu').get_popup()
 	popup_menu.set_name('spatial_menu')
 	
 	popup_menu.clear()
@@ -133,7 +145,7 @@ func update_menu():
 		popup_menu.connect("item_pressed", self, "popup_signal")
 	
 func popup_signal(id):
-	var popup = spatial_menu.get_popup()
+	var popup = hbox.get_node('spatial_toolbar_menu').get_popup()
 	
 	var command = popup.get_item_text(popup.get_item_index(id))
 	
@@ -169,6 +181,7 @@ func transform_dialog(tree):
 	tree.clear()
 	tree.set_hide_root(true)
 	tree.set_columns(2)
+	tree.set_column_min_width(0, 3)
 	tree.set_column_titles_visible(true)
 	tree.set_column_title(0, 'Axis')
 	tree.set_column_title(1, 'Value')
@@ -176,7 +189,7 @@ func transform_dialog(tree):
 	var root = tree.create_item()
 	
 	var translate = tree.create_item(root)
-	translate.set_text(0, 'Translate')
+	translate.set_text(0, 'Translation')
 	var rotate = tree.create_item(root)
 	rotate.set_text(0, 'Rotation')
 	var scale = tree.create_item(root)
@@ -207,6 +220,7 @@ func add_mesh_popup(key):
 	
 	if dir.file_exists(get_plugins_folder() + '/Add Primitives v1.1/3d/gui/AddMeshPopup.xml'):
 		var window = load(get_plugins_folder() + '/Add Primitives v1.1/3d/gui/AddMeshPopup.xml').instance()
+		window.set_title(key)
 		
 		var settings = window.get_node('tab/Parameters/Settings')
 		settings.clear()
@@ -260,21 +274,26 @@ func update_mesh(key, settings, smooth_button = null, reverse_button = null):
 	if reverse_button:
 		reverse = reverse_button.is_pressed()
 	
-	var next_range = root.get_children()
+	var next_item = root.get_children()
 	
 	while true:
-		var cell = next_range.get_cell_mode(1)
+		var cell = next_item.get_cell_mode(1)
 		if cell == 0:
-			values.append(next_range.get_text(1))
+			values.append(next_item.get_text(1))
 		elif cell == 1:
-			values.append(next_range.is_checked(1))
+			values.append(next_item.is_checked(1))
 		elif cell == 2:
-			values.append(next_range.get_range(1))
-		
-		next_range = next_range.get_next()
-		if next_range == null:
+			if next_item.get_text(1):
+				var text = next_item.get_text(1)
+				text = text.split(',')
+				values.append(text[next_item.get_range(1)])
+			else:
+				values.append(next_item.get_range(1))
+				
+		next_item = next_item.get_next()
+		if next_item == null:
 			break
-		
+			
 	var script_temp = load(mesh_scripts[key]).new()
 	var mesh = script_temp.build_mesh(values, smooth, reverse)
 	
@@ -283,7 +302,7 @@ func update_mesh(key, settings, smooth_button = null, reverse_button = null):
 		
 func transform_mesh(dialog):
 	var val = []
-	var transform = []
+	var transform = {}
 	
 	var root = dialog.get_root()
 	
@@ -297,7 +316,7 @@ func transform_mesh(dialog):
 			
 			child = child.get_next()
 			
-		transform.append(Vector3(val[0], val[1], val[2]))
+		transform[item.get_text(0)] = Vector3(val[0], val[1], val[2])
 		val.clear()
 		
 		item = item.get_next()
@@ -305,9 +324,13 @@ func transform_mesh(dialog):
 		if not item:
 			break
 			
-	mesh_instance.set_translation(transform[0])
-	mesh_instance.set_rotation(transform[1])
-	mesh_instance.set_scale(transform[2])
+	mesh_instance.set_translation(transform['Translation'])
+	
+	#Temporary fix############################################
+	mesh_instance.set_rotation(transform['Rotation']/57.295776)
+	##########################################################
+	
+	mesh_instance.set_scale(transform['Scale'])
 	
 func add_mesh_instance(mesh):
 	mesh_instance = MeshInstance.new()
@@ -321,8 +344,8 @@ func add_mesh_instance(mesh):
 	node.add_child(mesh_instance)
 	mesh_instance.set_owner(root)
 	
-#To be used like _exit_tree()
-func _end():
-	spatial_menu.free()
+func _exit_tree():
+	if hbox != null:
+		hbox.free()
 	mesh_scripts = null
 	extra_modules = null
