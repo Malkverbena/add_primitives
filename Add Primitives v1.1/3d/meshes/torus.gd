@@ -1,0 +1,52 @@
+extends "builder/mesh_builder.gd"
+
+func build_mesh(params, smooth = false, reverse = false):
+	if params == 'default':
+		params = [2, 12, 8]
+	var torus_radius = params[0]
+	var radius = 1
+	var steps_ = params[1]
+	var cuts = params[2]
+	
+	var bend_angle_radians = deg2rad(360.0)
+	var bend_radius = torus_radius/bend_angle_radians
+	
+	var angle_inc = bend_angle_radians/steps_
+	
+	var steps = build_circle_verts(Vector3(0,0,0), steps_, torus_radius)
+	
+	begin(4)
+	add_smooth_group(smooth)
+	
+	var circle
+	var circle_2
+	var temp_circle
+	
+	for i in range(steps.size() - 1):
+		circle = build_circle_verts(steps[i], cuts, radius, [PI/2, angle_inc * i], [Vector3(1,0,0), Vector3(0,1,0)])
+		circle_2 = build_circle_verts(steps[i + 1], cuts, radius, [PI/2, angle_inc * (i + 1)], [Vector3(1,0,0), Vector3(0,1,0)])
+		if i == steps.size() - 2:
+			temp_circle = circle_2
+		
+		for idx in range(cuts - 1):
+			add_quad([circle[idx], circle_2[idx], circle_2[idx + 1], circle[idx + 1]], null, reverse)
+		add_quad([circle[cuts - 1], circle_2[cuts - 1], circle_2[0], circle[0]], null, reverse)
+	
+	circle = temp_circle
+	circle_2 = build_circle_verts(steps[0], cuts, radius, [PI/2, angle_inc * 0], [Vector3(1,0,0), Vector3(0,1,0)])
+	
+	for idx in range(cuts - 1):
+		add_quad([circle[idx], circle_2[idx], circle_2[idx + 1], circle[idx + 1]], null, reverse)
+	add_quad([circle[cuts - 1], circle_2[cuts - 1], circle_2[0], circle[0]], null, reverse)
+	
+	generate_normals()
+	var mesh = commit()
+	clear()
+	
+	return mesh
+	
+func mesh_parameters(settings):
+	add_tree_range(settings, "Torus Radius", 2, 0.1, 100, 0.1)
+	add_tree_range(settings, "Steps", 12)
+	add_tree_range(settings, "Cuts", 8)
+	

@@ -55,9 +55,11 @@ func build_plane_verts(start, end, offset = Vector3(0,0,0)):
 	verts.append(Vector3(0,0,0) + offset)
 	return verts
 	
-func build_circle_verts(pos, segments, radius = 1, rotation = null):
+func build_circle_verts(pos, segments, radius = 1, rotation = [], axis = []):
 	var radians_circle = PI * 2
 	var _radius = Vector3(radius, 1, radius)
+	
+	var can_scale = true
 	
 	var circle_verts = []
 	
@@ -68,6 +70,13 @@ func build_circle_verts(pos, segments, radius = 1, rotation = null):
 		
 		var vector = Vector3(x, 0, z)
 		
+		if not rotation.empty():
+			assert( not axis.empty() )
+			
+			for i in range(rotation.size()):
+				var m3 = Matrix3(axis[i], rotation[i])
+				vector = m3 * vector
+				
 		circle_verts.append((vector * _radius) + pos)
 	
 	return circle_verts

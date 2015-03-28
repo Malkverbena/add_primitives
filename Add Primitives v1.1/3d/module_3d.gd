@@ -76,6 +76,7 @@ func _enter_tree():
 	
 	var icon = load(get_plugins_folder() + '/Add Primitives v1.1/3d/icons/icon_mesh_instance_add.png')
 	spatial_menu.set_button_icon(icon)
+	spatial_menu.set_tooltip("Add New MeshInstance")
 	
 	hbox.add_child(spatial_menu)
 	hbox.add_child(separator)
