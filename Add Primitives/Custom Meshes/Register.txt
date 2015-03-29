@@ -1,3 +1,0 @@
-[Custom Scripts]
-
-Stair.gd="/home/franklin-sobrinho/.godot/plugins/Add Primitives/Custom Meshes/Stair.gd"
