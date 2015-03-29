@@ -25,8 +25,10 @@ extends EditorPlugin
 
 var hbox
 var mesh_instance
+var original_mesh
 
 var mesh_scripts = {}
+var modifier_scripts = {}
 var extra_modules = {}
 
 #Utilites
@@ -178,6 +180,38 @@ func popup_signal(id):
 			if mesh != null:
 				add_mesh_instance(mesh)
 				
+func load_modifiers(tree):
+	var dir = extra_modules['directory_utilites']
+	var path = get_plugins_folder() + '/Add Primitives v1.1/3d/meshes/modifiers'
+
+	if dir.dir_exists(path):
+		var modifiers = dir.get_file_list(path)
+		modifiers = dir.get_scripts_from_list(modifiers)
+		
+		for mod in modifiers:
+			var name = mod.substr(0, mod.find_last('.')).capitalize()
+			modifier_scripts[name] = path + '/' + mod
+			
+			var temp = load(modifier_scripts[name]).new()
+			
+			if temp.has_method('modifier_parameters'):
+				tree.set_hide_root(true)
+				tree.set_columns(2)
+				tree.set_column_min_width(0, 2)
+				
+				var root = tree.get_root()
+				if not root:
+					root = tree.create_item()
+					
+				var item = tree.create_item(root)
+				item.set_text(0, temp.get_name())
+				item.set_cell_mode(1, 1)
+				item.set_checked(1, false)
+				item.set_editable(1, true)
+				item.set_text(1, 'On')
+				
+				temp.modifier_parameters(item, tree)
+				
 func transform_dialog(tree):
 	tree.clear()
 	tree.set_hide_root(true)
@@ -219,11 +253,14 @@ func transform_dialog(tree):
 func add_mesh_popup(key):
 	var dir = extra_modules['directory_utilites']
 	
+	original_mesh = null
+	
 	if dir.file_exists(get_plugins_folder() + '/Add Primitives v1.1/3d/gui/AddMeshPopup.xml'):
 		var window = load(get_plugins_folder() + '/Add Primitives v1.1/3d/gui/AddMeshPopup.xml').instance()
 		window.set_title(key)
 		
 		var settings = window.get_node('tab/Parameters/Settings')
+		var modifier = window.get_node('tab/Modifiers/Modifier')
 		settings.clear()
 		settings.set_hide_root(true)
 		settings.set_columns(2)
@@ -237,12 +274,17 @@ func add_mesh_popup(key):
 		var reverse_button = window.get_node('tab/Parameters/Reverse')
 		
 		if not settings.is_connected('item_edited', self, 'update_mesh'):
-			settings.connect('item_edited', self, 'update_mesh', [key, settings, smooth_button, reverse_button])
+			settings.connect('item_edited', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
 		if not smooth_button.is_connected('pressed', self, 'update_mesh'):
-			smooth_button.connect('pressed', self, 'update_mesh', [key, settings, smooth_button, reverse_button])
+			smooth_button.connect('pressed', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
 		if not reverse_button.is_connected('pressed', self, 'update_mesh'):
-			reverse_button.connect('pressed', self, 'update_mesh', [key, settings, smooth_button, reverse_button])
+			reverse_button.connect('pressed', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
 		
+		load_modifiers(modifier)
+		
+		if not modifier.is_connected("item_edited", self, 'modify_mesh'):
+			modifier.connect("item_edited", self, 'modify_mesh', [modifier])
+			
 		var dialog = window.get_node('tab/Transform/Dialog')
 		
 		transform_dialog(dialog)
@@ -262,7 +304,20 @@ func add_mesh_popup(key):
 			
 		window.popup_centered(window.get_size())
 		
-func update_mesh(key, settings, smooth_button = null, reverse_button = null):
+func get_tree_children(root):
+	var items = []
+	
+	var item = root.get_children()
+	while true:
+		items.append(item)
+		
+		item = item.get_next()
+		if item == null:
+			break
+			
+	return items
+	
+func update_mesh(key, settings, modifier, smooth_button = null, reverse_button = null):
 	var values = []
 	var root = settings.get_root()
 	
@@ -297,10 +352,64 @@ func update_mesh(key, settings, smooth_button = null, reverse_button = null):
 			
 	var script_temp = load(mesh_scripts[key]).new()
 	var mesh = script_temp.build_mesh(values, smooth, reverse)
+	#center geometry######
+	mesh.center_geometry()
+	######################
 	
 	if mesh.get_type() == 'Mesh':
 		mesh_instance.set_mesh(mesh)
 		
+		original_mesh = mesh
+		
+		modify_mesh(modifier)
+		
+func modify_mesh(tree):
+	var root = tree.get_root()
+	
+	var item = root.get_children()
+	
+	if original_mesh == null:
+		original_mesh = mesh_instance.get_mesh()
+		
+	while true:
+		var values = []
+		
+		var script = load(modifier_scripts[item.get_text(0)]).new()
+		
+		var par = get_tree_children(item)
+		
+		assert( not par.empty() )
+		
+		if item.is_checked(1):
+			for p in par:
+				var  cell = p.get_cell_mode(1)
+				if cell == 0:
+					values.append(p.get_text(1))
+				elif cell == 1:
+					values.append(p.get_checked(1))
+				elif cell == 2:
+					if p.get_text(1):
+						var text = p.get_text(1)
+						text = text.split(',')
+						values.append(text[p.get_range(1)])
+					else:
+						values.append(p.get_range(1))
+						
+			assert( mesh_instance.get_mesh() )
+			
+			mesh_instance.set_mesh(original_mesh)
+			mesh_instance.set_mesh(script.modifier(values, mesh_instance.get_aabb(), original_mesh))
+			print(original_mesh.get_surface_count())
+			values.clear()
+			
+		elif not item.is_checked(1):
+			mesh_instance.set_mesh(original_mesh)
+		
+		item = item.get_next()
+		
+		if item == null:
+			break
+			
 func transform_mesh(dialog):
 	var val = []
 	var transform = {}
@@ -335,6 +444,9 @@ func transform_mesh(dialog):
 	
 func add_mesh_instance(mesh):
 	mesh_instance = MeshInstance.new()
+	#center geometry######
+	mesh.center_geometry()
+	######################
 	mesh_instance.set_mesh(mesh)
 	mesh_instance.set_name(mesh.get_name())
 	
@@ -349,4 +461,5 @@ func _exit_tree():
 	if hbox != null:
 		hbox.free()
 	mesh_scripts = null
+	modifier_scripts = null
 	extra_modules = null
