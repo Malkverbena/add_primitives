@@ -20,7 +20,7 @@ A plugin capable of generating and adding procedual meshes
 4. Modifier System
 
 ###Installation
-Just copy and paste the 'Add Primitives v1.1' folder into godot plugins folder:
+Just copy and paste the 'Add Primitives' folder into godot plugins folder:
 
 * Windows: **%APPDATA%\Godot\plugins**
 * Linux/OSX: **~/.godot/plugins/**
