@@ -21,49 +21,45 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                       #
 #==============================================================================#
 
-extends EditorPlugin
+extends MeshDataTool
 
-#Utilites
-func get_plugins_folder():
-	var path = OS.get_data_dir()
-	path = path.substr(0, path.find_last('/'))
-	path = path.substr(0, path.find_last('/'))
-	return path + '/plugins'
+#Tree Item helper functions
+func _create_item(item, tree):
+	item = tree.create_item(item)
 	
-func get_spatial_node():
-	var root = get_tree().get_edited_scene_root()
+	return item
 	
-	if root != null:
-		if root.get_type() == 'Spatial':
-			return root
-		else:
-			for node in root.get_children():
-				if node.get_type() == 'Spatial':
-					return node
-	return null
+func add_tree_range(item, tree, text, value, step = 1, _min = 1, _max = 50):
+	var tree_item = _create_item(item, tree)
 	
-#main function
-func heightmap():
-	var heightmap_script
-	var mesh_builder
+	tree_item.set_text(0, text)
+	tree_item.set_cell_mode(1, 2)
+	tree_item.set_range(1, value)
+	tree_item.set_range_config(1, _min, _max, step)
+	tree_item.set_editable(1, true)
 	
-	heightmap_script = load(get_plugins_folder() + '/Add Primitives v1.1/3d/heightmap/heightmap.gd').new()
-	mesh_builder = load(get_plugins_folder() + '/Add Primitives v1.1/3d/heightmap/mesh.gd').new()
+func add_tree_combo(item, tree, text, items, selected = 0):
+	var tree_item = _create_item(item, tree)
 	
-	var mesh
+	tree_item.set_text(0, text)
+	tree_item.set_cell_mode(1, 2)
+	tree_item.set_text(1, items)
+	tree_item.set_range(1, selected)
+	tree_item.set_editable(1, true)
 	
-	if mesh_builder.has_method('build_mesh'):
-		mesh = mesh_builder.build_mesh(null, 50, 32, 5)
-		
-		heightmap_script.set_mesh(mesh)
-		
-		#root and node can be the same
-		if is_inside_tree():
-			var root = get_tree().get_edited_scene_root()
-			var node = get_spatial_node()
-			
-			if node:
-				node.add_child(heightmap_script)
-				heightmap_script.set_owner(root)
-				heightmap_script.set_name('Heigthmap')
-				heightmap_script.create_trimesh_collision()
+func add_tree_check(item, tree, text, checked = false):
+	var tree_item = _create_item(item, tree)
+	
+	tree_item.set_text(0, text)
+	tree_item.set_cell_mode(1, 1)
+	tree_item.set_checked(1, checked)
+	tree_item.set_text(1, 'On')
+	tree_item.set_editable(1, true)
+	
+func add_tree_entry(item, tree, text, string = ''):
+	var tree_item = _create_item(item, tree)
+	
+	tree_item.set_text(0, text)
+	tree_item.set_cell_mode(1, 0)
+	tree_item.set_text(1, string)
+	tree_item.set_editable(1, true)

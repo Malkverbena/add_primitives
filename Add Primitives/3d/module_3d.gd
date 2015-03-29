@@ -63,11 +63,7 @@ func _enter_tree():
 	print("3D MODULE INIT")
 	
 	extra_modules['directory_utilites'] =\
-	              load(get_plugins_folder() + '/Add Primitives v1.1/extra modules/directory_utilites.gd').new()
-	extra_modules['heightmap_module'] =\
-	              load(get_plugins_folder() + '/Add Primitives v1.1/3d/heightmap/module_heightmap.gd').new()
-	
-	register_module(extra_modules['heightmap_module'])
+	              load(get_plugins_folder() + '/Add Primitives/extra modules/directory_utilites.gd').new()
 	
 	hbox = HBoxContainer.new()
 	hbox.set_name("hbox")
@@ -76,7 +72,7 @@ func _enter_tree():
 	var spatial_menu = MenuButton.new()
 	spatial_menu.set_name('spatial_toolbar_menu')
 	
-	var icon = load(get_plugins_folder() + '/Add Primitives v1.1/3d/icons/icon_mesh_instance_add.png')
+	var icon = load(get_plugins_folder() + '/Add Primitives/3d/icons/icon_mesh_instance_add.png')
 	spatial_menu.set_button_icon(icon)
 	spatial_menu.set_tooltip("Add New MeshInstance")
 	
@@ -88,9 +84,6 @@ func _enter_tree():
 	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, hbox)
 	
 	hbox.get_parent().move_child(hbox, 6)
-	
-func register_module(module):
-	add_child(module)
 	
 func update_menu():
 	var popup_menu = hbox.get_node('spatial_toolbar_menu').get_popup()
@@ -106,7 +99,7 @@ func update_menu():
 	
 	var submenus = {}
 	
-	var path = get_plugins_folder() + '/Add Primitives v1.1/3d'
+	var path = get_plugins_folder() + '/Add Primitives/3d'
 	
 	if dir.dir_exists(path + '/meshes'):
 		var scripts = dir.get_file_list(path + '/meshes')
@@ -139,8 +132,6 @@ func update_menu():
 		for j in submenus[i]:
 			submenu.add_item(j)
 		
-	popup_menu.add_separator()
-	popup_menu.add_item('Heightmap')
 	popup_menu.add_separator()
 	popup_menu.add_item('Reload Menu')
 	
@@ -182,7 +173,7 @@ func popup_signal(id):
 				
 func load_modifiers(tree):
 	var dir = extra_modules['directory_utilites']
-	var path = get_plugins_folder() + '/Add Primitives v1.1/3d/meshes/modifiers'
+	var path = get_plugins_folder() + '/Add Primitives/3d/meshes/modifiers'
 
 	if dir.dir_exists(path):
 		var modifiers = dir.get_file_list(path)
@@ -255,8 +246,8 @@ func add_mesh_popup(key):
 	
 	original_mesh = null
 	
-	if dir.file_exists(get_plugins_folder() + '/Add Primitives v1.1/3d/gui/AddMeshPopup.xml'):
-		var window = load(get_plugins_folder() + '/Add Primitives v1.1/3d/gui/AddMeshPopup.xml').instance()
+	if dir.file_exists(get_plugins_folder() + '/Add Primitives/3d/gui/AddMeshPopup.xml'):
+		var window = load(get_plugins_folder() + '/Add Primitives/3d/gui/AddMeshPopup.xml').instance()
 		window.set_title(key)
 		
 		var settings = window.get_node('tab/Parameters/Settings')
@@ -399,7 +390,7 @@ func modify_mesh(tree):
 			
 			mesh_instance.set_mesh(original_mesh)
 			mesh_instance.set_mesh(script.modifier(values, mesh_instance.get_aabb(), original_mesh))
-			print(original_mesh.get_surface_count())
+			
 			values.clear()
 			
 		elif not item.is_checked(1):
