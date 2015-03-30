@@ -10,7 +10,6 @@ func modifier(params, aabb, mesh):
 	
 	var low_point = aabb.get_endpoint(0)
 	var high_point = aabb.get_endpoint(7)
-	var center = low_point - high_point
 	
 	for surf in range(mesh.get_surface_count()):
 		create_from_surface(mesh, surf)
@@ -41,7 +40,7 @@ func modifier(params, aabb, mesh):
 			
 		commit_to_surface(mesh_temp)
 		clear()
-		
+	
 	return mesh_temp
 	
 func modifier_parameters(item, tree):

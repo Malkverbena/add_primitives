@@ -25,7 +25,9 @@ extends EditorPlugin
 
 var hbox
 var mesh_instance
+
 var original_mesh
+var meshes_to_modify = []
 
 var mesh_scripts = {}
 var modifier_scripts = {}
@@ -110,6 +112,7 @@ func update_menu():
 			mesh_scripts[key] = path + '/meshes/' + name
 			
 			var temp_script = load(mesh_scripts[key]).new()
+			
 			if temp_script.has_method('container'):
 				var container = temp_script.container()
 				if submenus.has(container):
@@ -356,8 +359,11 @@ func update_mesh(key, settings, modifier, smooth_button = null, reverse_button =
 		
 func modify_mesh(tree):
 	var root = tree.get_root()
-	
 	var item = root.get_children()
+	
+	meshes_to_modify.clear()
+	
+	var count = 0
 	
 	if original_mesh == null:
 		original_mesh = mesh_instance.get_mesh()
@@ -365,13 +371,16 @@ func modify_mesh(tree):
 	while true:
 		var values = []
 		
-		var script = load(modifier_scripts[item.get_text(0)]).new()
-		
-		var par = get_tree_children(item)
-		
-		assert( not par.empty() )
+		var script
 		
 		if item.is_checked(1):
+			script = load(modifier_scripts[item.get_text(0)]).new()
+			count += 1
+			
+			var par = get_tree_children(item)
+			
+			assert( not par.empty() )
+			
 			for p in par:
 				var  cell = p.get_cell_mode(1)
 				if cell == 0:
@@ -388,14 +397,22 @@ func modify_mesh(tree):
 						
 			assert( mesh_instance.get_mesh() )
 			
-			mesh_instance.set_mesh(original_mesh)
-			mesh_instance.set_mesh(script.modifier(values, mesh_instance.get_aabb(), original_mesh))
-			
+			if count == 1:
+				mesh_instance.set_mesh(original_mesh)
+				mesh_instance.set_mesh(script.modifier(values, mesh_instance.get_aabb(), original_mesh))
+				
+			elif count > 1:
+				meshes_to_modify.resize(count - 1)
+				meshes_to_modify[count - 2] = mesh_instance.get_mesh()
+				
+				mesh_instance.set_mesh(meshes_to_modify[count - 2])
+				mesh_instance.set_mesh(script.modifier(values, mesh_instance.get_aabb(), meshes_to_modify[count - 2]))
+				
 			values.clear()
 			
-		elif not item.is_checked(1):
+		if count == 0:
 			mesh_instance.set_mesh(original_mesh)
-		
+			
 		item = item.get_next()
 		
 		if item == null:
@@ -426,11 +443,9 @@ func transform_mesh(dialog):
 			break
 			
 	mesh_instance.set_translation(transform['Translation'])
-	
 	#Temporary fix############################################
 	mesh_instance.set_rotation(transform['Rotation']/57.295776)
 	##########################################################
-	
 	mesh_instance.set_scale(transform['Scale'])
 	
 func add_mesh_instance(mesh):
