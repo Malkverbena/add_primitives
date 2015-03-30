@@ -89,6 +89,6 @@ func build_mesh(params, smooth = false, reverse = false):
 	return mesh
 	
 func mesh_parameters(settings):
-	add_tree_range(settings, 'C. Heigth', 1, 0.1, 100, 0.1)
-	add_tree_range(settings, 'Segments', 16, 3)
-	add_tree_range(settings, 'Cuts', 8, 4, 100, 2)
+	add_tree_range(settings, 'C. Heigth', 1, 0.1, 0.1, 100)
+	add_tree_range(settings, 'Segments', 16, 1, 3)
+	add_tree_range(settings, 'Cuts', 8, 2, 4)

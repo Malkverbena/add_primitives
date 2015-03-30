@@ -90,13 +90,29 @@ func _create_item(tree):
 	var item = tree.create_item(root)
 	return item
 	
-func add_tree_range(tree, text, value, _min = 1, _max = 100, step = 1):
+func add_tree_empty(tree):
+	var tree_item = _create_item(tree)
+	
+	tree_item.set_collapsed(true)
+	tree_item.set_selectable(0, false)
+	tree_item.set_selectable(1, false)
+	
+func add_tree_range(tree, text, value, step = 1, _min = 1, _max = 50):
 	var tree_item = _create_item(tree)
 	
 	tree_item.set_text(0, text)
 	tree_item.set_cell_mode(1, 2)
 	tree_item.set_range(1, value)
 	tree_item.set_range_config(1, _min, _max, step)
+	tree_item.set_editable(1, true)
+	
+func add_tree_combo(tree, text, items, selected = 0):
+	var tree_item = _create_item(tree)
+	
+	tree_item.set_text(0, text)
+	tree_item.set_cell_mode(1, 2)
+	tree_item.set_text(1, items)
+	tree_item.set_range(1, selected)
 	tree_item.set_editable(1, true)
 	
 func add_tree_check(tree, text, checked = false):
@@ -114,13 +130,4 @@ func add_tree_entry(tree, text, string = ''):
 	tree_item.set_text(0, text)
 	tree_item.set_cell_mode(1, 0)
 	tree_item.set_text(1, string)
-	tree_item.set_editable(1, true)
-	
-func add_tree_menu(tree, text, items, selected = 0):
-	var tree_item = _create_item(tree)
-	
-	tree_item.set_text(0, text)
-	tree_item.set_cell_mode(1, 2)
-	tree_item.set_text(1, items)
-	tree_item.set_range(1, selected)
 	tree_item.set_editable(1, true)

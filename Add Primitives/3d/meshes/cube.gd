@@ -7,7 +7,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	var w = params[0]    #Width
 	var l = params[1]    #Length
 	var h = params[2]    #Height
-		
+	
 	var fd = Vector3(w,0,0)    #Foward Direction
 	var rd = Vector3(0,0,l)    #Right Direction
 	var ud = Vector3(0,h,0)    #Up Dir
@@ -32,6 +32,6 @@ func build_mesh(params, smooth = false, reverse = false):
 	return mesh
 	
 func mesh_parameters(settings):
-	add_tree_range(settings, 'Width', 2, 0.1, 100, 0.1)
-	add_tree_range(settings, 'Length', 2, 0.1, 100, 0.1)
-	add_tree_range(settings, 'Heigth', 2, 0.1, 100, 0.1)
+	add_tree_range(settings, 'Width', 2, 0.1, 0.1, 100)
+	add_tree_range(settings, 'Length', 2, 0.1, 0.1, 100)
+	add_tree_range(settings, 'Heigth', 2, 0.1, 0.1, 100)

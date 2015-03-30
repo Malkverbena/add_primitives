@@ -46,7 +46,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	return mesh
 	
 func mesh_parameters(settings):
-	add_tree_range(settings, "Torus Radius", 2, 0.1, 100, 0.1)
+	add_tree_range(settings, "Torus Radius", 2, 0.1, 0.1, 100)
 	add_tree_range(settings, "Steps", 12)
 	add_tree_range(settings, "Cuts", 8)
 	
