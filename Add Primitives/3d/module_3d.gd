@@ -433,7 +433,7 @@ func transform_mesh(dialog):
 			val.append(child.get_range(1))
 			
 			child = child.get_next()
-			
+		
 		transform[item.get_text(0)] = Vector3(val[0], val[1], val[2])
 		val.clear()
 		
@@ -443,9 +443,7 @@ func transform_mesh(dialog):
 			break
 			
 	mesh_instance.set_translation(transform['Translation'])
-	#Temporary fix############################################
-	mesh_instance.set_rotation(transform['Rotation']/57.295776)
-	##########################################################
+	mesh_instance.set_rotation(transform['Rotation']/rad2deg(1))
 	mesh_instance.set_scale(transform['Scale'])
 	
 func add_mesh_instance(mesh):

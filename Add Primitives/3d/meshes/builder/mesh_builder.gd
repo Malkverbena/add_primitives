@@ -46,8 +46,8 @@ func add_quad(vertex_array, uv_array = null, reverse = false):
 			if uv_array != null:
 				add_uv(uv_array[idx])
 			add_vertex(vertex_array[idx])
-			
-func build_plane_verts(start, end, offset = Vector3(0,0,0)):
+
+static func build_plane_verts(start, end, offset = Vector3(0,0,0)):
 	var verts = []
 	verts.append(Vector3(0,0,0) + offset + end)
 	verts.append(Vector3(0,0,0) + offset + end + start)
@@ -55,7 +55,7 @@ func build_plane_verts(start, end, offset = Vector3(0,0,0)):
 	verts.append(Vector3(0,0,0) + offset)
 	return verts
 	
-func build_circle_verts(pos, segments, radius = 1, rotation = [], axis = []):
+static func build_circle_verts(pos, segments, radius = 1, rotation = [], axis = []):
 	var radians_circle = PI * 2
 	var _radius = Vector3(radius, 1, radius)
 	
@@ -70,15 +70,17 @@ func build_circle_verts(pos, segments, radius = 1, rotation = [], axis = []):
 		
 		var vector = Vector3(x, 0, z)
 		
+		vector = vector * _radius
+		
 		if not rotation.empty():
-			assert( not axis.empty() )
+			assert( not axis.size() != rotation.size())
 			
 			for i in range(rotation.size()):
 				var m3 = Matrix3(axis[i], rotation[i])
 				vector = m3 * vector
 				
-		circle_verts.append((vector * _radius) + pos)
-	
+		circle_verts.append(vector + pos)
+		
 	return circle_verts
 	
 #Tree Item helper functions

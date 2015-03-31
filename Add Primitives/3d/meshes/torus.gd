@@ -2,13 +2,13 @@ extends "builder/mesh_builder.gd"
 
 func build_mesh(params, smooth = false, reverse = false):
 	if params == 'default':
-		params = [2, 12, 8]
+		params = [2, 1, 12, 8]
 	var torus_radius = params[0]
-	var radius = 1
-	var steps_ = params[1]
-	var cuts = params[2]
+	var radius = params[1]
+	var steps_ = params[2]
+	var cuts = params[3]
 	
-	var bend_angle_radians = deg2rad(360.0)
+	var bend_angle_radians = PI*2
 	var bend_radius = torus_radius/bend_angle_radians
 	
 	var angle_inc = bend_angle_radians/steps_
@@ -24,7 +24,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 	for i in range(steps.size() - 1):
 		circle = build_circle_verts(steps[i], cuts, radius, [PI/2, angle_inc * i], [Vector3(1,0,0), Vector3(0,1,0)])
-		circle_2 = build_circle_verts(steps[i + 1], cuts, radius, [PI/2, angle_inc * (i + 1)], [Vector3(1,0,0), Vector3(0,1,0)])
+		circle_2 = build_circle_verts(steps[i + 1], cuts, radius, [PI/2, angle_inc * (i+1)], [Vector3(1,0,0), Vector3(0,1,0)])
 		if i == steps.size() - 2:
 			temp_circle = circle_2
 		
@@ -47,6 +47,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 func mesh_parameters(settings):
 	add_tree_range(settings, "Torus Radius", 2, 0.1, 0.1, 100)
+	add_tree_range(settings, "Radius", 1, 0.1, 0.1, 100)
 	add_tree_range(settings, "Steps", 12)
 	add_tree_range(settings, "Cuts", 8)
 	
