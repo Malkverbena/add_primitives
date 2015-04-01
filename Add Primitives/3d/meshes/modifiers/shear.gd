@@ -6,41 +6,51 @@ static func get_name():
 func modifier(params, aabb, mesh):
 	var mesh_temp = Mesh.new()
 	var axis = params[0]
-	var val = params[1]
 	
-	var low_point = aabb.get_endpoint(0)
-	var high_point = aabb.get_endpoint(7)
+	var h
+	var c
+	
+	if axis == 'x':
+		h = aabb.get_endpoint(7).y - aabb.get_endpoint(0).y
+	elif axis == 'y':
+		h = aabb.get_endpoint(7).x - aabb.get_endpoint(0).x
+	c = h/2
 	
 	for surf in range(mesh.get_surface_count()):
 		create_from_surface(mesh, surf)
 		
-		for i in range(get_vertex_count()):
-			var vert = get_vertex(i)
+		for i in range(get_face_count()):
+			var val = params[1]
 			
-			var per
+			var vert_1 = get_vertex(get_face_vertex(i, 0))
+			var vert_2 = get_vertex(get_face_vertex(i, 1))
+			var vert_3 = get_vertex(get_face_vertex(i, 2))
+			
 			if axis == 'x':
-				if vert.y >= 0:
-					per = vert.y/high_point.y
-					
-				elif vert.y < 0:
-					per = vert.y/low_point.y * -1
-					
-				vert.x += val * per
+				vert_1.x += val * (vert_1.y/c)
+				vert_2.x += val * (vert_2.y/c)
+				vert_3.x += val * (vert_3.y/c)
+				
+				set_vertex(0 + (i * 3), vert_1)
+				set_vertex(1 + (i * 3), vert_2)
+				set_vertex(2 + (i * 3), vert_3)
+				
+				continue
 				
 			elif axis == 'y':
-				if vert.x >= 0:
-					per = vert.x/high_point.x
-					
-				elif vert.x < 0:
-					per = vert.x/low_point.x * -1
-					
-				vert.y += val * per
+				vert_1.y += val * (vert_1.x/c)
+				vert_2.y += val * (vert_2.x/c)
+				vert_3.y += val * (vert_3.x/c)
 				
-			set_vertex(i, vert)
-			
+				set_vertex(0 + (i * 3), vert_1)
+				set_vertex(1 + (i * 3), vert_2)
+				set_vertex(2 + (i * 3), vert_3)
+				
+				continue
+				
 		commit_to_surface(mesh_temp)
 		clear()
-	
+		
 	return mesh_temp
 	
 func modifier_parameters(item, tree):

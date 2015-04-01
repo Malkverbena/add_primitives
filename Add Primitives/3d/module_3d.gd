@@ -29,6 +29,7 @@ var mesh_instance
 var original_mesh
 var meshes_to_modify = []
 
+var current_script
 var mesh_scripts = {}
 var modifier_scripts = {}
 var extra_modules = {}
@@ -142,6 +143,8 @@ func update_menu():
 		popup_menu.connect("item_pressed", self, "popup_signal")
 	
 func popup_signal(id):
+	current_script = null
+	
 	var popup = hbox.get_node('spatial_toolbar_menu').get_popup()
 	
 	var command = popup.get_item_text(popup.get_item_index(id))
@@ -156,16 +159,16 @@ func popup_signal(id):
 			message_popup("You need one Spatial node\nto add the heightmap!")
 		
 	else:
-		var script = load(mesh_scripts[command]).new()
+		current_script = load(mesh_scripts[command]).new()
 		
-		if script.has_method('build_mesh'):
+		if current_script.has_method('build_mesh'):
 			var mesh
 			if get_spatial_node():
-				if script.has_method('mesh_parameters'):
-					mesh = script.build_mesh('default')
+				if current_script.has_method('mesh_parameters'):
+					mesh = current_script.build_mesh('default')
 					add_mesh_popup(command)
 				else:
-					mesh = script.build_mesh()
+					mesh = current_script.build_mesh()
 					
 				mesh.set_name(command.split(' ')[1])
 			else:
@@ -184,9 +187,9 @@ func load_modifiers(tree):
 		
 		for mod in modifiers:
 			var name = mod.substr(0, mod.find_last('.')).capitalize()
-			modifier_scripts[name] = path + '/' + mod
+			modifier_scripts[name] = load(path + '/' + mod).new()
 			
-			var temp = load(modifier_scripts[name]).new()
+			var temp = modifier_scripts[name]
 			
 			if temp.has_method('modifier_parameters'):
 				tree.set_hide_root(true)
@@ -247,6 +250,7 @@ func transform_dialog(tree):
 func add_mesh_popup(key):
 	var dir = extra_modules['directory_utilites']
 	
+	modifier_scripts.clear()
 	original_mesh = null
 	
 	if dir.file_exists(get_plugins_folder() + '/Add Primitives/3d/gui/AddMeshPopup.xml'):
@@ -344,8 +348,7 @@ func update_mesh(key, settings, modifier, smooth_button = null, reverse_button =
 		if next_item == null:
 			break
 			
-	var script_temp = load(mesh_scripts[key]).new()
-	var mesh = script_temp.build_mesh(values, smooth, reverse)
+	var mesh = current_script.build_mesh(values, smooth, reverse)
 	#center geometry######
 	mesh.center_geometry()
 	######################
@@ -374,7 +377,7 @@ func modify_mesh(tree):
 		var script
 		
 		if item.is_checked(1):
-			script = load(modifier_scripts[item.get_text(0)]).new()
+			script = modifier_scripts[item.get_text(0)]
 			count += 1
 			
 			var par = get_tree_children(item)
