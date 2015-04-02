@@ -22,20 +22,12 @@ func build_mesh(params, smooth = false, reverse = false):
 	begin(4)
 	add_smooth_group(smooth)
 	
-	for idx in range(s - 1):
+	for idx in range(s):
 		p = Vector3(0,-cos(angle_inc) - h,0) * rd
-		add_tri([(circle[idx + 1] * r) + p, (circle[idx] * r) + p, -cc], null, reverse)
+		add_tri([(circle[idx + 1] * r) + p, (circle[idx] * r) + p, -cc], [], reverse)
 		p = Vector3(0,-cos(angle_inc * (c - 1)) + h,0) * rd
-		add_tri([cc, (circle[idx] * r) + p, (circle[idx + 1] * r + p)], null, reverse)
-	
-	p = Vector3(0,-cos(angle_inc) - h,0) * rd
-	add_tri([(circle[0] * r) + p, (circle[s - 1] * r) + p, -cc], null, reverse)
-	
-	p = Vector3(0,-cos(angle_inc * (c - 1)) + h,0) * rd
-	add_tri([cc, (circle[s - 1] * r) + p, (circle[0] * r) + p], null, reverse)
-	
-	p = Vector3(0,-cos(angle_inc) + h,0) * rd
-	
+		add_tri([cc, (circle[idx] * r) + p, (circle[idx + 1] * r + p)], [], reverse)
+		
 	for i in range((c - 2)/2):
 		r = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
 		var nr = Vector3(sin(angle_inc * (i + 2)), 0, sin(angle_inc * (i + 2)))    #Next Radius
@@ -47,16 +39,11 @@ func build_mesh(params, smooth = false, reverse = false):
 		if i == 0:
 			p = Vector3(0,-cos(angle_inc) - h,0) * rd
 		
-		for idx in range(s - 1):
+		for idx in range(s):
 			add_quad([(circle[idx+1] * r) + p,\
 			          (circle[idx+1] * nr) + np,\
 			          (circle[idx] * nr) + np,\
-			          (circle[idx] * r) + p], null, reverse)
-			
-		add_quad([(circle[0] * r) + p,\
-		          (circle[0] * nr) + np,\
-		          (circle[s - 1] * nr) + np,\
-		          (circle[s - 1] * r) + p], null, reverse)
+			          (circle[idx] * r) + p], [], reverse)
 		p = np
 		
 	for i in range(((c - 2)/2), c - 1):
@@ -69,17 +56,11 @@ func build_mesh(params, smooth = false, reverse = false):
 		
 		var np = Vector3(0, -cos(angle_inc * (i + 1)) + h, 0) * rd
 		
-		for idx in range(s - 1):
+		for idx in range(s):
 			add_quad([(circle[idx+1] * r) + p,\
 			          (circle[idx+1] * nr) + np,\
 			          (circle[idx] * nr) + np,\
-			          (circle[idx] * r) + p], null, reverse)
-			
-		add_quad([(circle[0] * r) + p,\
-		          (circle[0] * nr) + np,\
-		          (circle[s - 1] * nr) + np,\
-		          (circle[s - 1] * r) + p], null, reverse)
-		
+			          (circle[idx] * r) + p], [], reverse)
 		p = np
 	
 	generate_normals()

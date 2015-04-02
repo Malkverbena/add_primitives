@@ -19,37 +19,27 @@ func build_mesh(params, smooth = false, reverse = false):
 	begin(4)
 	add_smooth_group(smooth)
 	
-	for idx in range(s - 1):
+	for idx in range(s):
 		pos = Vector3(0,-cos(angle_inc),0) * r
-		add_tri([(circle[idx + 1] * rd) + pos, (circle[idx] * rd) + pos, cc], null, reverse)
+		add_tri([(circle[idx + 1] * rd) + pos, (circle[idx] * rd) + pos, cc], [], reverse)
 		
 		pos = Vector3(0,-cos(angle_inc * (c - 1)),0) * r
-		add_tri([ -cc, (circle[idx] * rd) + pos, (circle[idx + 1] * rd + pos)], null, reverse)
+		add_tri([ -cc, (circle[idx] * rd) + pos, (circle[idx + 1] * rd + pos)], [], reverse)
 	
 	pos = Vector3(0,-cos(angle_inc),0) * r
-	add_tri([(circle[0] * rd) + pos, (circle[s - 1] * rd) + pos, cc], null, reverse)
 	
-	pos = Vector3(0,-cos(angle_inc * (c - 1)),0) * r
-	add_tri([-cc, (circle[s - 1] * rd) + pos, (circle[0] * rd) + pos], null, reverse)
-	
-	pos = Vector3(0,-cos(angle_inc),0) * r
 	for i in range(c - 2):
 		rd = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
 		var next_radius = Vector3(sin(angle_inc * (i + 2)), 0, sin(angle_inc * (i + 2)))
 		
 		var next_pos = Vector3(0,-cos(angle_inc * (i + 2)), 0) * r
-		for idx in range(s - 1):
+		for idx in range(s):
 			
 			add_quad([(circle[idx + 1] * rd) + pos,\
 			          (circle[idx + 1] * next_radius) + next_pos,\
 			          (circle[idx] * next_radius) + next_pos,\
-			          (circle[idx] * rd) + pos], null, reverse)
+			          (circle[idx] * rd) + pos], [], reverse)
 			
-		add_quad([(circle[0] * rd) + pos,\
-		          (circle[0] * next_radius) + next_pos,\
-		          (circle[s - 1] * next_radius) + next_pos,\
-		          (circle[s - 1] * rd) + pos], null, reverse)
-		
 		pos = next_pos
 	
 	generate_normals()

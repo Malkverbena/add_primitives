@@ -23,30 +23,57 @@
 
 extends SurfaceTool
 
-func add_tri(vertex_array, uv_array = null, reverse = false):
-	if vertex_array.size() == 3:
-		var face_index = [0,1,2]
-		
-		if reverse:
-			face_index.invert()
-		
-		for idx in face_index:
-			if uv_array != null:
-				add_uv(uv_array[idx])
-			add_vertex(vertex_array[idx])
-			
-func add_quad(vertex_array, uv_array = null, reverse = false):
-	if vertex_array.size() == 4:
-		var face_index = [0,1,2,0,2,3]
-		
-		if reverse:
-			face_index.invert()
-		
-		for idx in face_index:
-			if uv_array != null:
-				add_uv(uv_array[idx])
-			add_vertex(vertex_array[idx])
+var parameters = []
 
+func add_tri(vertex = [], uv = [], reverse = false):
+	assert( vertex.size() == 3 )
+	
+	if reverse:
+		vertex.invert()
+		uv.invert()
+		
+	if uv.size() == 3:
+		add_uv(uv[0])
+		add_vertex(vertex[0])
+		add_uv(uv[1])
+		add_vertex(vertex[1])
+		add_uv(uv[2])
+		add_vertex(vertex[2])
+		
+	else:
+		add_vertex(vertex[0])
+		add_vertex(vertex[1])
+		add_vertex(vertex[2])
+		
+func add_quad(vertex = [], uv = [], reverse = false):
+	assert( vertex.size() == 4 )
+	
+	if reverse:
+		vertex.invert()
+		uv.invert()
+		
+	if uv.size() == 4:
+		add_uv(uv[0])
+		add_vertex(vertex[0])
+		add_uv(uv[1])
+		add_vertex(vertex[1])
+		add_uv(uv[2])
+		add_vertex(vertex[2])
+		add_uv(uv[2])
+		add_vertex(vertex[2])
+		add_uv(uv[3])
+		add_vertex(vertex[3])
+		add_uv(uv[0])
+		add_vertex(vertex[0])
+		
+	else:
+		add_vertex(vertex[0])
+		add_vertex(vertex[1])
+		add_vertex(vertex[2])
+		add_vertex(vertex[2])
+		add_vertex(vertex[3])
+		add_vertex(vertex[0])
+		
 static func build_plane_verts(start, end, offset = Vector3(0,0,0)):
 	var verts = []
 	verts.append(Vector3(0,0,0) + offset + end)
@@ -59,32 +86,31 @@ static func build_circle_verts(pos, segments, radius = 1, rotation = [], axis = 
 	var radians_circle = PI * 2
 	var _radius = Vector3(radius, 1, radius)
 	
-	var can_scale = true
-	
 	var circle_verts = []
+	
+	var m3 = Matrix3()
 	
 	for i in range(segments):
 		var angle = radians_circle * i/segments
 		var x = cos(angle)
 		var z = sin(angle)
 		
-		var vector = Vector3(x, 0, z)
-		
-		vector = vector * _radius
+		var vector = Vector3(x, 0, z) * Vector3(radius, 1, radius)
 		
 		if not rotation.empty():
-			assert( not axis.size() != rotation.size())
+			assert( axis.size() == rotation.size())
 			
 			for i in range(rotation.size()):
-				var m3 = Matrix3(axis[i], rotation[i])
-				vector = m3 * vector
+				vector = m3.rotated(axis[i], rotation[i]) * vector
 				
-		circle_verts.append(vector + pos)
+		circle_verts.push_back(vector + pos)
 		
+	circle_verts.push_back(circle_verts[0])
+	
 	return circle_verts
 	
 #Tree Item helper functions
-func _create_item(tree):
+static func _create_item(tree):
 	var root = tree.get_root()
 	if not root:
 		root = tree.create_item()
@@ -92,7 +118,7 @@ func _create_item(tree):
 	var item = tree.create_item(root)
 	return item
 	
-func add_tree_empty(tree):
+static func add_tree_empty(tree):
 	var tree_item = _create_item(tree)
 	
 	tree_item.set_collapsed(true)
@@ -108,6 +134,8 @@ func add_tree_range(tree, text, value, step = 1, _min = 1, _max = 50):
 	tree_item.set_range_config(1, _min, _max, step)
 	tree_item.set_editable(1, true)
 	
+	parameters.append(tree_item)
+	
 func add_tree_combo(tree, text, items, selected = 0):
 	var tree_item = _create_item(tree)
 	
@@ -116,6 +144,8 @@ func add_tree_combo(tree, text, items, selected = 0):
 	tree_item.set_text(1, items)
 	tree_item.set_range(1, selected)
 	tree_item.set_editable(1, true)
+	
+	parameters.append(tree_item)
 	
 func add_tree_check(tree, text, checked = false):
 	var tree_item = _create_item(tree)
@@ -126,6 +156,8 @@ func add_tree_check(tree, text, checked = false):
 	tree_item.set_text(1, 'On')
 	tree_item.set_editable(1, true)
 	
+	parameters.append(tree_item)
+	
 func add_tree_entry(tree, text, string = ''):
 	var tree_item = _create_item(tree)
 	
@@ -133,3 +165,8 @@ func add_tree_entry(tree, text, string = ''):
 	tree_item.set_cell_mode(1, 0)
 	tree_item.set_text(1, string)
 	tree_item.set_editable(1, true)
+	
+	parameters.append(tree_item)
+	
+func get_parameters():
+	return parameters

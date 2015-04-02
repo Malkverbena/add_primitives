@@ -152,12 +152,6 @@ func popup_signal(id):
 	if command == 'Reload Menu':
 		update_menu()
 		
-	elif command == 'Heightmap':
-		if get_spatial_node():
-			extra_modules['heightmap_module'].heightmap()
-		else:
-			message_popup("You need one Spatial node\nto add the heightmap!")
-		
 	else:
 		current_script = load(mesh_scripts[command]).new()
 		
@@ -189,9 +183,9 @@ func load_modifiers(tree):
 			var name = mod.substr(0, mod.find_last('.')).capitalize()
 			modifier_scripts[name] = load(path + '/' + mod).new()
 			
-			var temp = modifier_scripts[name]
+			var temp = weakref(modifier_scripts[name])
 			
-			if temp.has_method('modifier_parameters'):
+			if temp.get_ref().has_method('modifier_parameters'):
 				tree.set_hide_root(true)
 				tree.set_columns(2)
 				tree.set_column_min_width(0, 2)
@@ -201,13 +195,13 @@ func load_modifiers(tree):
 					root = tree.create_item()
 					
 				var item = tree.create_item(root)
-				item.set_text(0, temp.get_name())
+				item.set_text(0, temp.get_ref().get_name())
 				item.set_cell_mode(1, 1)
 				item.set_checked(1, false)
 				item.set_editable(1, true)
 				item.set_text(1, 'On')
 				
-				temp.modifier_parameters(item, tree)
+				temp.get_ref().modifier_parameters(item, tree)
 				
 func transform_dialog(tree):
 	tree.clear()
@@ -222,10 +216,18 @@ func transform_dialog(tree):
 	
 	var translate = tree.create_item(root)
 	translate.set_text(0, 'Translation')
+	translate.set_selectable(0, false)
+	translate.set_selectable(1, false)
+	
 	var rotate = tree.create_item(root)
 	rotate.set_text(0, 'Rotation')
+	rotate.set_selectable(0, false)
+	rotate.set_selectable(1, false)
+	
 	var scale = tree.create_item(root)
 	scale.set_text(0, 'Scale')
+	scale.set_selectable(0, false)
+	scale.set_selectable(1, false)
 	
 	var axis = ['x', 'y', 'z']
 	
@@ -290,9 +292,7 @@ func add_mesh_popup(key):
 		if not dialog.is_connected('item_edited', self, 'transform_mesh'):
 			dialog.connect('item_edited', self, 'transform_mesh', [dialog])
 		
-		var script = load(mesh_scripts[key]).new()
-		
-		script.mesh_parameters(settings)
+		current_script.mesh_parameters(settings)
 		
 		if not window.is_inside_tree():
 			add_child(window)
@@ -315,51 +315,45 @@ func get_tree_children(root):
 			
 	return items
 	
-func update_mesh(key, settings, modifier, smooth_button = null, reverse_button = null):
+func update_mesh(key, settings, modifier, smooth_button, reverse_button):
 	var values = []
-	var root = settings.get_root()
 	
 	var smooth = false
 	var reverse = false
 	
-	if smooth_button:
-		smooth = smooth_button.is_pressed()
+	smooth = smooth_button.is_pressed()
+	reverse = reverse_button.is_pressed()
 	
-	if reverse_button:
-		reverse = reverse_button.is_pressed()
+	var items = current_script.get_parameters()
 	
-	var next_item = root.get_children()
-	
-	while true:
-		var cell = next_item.get_cell_mode(1)
+	for i in items:
+		var cell = i.get_cell_mode(1)
+		
 		if cell == 0:
-			values.append(next_item.get_text(1))
+			values.append(i.get_text(1))
 		elif cell == 1:
-			values.append(next_item.is_checked(1))
+			values.append(i.is_checked(1))
 		elif cell == 2:
-			if next_item.get_text(1):
-				var text = next_item.get_text(1)
+			if i.get_text(1):
+				var text = i.get_text(1)
 				text = text.split(',')
-				values.append(text[next_item.get_range(1)])
+				values.append(text[i.get_range(1)])
 			else:
-				values.append(next_item.get_range(1))
+				values.append(i.get_range(1))
 				
-		next_item = next_item.get_next()
-		if next_item == null:
-			break
-			
 	var mesh = current_script.build_mesh(values, smooth, reverse)
 	#center geometry######
 	mesh.center_geometry()
 	######################
 	
-	if mesh.get_type() == 'Mesh':
-		mesh_instance.set_mesh(mesh)
-		
-		original_mesh = mesh
-		
-		modify_mesh(modifier)
-		
+	assert( mesh.get_type() == 'Mesh' )
+	
+	mesh_instance.set_mesh(mesh)
+	
+	original_mesh = mesh
+	
+	modify_mesh(modifier)
+	
 func modify_mesh(tree):
 	var root = tree.get_root()
 	var item = root.get_children()
