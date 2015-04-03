@@ -61,7 +61,9 @@ class AddPrimitives:
 	extends HBoxContainer
 	
 	var start
+	
 	var hbox
+	var window
 	
 	var node
 	var mesh_instance
@@ -100,25 +102,24 @@ class AddPrimitives:
 		
 		var path = get_plugins_folder() + '/Add Primitives'
 		
-		if dir.dir_exists(path + '/meshes'):
-			var scripts = dir.get_file_list(path + '/meshes')
-			scripts = dir.get_scripts_from_list(scripts)
-						
-			for name in scripts:
-				var key = 'Add ' + name.substr(0, name.find_last('.')).capitalize()
-				mesh_scripts[key] = path + '/meshes/' + name
-				
-				var temp_script = load(mesh_scripts[key]).new()
-				
-				if temp_script.has_method('container'):
-					var container = temp_script.container()
-					if submenus.has(container):
-						submenus[container].append(key)
-					else:
-						submenus[container] = [key]
+		var scripts = dir.get_file_list(path + '/meshes')
+		scripts = dir.get_scripts_from_list(scripts)
+		
+		for name in scripts:
+			var key = 'Add ' + name.substr(0, name.find_last('.')).capitalize()
+			mesh_scripts[key] = path + '/meshes/' + name
+			
+			var temp_script = load(mesh_scripts[key]).new()
+			
+			if temp_script.has_method('container'):
+				var container = temp_script.container()
+				if submenus.has(container):
+					submenus[container].append(key)
 				else:
-					popup_menu.add_item(key)
-					
+					submenus[container] = [key]
+			else:
+				popup_menu.add_item(key)
+				
 		if submenus.size() != 0:
 			popup_menu.add_separator()
 		
@@ -257,53 +258,46 @@ class AddPrimitives:
 		modifier_scripts.clear()
 		original_mesh = null
 		
-		if dir.file_exists(get_plugins_folder() + '/Add Primitives/gui/AddMeshPopup.xml'):
-			var window = load(get_plugins_folder() + '/Add Primitives/gui/AddMeshPopup.xml').instance()
-			window.set_title(key)
+		window.set_title(key)
+		
+		var settings = window.get_node('tab/Parameters/Settings')
+		var modifier = window.get_node('tab/Modifiers/Modifier')
+		
+		settings.clear()
+		settings.set_hide_root(true)
+		settings.set_columns(2)
+		settings.set_column_title(0, 'Parameter')
+		settings.set_column_title(1, 'Value')
+		settings.set_column_titles_visible(true)
+		settings.set_column_min_width(0, 2)
+		
+		var smooth_button = window.get_node('tab/Parameters/Smooth')
+		var reverse_button = window.get_node('tab/Parameters/Reverse')
+		
+		if not settings.is_connected('item_edited', self, 'update_mesh'):
+			settings.connect('item_edited', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
+		if not smooth_button.is_connected('pressed', self, 'update_mesh'):
+			smooth_button.connect('pressed', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
+		if not reverse_button.is_connected('pressed', self, 'update_mesh'):
+			reverse_button.connect('pressed', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
+		
+		load_modifiers(modifier)
+		
+		if not modifier.is_connected("item_edited", self, 'modify_mesh'):
+			modifier.connect("item_edited", self, 'modify_mesh', [modifier])
 			
-			var settings = window.get_node('tab/Parameters/Settings')
-			var modifier = window.get_node('tab/Modifiers/Modifier')
-			settings.clear()
-			settings.set_hide_root(true)
-			settings.set_columns(2)
-			settings.set_column_title(0, 'Parameter')
-			settings.set_column_title(1, 'Value')
-			settings.set_column_titles_visible(true)
-			
-			settings.set_column_min_width(0, 2)
-			
-			var smooth_button = window.get_node('tab/Parameters/Smooth')
-			var reverse_button = window.get_node('tab/Parameters/Reverse')
-			
-			if not settings.is_connected('item_edited', self, 'update_mesh'):
-				settings.connect('item_edited', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
-			if not smooth_button.is_connected('pressed', self, 'update_mesh'):
-				smooth_button.connect('pressed', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
-			if not reverse_button.is_connected('pressed', self, 'update_mesh'):
-				reverse_button.connect('pressed', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
-			
-			load_modifiers(modifier)
-			
-			if not modifier.is_connected("item_edited", self, 'modify_mesh'):
-				modifier.connect("item_edited", self, 'modify_mesh', [modifier])
-				
-			var dialog = window.get_node('tab/Transform/Dialog')
-			
-			transform_dialog(dialog)
-			
-			if not dialog.is_connected('item_edited', self, 'transform_mesh'):
-				dialog.connect('item_edited', self, 'transform_mesh', [dialog])
-			
-			current_script.mesh_parameters(settings)
-			
-			if not window.is_inside_tree():
-				add_child(window)
-			else:
-				window.free()
-				add_child(window)
-				
-			window.popup_centered(window.get_size())
-			
+		var dialog = window.get_node('tab/Transform/Dialog')
+		
+		transform_dialog(dialog)
+		
+		if not dialog.is_connected('item_edited', self, 'transform_mesh'):
+			dialog.connect('item_edited', self, 'transform_mesh', [dialog])
+		
+		current_script.mesh_parameters(settings)
+		
+		window.show()
+		window.popup_centered(window.get_size())
+		
 	func get_tree_children(root):
 		var items = []
 		
@@ -320,11 +314,8 @@ class AddPrimitives:
 	func update_mesh(key, settings, modifier, smooth_button, reverse_button):
 		var values = []
 		
-		var smooth = false
-		var reverse = false
-		
-		smooth = smooth_button.is_pressed()
-		reverse = reverse_button.is_pressed()
+		var smooth = smooth_button.is_pressed()
+		var reverse = reverse_button.is_pressed()
 		
 		var items = current_script.get_parameters()
 		
@@ -448,6 +439,7 @@ class AddPrimitives:
 		mesh_instance.set_rotation(transform['Rotation']/rad2deg(1))
 		mesh_instance.set_scale(transform['Scale'])
 		
+		
 	func add_mesh_instance(mesh):
 		mesh_instance = MeshInstance.new()
 		#center geometry######
@@ -463,7 +455,14 @@ class AddPrimitives:
 			
 			node.add_child(mesh_instance)
 			mesh_instance.set_owner(root)
-		
+			
+	func _notification(what):
+		if what == NOTIFICATION_ENTER_TREE:
+			window = load(get_plugins_folder() + '/Add Primitives/gui/AddMeshPopup.xml').instance()
+			
+			add_child(window)
+			window.hide()
+			
 	func _init(editor_plugin):
 		extra_modules['directory_utilites'] = DirectoryUtilities.new()
 		
