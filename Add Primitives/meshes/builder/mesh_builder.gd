@@ -25,6 +25,8 @@ extends SurfaceTool
 
 var parameters = []
 
+const DEFAULT = 1
+
 func add_tri(vertex = [], uv = [], reverse = false):
 	assert( vertex.size() == 3 )
 	

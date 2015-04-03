@@ -1,7 +1,7 @@
 extends 'builder/mesh_builder.gd'
 	
 func build_mesh(params, smooth = false, reverse = false):
-	if params == 'default':
+	if params == DEFAULT:
 		params = [1, 16, 8]
 		
 	var r = params[0]    #Radius
@@ -51,4 +51,4 @@ func build_mesh(params, smooth = false, reverse = false):
 func mesh_parameters(settings):
 		add_tree_range(settings, 'Radius', 1, 0.1, 0.1, 100)
 		add_tree_range(settings, 'Segments', 16, 1, 3)
-		add_tree_range(settings, 'Cuts', 8, 1, 3)
+		add_tree_range(settings, 'Rings', 8, 1, 3)

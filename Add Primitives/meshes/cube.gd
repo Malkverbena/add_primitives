@@ -1,7 +1,7 @@
 extends "builder/mesh_builder.gd"
 	
 func build_mesh(params, smooth = false, reverse = false):
-	if params == 'default':
+	if params == DEFAULT:
 		params = [2, 2, 2]
 		
 	var w = params[0]    #Width
