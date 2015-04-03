@@ -177,6 +177,8 @@ class AddPrimitives:
 	func load_modifiers(tree):
 		var dir = extra_modules['directory_utilites']
 		var path = get_plugins_folder() + '/Add Primitives/meshes/modifiers'
+
+		tree.clear()
 	
 		if dir.dir_exists(path):
 			var modifiers = dir.get_file_list(path)
