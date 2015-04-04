@@ -10,7 +10,7 @@ func modifier(params, aabb, mesh):
 	var h
 	var c
 	
-	if axis == 'x':
+	if axis == 'x' or axis == 'z':
 		h = aabb.get_endpoint(7).y - aabb.get_endpoint(0).y
 	elif axis == 'y':
 		h = aabb.get_endpoint(7).x - aabb.get_endpoint(0).x
@@ -48,11 +48,22 @@ func modifier(params, aabb, mesh):
 				
 				continue
 				
+			elif axis == 'z':
+				vert_1.z += val * (vert_1.y/c)
+				vert_2.z += val * (vert_2.y/c)
+				vert_3.z += val * (vert_3.y/c)
+				
+				set_vertex(0 + (i * 3), vert_1)
+				set_vertex(1 + (i * 3), vert_2)
+				set_vertex(2 + (i * 3), vert_3)
+				
+				continue
+				
 		commit_to_surface(mesh_temp)
 		clear()
 		
 	return mesh_temp
 	
 func modifier_parameters(item, tree):
-	add_tree_combo(item, tree, 'Shear Axis', 'x,y')
+	add_tree_combo(item, tree, 'Shear Axis', 'x,y,z')
 	add_tree_range(item, tree, 'Shear', 0, 0.01, -50)
