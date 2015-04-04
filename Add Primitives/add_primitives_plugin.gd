@@ -71,6 +71,9 @@ class AddMeshPopup:
 	var reverse_button
 	
 	var modifiers
+	var tools
+	var add_modifier
+	
 	var transform
 	
 	func get_dialogs():
@@ -80,7 +83,125 @@ class AddMeshPopup:
 			dialogs.append(i)
 			
 		return dialogs
-	
+		
+	func get_tools():
+		var t = []
+		
+		for i in tools.get_children():
+			t.append(i)
+			
+		return t
+		
+	func tree_move_to_bottom(item):
+		var next = item.get_next()
+		
+		if next != null and next.get_parent() == item.get_parent():
+			item.move_to_bottom()
+			
+	func tree_move_to_top(item):
+		var prev = item.get_prev()
+		
+		if prev != null and prev.get_parent() == item.get_parent():
+			item.move_to_top()
+			
+	func create_modifier(script):
+		var root = modifiers.get_root()
+		
+		var item = modifiers.create_item(root)
+		
+		item.set_cell_mode(0, 0)
+		item.set_text(0, script.get_name())
+		item.set_editable(0, true)
+		item.set_metadata('modifier', script.get_name())
+		
+		item.set_cell_mode(1, 1)
+		item.set_checked(1, true)
+		item.set_text(1, 'On')
+		item.set_editable(1, true)
+		item.set_selectable(1, false)
+		
+		script.modifier_parameters(item, modifiers)
+		
+	func update(key, script, modifiers_scripts):
+		window.set_title(key)
+		
+		parameters.clear()
+		parameters.set_hide_root(true)
+		parameters.set_columns(2)
+		parameters.set_column_title(0, 'Parameter')
+		parameters.set_column_title(1, 'Value')
+		parameters.set_column_titles_visible(true)
+		parameters.set_column_min_width(0, 2)
+		
+		script.mesh_parameters(parameters)
+		
+		smooth_button.set_pressed(false)
+		reverse_button.set_pressed(false)
+		
+		modifiers.clear()
+		add_modifier.get_popup().clear()
+		
+		modifiers.create_item()
+		modifiers.set_hide_root(true)
+		modifiers.set_columns(2)
+		modifiers.set_column_min_width(0, 2)
+		
+		for name in modifiers_scripts:
+			add_modifier.get_popup().add_item(name)
+			
+		for t in tools.get_children():
+			t.set_button_icon(get_icon(t.get_name(), 'EditorIcons'))
+			
+			if not t.is_type('MenuButton'):
+				t.set_disabled(true)
+				
+		transform.clear()
+		transform.set_hide_root(true)
+		transform.set_columns(2)
+		transform.set_column_min_width(0, 3)
+		transform.set_column_titles_visible(true)
+		transform.set_column_title(0, 'Axis')
+		transform.set_column_title(1, 'Value')
+		
+		var root = transform.create_item()
+		
+		var translate = transform.create_item(root)
+		translate.set_text(0, 'Translation')
+		translate.set_selectable(0, false)
+		translate.set_selectable(1, false)
+		
+		var rotate = transform.create_item(root)
+		rotate.set_text(0, 'Rotation')
+		rotate.set_selectable(0, false)
+		rotate.set_selectable(1, false)
+		
+		var scale = transform.create_item(root)
+		scale.set_text(0, 'Scale')
+		scale.set_selectable(0, false)
+		scale.set_selectable(1, false)
+		
+		var axis = ['x', 'y', 'z']
+		
+		var item = root.get_children()
+		
+		while true:
+			for a in axis:
+				var i = transform.create_item(item)
+				i.set_text(0, a)
+				i.set_icon(0, get_icon('Real', 'EditorIcons'))
+				i.set_selectable(0, false)
+				i.set_cell_mode(1, 2)
+				if item.get_text(0) != 'Scale':
+					i.set_range(1, 0)
+				else:
+					i.set_range(1, 1)
+				i.set_range_config(1, -100, 100, 0.1)
+				i.set_editable(1, true)
+			item = item.get_next()
+			
+			if not item:
+				break
+				
 	func _init():
 		window = preload('gui/AddMeshPopup.xml').instance()
 		
@@ -89,6 +210,9 @@ class AddMeshPopup:
 		reverse_button = window.get_node('PopupPanel/Parameters/Reverse')
 		
 		modifiers = window.get_node('PopupPanel/Modifiers/Modifier')
+		tools = window.get_node("PopupPanel/Modifiers/Tools")
+		add_modifier = window.get_node("PopupPanel/Modifiers/Tools/Add")
+		
 		transform = window.get_node('PopupPanel/Transform/Dialog')
 		
 		menu_button = window.get_node('MenuButton')
@@ -212,87 +336,7 @@ class AddPrimitives:
 				
 				if mesh != null:
 					add_mesh_instance(mesh)
-				
-	func load_modifiers(tree):
-		var dir = extra_modules['directory_utilites']
-		var path = get_plugins_folder() + '/Add Primitives/meshes/modifiers'
-
-		tree.clear()
-	
-		if dir.dir_exists(path):
-			var modifiers = dir.get_file_list(path)
-			modifiers = dir.get_scripts_from_list(modifiers)
-			
-			for mod in modifiers:
-				var name = mod.substr(0, mod.find_last('.')).capitalize()
-				modifier_scripts[name] = load(path + '/' + mod).new()
-				
-				var temp = weakref(modifier_scripts[name])
-				
-				if temp.get_ref().has_method('modifier_parameters'):
-					tree.set_hide_root(true)
-					tree.set_columns(2)
-					tree.set_column_min_width(0, 2)
 					
-					var root = tree.get_root()
-					if not root:
-						root = tree.create_item()
-						
-					var item = tree.create_item(root)
-					item.set_text(0, temp.get_ref().get_name())
-					item.set_cell_mode(1, 1)
-					item.set_checked(1, false)
-					item.set_editable(1, true)
-					item.set_text(1, 'On')
-					
-					temp.get_ref().modifier_parameters(item, tree)
-					
-	func transform_dialog(tree):
-		tree.clear()
-		tree.set_hide_root(true)
-		tree.set_columns(2)
-		tree.set_column_min_width(0, 3)
-		tree.set_column_titles_visible(true)
-		tree.set_column_title(0, 'Axis')
-		tree.set_column_title(1, 'Value')
-		
-		var root = tree.create_item()
-		
-		var translate = tree.create_item(root)
-		translate.set_text(0, 'Translation')
-		translate.set_selectable(0, false)
-		translate.set_selectable(1, false)
-		
-		var rotate = tree.create_item(root)
-		rotate.set_text(0, 'Rotation')
-		rotate.set_selectable(0, false)
-		rotate.set_selectable(1, false)
-		
-		var scale = tree.create_item(root)
-		scale.set_text(0, 'Scale')
-		scale.set_selectable(0, false)
-		scale.set_selectable(1, false)
-		
-		var axis = ['x', 'y', 'z']
-		
-		var item = root.get_children()
-		
-		while true:
-			for a in axis:
-				var i = tree.create_item(item)
-				i.set_text(0, a)
-				i.set_cell_mode(1, 2)
-				if item.get_text(0) != 'Scale':
-					i.set_range(1, 0)
-				else:
-					i.set_range(1, 1)
-				i.set_range_config(1, -100, 100, 0.1)
-				i.set_editable(1, true)
-			item = item.get_next()
-			
-			if not item:
-				break
-				
 	func mesh_popup(key):
 		set_current_dialog(0)
 		
@@ -306,18 +350,8 @@ class AddPrimitives:
 		var settings = add_mesh_popup.parameters
 		var modifier = add_mesh_popup.modifiers
 		
-		settings.clear()
-		settings.set_hide_root(true)
-		settings.set_columns(2)
-		settings.set_column_title(0, 'Parameter')
-		settings.set_column_title(1, 'Value')
-		settings.set_column_titles_visible(true)
-		settings.set_column_min_width(0, 2)
-		
 		var smooth_button = add_mesh_popup.smooth_button
-		smooth_button.set_pressed(false)
 		var reverse_button = add_mesh_popup.reverse_button
-		smooth_button.set_pressed(false)
 		
 		if not settings.is_connected('item_edited', self, 'update_mesh'):
 			settings.connect('item_edited', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
@@ -325,24 +359,84 @@ class AddPrimitives:
 			smooth_button.connect('pressed', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
 		if not reverse_button.is_connected('pressed', self, 'update_mesh'):
 			reverse_button.connect('pressed', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
-		
-		load_modifiers(modifier)
-		
-		if not modifier.is_connected("item_edited", self, 'modify_mesh'):
-			modifier.connect("item_edited", self, 'modify_mesh', [modifier])
 			
-		var dialog = add_mesh_popup.transform
+		var path = get_plugins_folder() + '/Add Primitives/meshes/modifiers'
+
+		if dir.dir_exists(path):
+			var modifiers = dir.get_file_list(path)
+			modifiers = dir.get_scripts_from_list(modifiers)
+			
+			for mod in modifiers:
+				var name = mod.substr(0, mod.find_last('.')).capitalize()
+				modifier_scripts[name] = load(path + '/' + mod).new()
+				
+		if not modifier.is_connected("item_edited", self, 'modify_mesh'):
+			modifier.connect("item_edited", self, 'modify_mesh')
+		if not modifier.is_connected("cell_selected", self, 'item_selected'):
+			modifier.connect("cell_selected", self, 'item_selected')
+			
+		for t in add_mesh_popup.get_tools():
+			if t.is_type('ToolButton') and not t.is_connected('pressed', self, 'modifier_tools'):
+				t.connect('pressed', self, 'modifier_tools', [t])
+				
+			elif t.is_type('MenuButton') and not t.get_popup().is_connected('item_pressed', self, 'add_modifier'):
+				t.get_popup().connect('item_pressed', self, 'add_modifier')
+				
+		add_mesh_popup.tools.get_node('Add').set_tooltip('Add New Modifier')
+		add_mesh_popup.tools.get_node('Remove').set_tooltip('Remove Modifier')
+		add_mesh_popup.tools.get_node('MoveUp').set_tooltip('Move to Top')
+		add_mesh_popup.tools.get_node('MoveDown').set_tooltip('Move to Bottom')
 		
-		transform_dialog(dialog)
+		var dialog = add_mesh_popup.transform
 		
 		if not dialog.is_connected('item_edited', self, 'transform_mesh'):
 			dialog.connect('item_edited', self, 'transform_mesh', [dialog])
-		
-		current_script.mesh_parameters(settings)
+			
+		add_mesh_popup.update(key, current_script, modifier_scripts)
 		
 		add_mesh_popup.show()
 		add_mesh_popup.window.popup_centered()
 		
+	func add_modifier(id):
+		var popup_menu = add_mesh_popup.tools.get_node('Add').get_popup()
+		var mod = popup_menu.get_item_text(popup_menu.get_item_index(id))
+		
+		if mod in modifier_scripts:
+			add_mesh_popup.create_modifier(modifier_scripts[mod])
+			
+	func modifier_tools(button):
+		var modifiers = add_mesh_popup.modifiers
+		
+		var sel = modifiers.get_selected()
+		
+		if button.get_name() == 'Remove':
+			if sel.get_parent() == modifiers.get_root():
+				modifiers.get_root().remove_child(sel)
+				
+		elif button.get_name() == 'MoveUp':
+			add_mesh_popup.tree_move_to_top(sel)
+			
+		elif button.get_name() == 'MoveDown':
+			add_mesh_popup.tree_move_to_bottom(sel)
+			
+		button.release_focus()
+		modify_mesh()
+		
+	func item_selected():
+		var tree = add_mesh_popup.modifiers
+		
+		var item = tree.get_selected()
+		
+		if item.get_parent() == tree.get_root():
+			add_mesh_popup.tools.get_node('Remove').set_disabled(false)
+			add_mesh_popup.tools.get_node('MoveUp').set_disabled(false)
+			add_mesh_popup.tools.get_node('MoveDown').set_disabled(false)
+			
+		else:
+			add_mesh_popup.tools.get_node('Remove').set_disabled(true)
+			add_mesh_popup.tools.get_node('MoveUp').set_disabled(true)
+			add_mesh_popup.tools.get_node('MoveDown').set_disabled(true)
+			
 	func get_tree_children(root):
 		var items = []
 		
@@ -393,9 +487,11 @@ class AddPrimitives:
 		
 		original_mesh = mesh
 		
-		modify_mesh(modifier)
+		modify_mesh()
 		
-	func modify_mesh(tree):
+	func modify_mesh():
+		var tree = add_mesh_popup.modifiers
+		
 		var root = tree.get_root()
 		var item = root.get_children()
 		
@@ -406,13 +502,15 @@ class AddPrimitives:
 		if original_mesh == null:
 			original_mesh = mesh_instance.get_mesh()
 			
+		mesh_instance.set_mesh(original_mesh)
+			
 		while true:
 			var values = []
 			
 			var script
 			
 			if item.is_checked(1):
-				script = modifier_scripts[item.get_text(0)]
+				script = modifier_scripts[item.get_metadata(0)]
 				count += 1
 				
 				var par = get_tree_children(item)
@@ -436,7 +534,6 @@ class AddPrimitives:
 				assert( mesh_instance.get_mesh() )
 				
 				if count == 1:
-					mesh_instance.set_mesh(original_mesh)
 					mesh_instance.set_mesh(script.modifier(values, mesh_instance.get_aabb(), original_mesh))
 					
 				elif count > 1:
@@ -567,7 +664,7 @@ func make_visible(visible):
 	else:
 		add_primitives.hide()
 		add_primitives.edit(null)
-
+		
 func _init():
 	print("ADD PRIMITIVES INIT")
 	

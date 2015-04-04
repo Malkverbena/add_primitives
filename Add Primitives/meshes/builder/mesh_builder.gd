@@ -131,6 +131,13 @@ func add_tree_range(tree, text, value, step = 1, _min = 1, _max = 50):
 	var tree_item = _create_item(tree)
 	
 	tree_item.set_text(0, text)
+	
+	if typeof(step) == TYPE_INT:
+		tree_item.set_icon(0, tree.get_icon('Integer', 'EditorIcons'))
+	else:
+		tree_item.set_icon(0, tree.get_icon('Real', 'EditorIcons'))
+	tree_item.set_selectable(0, false)
+	
 	tree_item.set_cell_mode(1, 2)
 	tree_item.set_range(1, value)
 	tree_item.set_range_config(1, _min, _max, step)
@@ -142,6 +149,8 @@ func add_tree_combo(tree, text, items, selected = 0):
 	var tree_item = _create_item(tree)
 	
 	tree_item.set_text(0, text)
+	tree_item.set_icon(0, tree.get_icon('Enum', 'EditorIcons'))
+	tree_item.set_selectable(0, false)
 	tree_item.set_cell_mode(1, 2)
 	tree_item.set_text(1, items)
 	tree_item.set_range(1, selected)
@@ -153,6 +162,8 @@ func add_tree_check(tree, text, checked = false):
 	var tree_item = _create_item(tree)
 	
 	tree_item.set_text(0, text)
+	tree_item.set_icon(0, tree.get_icon('Bool', 'EditorIcons'))
+	tree_item.set_selectable(0, false)
 	tree_item.set_cell_mode(1, 1)
 	tree_item.set_checked(1, checked)
 	tree_item.set_text(1, 'On')
@@ -164,6 +175,8 @@ func add_tree_entry(tree, text, string = ''):
 	var tree_item = _create_item(tree)
 	
 	tree_item.set_text(0, text)
+	tree_item.set_icon(0, tree.get_icon('String', 'EditorIcons'))
+	tree_item.set_selectable(0, false)
 	tree_item.set_cell_mode(1, 0)
 	tree_item.set_text(1, string)
 	tree_item.set_editable(1, true)
