@@ -57,13 +57,55 @@ class DirectoryUtilities:
 		
 #End DirectoryUtilities
 
+class AddMeshPopup:
+	extends Control
+	
+	var window
+	
+	var menu_button
+	var options
+	var popup_panel
+	
+	var parameters
+	var smooth_button
+	var reverse_button
+	
+	var modifiers
+	var transform
+	
+	func get_dialogs():
+		var dialogs = []
+		
+		for i in popup_panel.get_children():
+			dialogs.append(i)
+			
+		return dialogs
+	
+	func _init():
+		window = preload('gui/AddMeshPopup.xml').instance()
+		
+		parameters = window.get_node('PopupPanel/Parameters/Settings')
+		smooth_button = window.get_node('PopupPanel/Parameters/Smooth')
+		reverse_button = window.get_node('PopupPanel/Parameters/Reverse')
+		
+		modifiers = window.get_node('PopupPanel/Modifiers/Modifier')
+		transform = window.get_node('PopupPanel/Transform/Dialog')
+		
+		menu_button = window.get_node('MenuButton')
+		options = menu_button.get_popup()
+		popup_panel = window.get_node('PopupPanel')
+		
+		add_child(window)
+		window.hide()
+		
 class AddPrimitives:
 	extends HBoxContainer
 	
 	var start
+	var index = 0
 	
 	var hbox
-	var window
+	var add_mesh_popup
 	
 	var node
 	var mesh_instance
@@ -159,7 +201,7 @@ class AddPrimitives:
 					mesh = current_script.build_mesh(1)
 					print('built in: ', OS.get_ticks_msec() - start, ' milisecs')
 					print('====================================================')
-					add_mesh_popup(command)
+					mesh_popup(command)
 				else:
 					start = OS.get_ticks_msec()
 					mesh = current_script.build_mesh()
@@ -170,9 +212,6 @@ class AddPrimitives:
 				
 				if mesh != null:
 					add_mesh_instance(mesh)
-					
-			else:
-				message_popup("You need one Spatial node\nto add the mesh!")
 				
 	func load_modifiers(tree):
 		var dir = extra_modules['directory_utilites']
@@ -254,16 +293,18 @@ class AddPrimitives:
 			if not item:
 				break
 				
-	func add_mesh_popup(key):
+	func mesh_popup(key):
+		set_current_dialog(0)
+		
 		var dir = extra_modules['directory_utilites']
 		
 		modifier_scripts.clear()
 		original_mesh = null
 		
-		window.set_title(key)
+		add_mesh_popup.window.set_title(key)
 		
-		var settings = window.get_node('tab/Parameters/Settings')
-		var modifier = window.get_node('tab/Modifiers/Modifier')
+		var settings = add_mesh_popup.parameters
+		var modifier = add_mesh_popup.modifiers
 		
 		settings.clear()
 		settings.set_hide_root(true)
@@ -273,8 +314,10 @@ class AddPrimitives:
 		settings.set_column_titles_visible(true)
 		settings.set_column_min_width(0, 2)
 		
-		var smooth_button = window.get_node('tab/Parameters/Smooth')
-		var reverse_button = window.get_node('tab/Parameters/Reverse')
+		var smooth_button = add_mesh_popup.smooth_button
+		smooth_button.set_pressed(false)
+		var reverse_button = add_mesh_popup.reverse_button
+		smooth_button.set_pressed(false)
 		
 		if not settings.is_connected('item_edited', self, 'update_mesh'):
 			settings.connect('item_edited', self, 'update_mesh', [key, settings, modifier, smooth_button, reverse_button])
@@ -288,7 +331,7 @@ class AddPrimitives:
 		if not modifier.is_connected("item_edited", self, 'modify_mesh'):
 			modifier.connect("item_edited", self, 'modify_mesh', [modifier])
 			
-		var dialog = window.get_node('tab/Transform/Dialog')
+		var dialog = add_mesh_popup.transform
 		
 		transform_dialog(dialog)
 		
@@ -297,8 +340,8 @@ class AddPrimitives:
 		
 		current_script.mesh_parameters(settings)
 		
-		window.show()
-		window.popup_centered(window.get_size())
+		add_mesh_popup.show()
+		add_mesh_popup.window.popup_centered()
 		
 	func get_tree_children(root):
 		var items = []
@@ -458,12 +501,34 @@ class AddPrimitives:
 			node.add_child(mesh_instance)
 			mesh_instance.set_owner(root)
 			
+	func set_current_dialog(id):
+		var popup_panel = add_mesh_popup.popup_panel
+		var options = add_mesh_popup.options
+		
+		if id == index:
+			pass
+			
+		else:
+			popup_panel.get_child(index).hide()
+			popup_panel.get_child(id).show()
+			
+			add_mesh_popup.menu_button.set_text(options.get_item_text(options.get_item_index(id)))
+			
+			index = id
+			
 	func _notification(what):
 		if what == NOTIFICATION_ENTER_TREE:
-			window = load(get_plugins_folder() + '/Add Primitives/gui/AddMeshPopup.xml').instance()
+			add_mesh_popup = AddMeshPopup.new()
 			
-			add_child(window)
-			window.hide()
+			for i in add_mesh_popup.get_dialogs():
+				add_mesh_popup.options.add_item(i.get_name())
+				
+			add_mesh_popup.options.connect('item_pressed', self, 'set_current_dialog')
+			
+			add_mesh_popup.menu_button.set_text(add_mesh_popup.options.get_item_text(add_mesh_popup.options.get_item_index(0)))
+			
+			add_child(add_mesh_popup)
+			add_mesh_popup.hide()
 			
 	func _init(editor_plugin):
 		extra_modules['directory_utilites'] = DirectoryUtilities.new()

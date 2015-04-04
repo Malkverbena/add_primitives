@@ -27,18 +27,7 @@
 				<string> "popup/exclusive" </string>
 				<string> "window/title" </string>
 				<string> "__meta__" </string>
-				<string> "tab" </string>
-				<string> "TabContainer" </string>
-				<string> "tab_align" </string>
-				<string> "tabs_visible" </string>
-				<string> "Parameters" </string>
-				<string> "Container" </string>
-				<string> "anchor/right" </string>
-				<string> "anchor/bottom" </string>
-				<string> "Settings" </string>
-				<string> "Tree" </string>
-				<string> "Smooth" </string>
-				<string> "CheckBox" </string>
+				<string> "MenuButton" </string>
 				<string> "disabled" </string>
 				<string> "toggle_mode" </string>
 				<string> "is_pressed" </string>
@@ -48,8 +37,19 @@
 				<string> "flat" </string>
 				<string> "clip_text" </string>
 				<string> "align" </string>
+				<string> "items" </string>
+				<string> "PopupPanel" </string>
+				<string> "PanelContainer" </string>
+				<string> "Parameters" </string>
+				<string> "Container" </string>
+				<string> "Settings" </string>
+				<string> "Tree" </string>
+				<string> "Smooth" </string>
+				<string> "CheckBox" </string>
 				<string> "Reverse" </string>
 				<string> "Modifiers" </string>
+				<string> "anchor/right" </string>
+				<string> "anchor/bottom" </string>
 				<string> "Modifier" </string>
 				<string> "Transform" </string>
 				<string> "Dialog" </string>
@@ -59,9 +59,9 @@
 			<string> "conn_count" </string>
 			<int> 0 </int>
 			<string> "node_count" </string>
-			<int> 10 </int>
+			<int> 11 </int>
 			<string> "variants" </string>
-			<array  len="29" shared="false">
+			<array  len="37" shared="false">
 				<node_path> "" </node_path>
 				<bool> True </bool>
 				<real> 1 </real>
@@ -205,19 +205,34 @@
 					<string> "2D" </string>
 				</dictionary>
 				<real> 5 </real>
+				<real> 21 </real>
+				<real> 26 </real>
+				<resource name=""></resource>				<array  len="0" shared="false">
+				</array>
+				<real> 30 </real>
 				<real> 210 </real>
 				<real> 4 </real>
-				<real> 31 </real>
+				<real> 8 </real>
+				<real> 201 </real>
+				<real> 176 </real>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
 				<real> -1 </real>
 				<real> 196 </real>
 				<real> 119 </real>
 				<real> 124 </real>
 				<real> 145 </real>
 				<string> "Smooth" </string>
-				<resource name=""></resource>				<int> 0 </int>
+				<int> 0 </int>
 				<real> 149 </real>
 				<real> 170 </real>
 				<string> "Reverse Normals" </string>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
 				<real> 169 </real>
 				<dictionary  shared="false">
 					<string> "_editor_collapsed" </string>
@@ -225,7 +240,7 @@
 				</dictionary>
 			</array>
 			<string> "nodes" </string>
-			<int_array  len="490"> 				-1, -1, 1, 0, -1, 21, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 5, 9, 6, 10, 7, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 20, 8, 21, 10, 22, 11, 0, 0, 0, 24, 23, -1, 20, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 12, 8, 12, 9, 13, 10, 13, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 25, 3, 26, 1, 0, 1, 0, 28, 27, -1, 20, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 29, 3, 30, 3, 7, 14, 8, 15, 9, 14, 10, 14, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 0, 2, 0, 32, 31, -1, 18, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 2, 8, 16, 9, 17, 10, 18, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 0, 2, 0, 34, 33, -1, 27, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 2, 8, 19, 9, 17, 10, 20, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 35, 8, 36, 1, 37, 8, 38, 8, 39, 21, 40, 22, 41, 8, 42, 8, 43, 23, 0, 2, 0, 34, 44, -1, 27, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 2, 8, 24, 9, 17, 10, 25, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 35, 8, 36, 1, 37, 8, 38, 8, 39, 26, 40, 22, 41, 8, 42, 8, 43, 23, 0, 1, 0, 28, 45, -1, 20, 2, 0, 3, 8, 4, 2, 5, 2, 6, 3, 29, 3, 30, 3, 7, 14, 8, 15, 9, 14, 10, 14, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 0, 6, 0, 32, 46, -1, 18, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 2, 8, 16, 9, 17, 10, 27, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 0, 1, 0, 28, 47, -1, 21, 2, 0, 3, 8, 4, 2, 5, 2, 6, 3, 29, 3, 30, 3, 7, 14, 8, 15, 9, 14, 10, 14, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 22, 28, 0, 8, 0, 32, 48, -1, 18, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 2, 8, 16, 9, 17, 10, 27, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 0 </int_array>
+			<int_array  len="549"> 				-1, -1, 1, 0, -1, 21, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 5, 9, 6, 10, 7, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 20, 8, 21, 10, 22, 11, 0, 0, 0, 23, 23, -1, 28, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 12, 8, 12, 9, 13, 10, 14, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 24, 8, 25, 8, 26, 8, 27, 1, 28, 10, 29, 15, 30, 8, 31, 8, 32, 3, 33, 16, 0, 0, 0, 35, 34, -1, 18, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 12, 8, 17, 9, 18, 10, 18, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 0, 2, 0, 37, 36, -1, 19, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 19, 8, 20, 9, 21, 10, 22, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 22, 23, 0, 3, 0, 39, 38, -1, 18, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 2, 8, 24, 9, 25, 10, 26, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 0, 3, 0, 41, 40, -1, 27, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 2, 8, 27, 9, 25, 10, 28, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 24, 8, 25, 1, 26, 8, 27, 8, 28, 29, 29, 15, 30, 8, 31, 8, 32, 30, 0, 3, 0, 41, 42, -1, 27, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 2, 8, 31, 9, 25, 10, 32, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 24, 8, 25, 1, 26, 8, 27, 8, 28, 33, 29, 15, 30, 8, 31, 8, 32, 30, 0, 2, 0, 37, 43, -1, 21, 2, 0, 3, 8, 4, 2, 5, 2, 6, 3, 44, 3, 45, 3, 7, 19, 8, 17, 9, 19, 10, 19, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 22, 34, 0, 7, 0, 39, 46, -1, 18, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 2, 8, 24, 9, 25, 10, 35, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 0, 2, 0, 37, 47, -1, 21, 2, 0, 3, 8, 4, 2, 5, 2, 6, 3, 44, 3, 45, 3, 7, 19, 8, 17, 9, 19, 10, 19, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 22, 36, 0, 9, 0, 39, 48, -1, 18, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 2, 8, 24, 9, 25, 10, 35, 11, 0, 12, 0, 13, 0, 14, 0, 15, 8, 16, 1, 17, 9, 18, 9, 19, 2, 0 </int_array>
 			<string> "conns" </string>
 			<int_array  len="0"> 				 </int_array>
 		</dictionary>
