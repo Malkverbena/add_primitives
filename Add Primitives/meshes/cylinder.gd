@@ -2,13 +2,14 @@ extends "builder/mesh_builder.gd"
 
 func build_mesh(params, smooth = false, reverse = false):
 	if params == DEFAULT:
-		params = [1, 2.0, 16, 0]
+		params = [1, 2.0, true, 16, 0]
 		
 	var r = params[0]    #Radius
 	var h = params[1]    #Height
-	var s = params[2]    #Segments
+	var caps = params[2]
+	var s = params[3]    #Segments
 	#  1 cut means no cut
-	var c = float(params[3]) + 1    #Cuts
+	var c = float(params[4]) + 1    #Cuts
 	
 	var circle = build_circle_verts(Vector3(0,h/2,0), s, r)
 	var circle_uv = build_circle_verts(Vector3(0,0,0), s, 1)
@@ -21,19 +22,20 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 	add_smooth_group(false)
 	
-	for idx in range(s):
-		uv = [Vector2(0.25, 0.25),
-		      Vector2(0.25 + (circle_uv[idx].x * 0.25), 0.25 + (circle_uv[idx].z * 0.25)),
-		      Vector2(0.25 + (circle_uv[idx + 1].x * 0.25), 0.25 + (circle_uv[idx + 1].z * 0.25))]
-		
-		add_tri([Vector3(0,h/2,0), circle[idx], circle[idx + 1]], uv, reverse)
-		
-		uv = [Vector2(0.75, 0.25),
-		      Vector2(0.75 + (circle_uv[idx + 1].x * 0.25), 0.25 + (circle_uv[idx + 1].z * 0.25)),
-		      Vector2(0.75 + (circle_uv[idx].x * 0.25), 0.25 + (circle_uv[idx].z * 0.25))]
-		             
-		add_tri([min_pos * 0.5, circle[idx + 1] + min_pos, circle[idx] + min_pos], uv, reverse)
-		
+	if caps:
+		for idx in range(s):
+			uv = [Vector2(0.25, 0.25),
+			      Vector2(0.25 + (circle_uv[idx].x * 0.25), 0.25 + (circle_uv[idx].z * 0.25)),
+			      Vector2(0.25 + (circle_uv[idx + 1].x * 0.25), 0.25 + (circle_uv[idx + 1].z * 0.25))]
+			
+			add_tri([Vector3(0,h/2,0), circle[idx], circle[idx + 1]], uv, reverse)
+			
+			uv = [Vector2(0.75, 0.25),
+			      Vector2(0.75 + (circle_uv[idx + 1].x * 0.25), 0.25 + (circle_uv[idx + 1].z * 0.25)),
+			      Vector2(0.75 + (circle_uv[idx].x * 0.25), 0.25 + (circle_uv[idx].z * 0.25))]
+			             
+			add_tri([min_pos * 0.5, circle[idx + 1] + min_pos, circle[idx] + min_pos], uv, reverse)
+			
 	var next_cut = min_pos + Vector3(0, h/c, 0)
 	var uv_offset = Vector2(0, 0.5)
 	
@@ -64,5 +66,6 @@ func build_mesh(params, smooth = false, reverse = false):
 func mesh_parameters(settings):
 	add_tree_range(settings, 'Radius', 1, 0.1, 0.1, 100)
 	add_tree_range(settings, 'Heigth', 2, 0.1, 0.1, 100)
+	add_tree_check(settings, 'Caps', true)
 	add_tree_range(settings, 'Segments', 16)
 	add_tree_range(settings, 'Cuts', 0, 1, 0)
