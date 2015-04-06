@@ -139,8 +139,8 @@ func add_tree_range(tree, text, value, step = 1, _min = 1, _max = 50):
 	tree_item.set_selectable(0, false)
 	
 	tree_item.set_cell_mode(1, 2)
-	tree_item.set_range(1, value)
 	tree_item.set_range_config(1, _min, _max, step)
+	tree_item.set_range(1, value)
 	tree_item.set_editable(1, true)
 	
 	parameters.append(tree_item)
