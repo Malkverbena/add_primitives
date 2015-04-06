@@ -72,6 +72,8 @@ class TransformDialog:
 		SCALE = 2
 	}
 	
+	var spin_boxes = []
+	
 	var translation = Vector3(0,0,0)
 	var rotation = Vector3(0,0,0)
 	var scale = Vector3(1,1,1)
@@ -129,8 +131,15 @@ class TransformDialog:
 		spin.set_max(_max)
 		parent.add_child(spin)
 		
+		spin.set_meta('default', value)
+		spin_boxes.append(spin)
+		
 		return spin
 		
+	func update():
+		for s in spin_boxes:
+			s.set_val(s.get_meta('default'))
+			
 	func _init():
 		set_name("Transform")
 		set_v_size_flags(SIZE_EXPAND_FILL)
@@ -423,8 +432,6 @@ class ParameterDialog:
 		return reverse_button.is_pressed()
 		
 	func _item_edited():
-		print('_-_')		
-		
 		emit_signal("parameter_edited")
 		
 	func _init():
@@ -654,6 +661,8 @@ class AddPrimitives:
 				
 		add_mesh_popup.get_modifier_dialog().update_menu(modifier_scripts)
 		add_mesh_popup.get_modifier_dialog().update()
+		
+		add_mesh_popup.get_transform_dialog().update()
 		
 	func update_mesh():
 		var values = add_mesh_popup.get_parameter_dialog().get_parameters_values(current_script)
