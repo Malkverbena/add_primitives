@@ -10,10 +10,24 @@ func modifier(params, aabb, mesh):
 	var h
 	var c
 	
+	var s_axis
+	var b_axis
+	
 	if axis == 'x' or axis == 'z':
 		h = aabb.get_endpoint(7).y - aabb.get_endpoint(0).y
+		
+		if axis == 'x':
+			s_axis = Vector3.AXIS_X
+		elif axis == 'z':
+			s_axis = Vector3.AXIS_Z
+		b_axis = Vector3.AXIS_Y
+		
 	elif axis == 'y':
 		h = aabb.get_endpoint(7).x - aabb.get_endpoint(0).x
+		
+		s_axis = Vector3.AXIS_Y
+		b_axis = Vector3.AXIS_X
+		
 	c = h/2
 	
 	for surf in range(mesh.get_surface_count()):
@@ -26,39 +40,14 @@ func modifier(params, aabb, mesh):
 			var vert_2 = get_vertex(get_face_vertex(i, 1))
 			var vert_3 = get_vertex(get_face_vertex(i, 2))
 			
-			if axis == 'x':
-				vert_1.x += val * (vert_1.y/c)
-				vert_2.x += val * (vert_2.y/c)
-				vert_3.x += val * (vert_3.y/c)
-				
-				set_vertex(0 + (i * 3), vert_1)
-				set_vertex(1 + (i * 3), vert_2)
-				set_vertex(2 + (i * 3), vert_3)
-				
-				continue
-				
-			elif axis == 'y':
-				vert_1.y += val * (vert_1.x/c)
-				vert_2.y += val * (vert_2.x/c)
-				vert_3.y += val * (vert_3.x/c)
-				
-				set_vertex(0 + (i * 3), vert_1)
-				set_vertex(1 + (i * 3), vert_2)
-				set_vertex(2 + (i * 3), vert_3)
-				
-				continue
-				
-			elif axis == 'z':
-				vert_1.z += val * (vert_1.y/c)
-				vert_2.z += val * (vert_2.y/c)
-				vert_3.z += val * (vert_3.y/c)
-				
-				set_vertex(0 + (i * 3), vert_1)
-				set_vertex(1 + (i * 3), vert_2)
-				set_vertex(2 + (i * 3), vert_3)
-				
-				continue
-				
+			vert_1[s_axis] += val * (vert_1[b_axis]/c)
+			vert_2[s_axis] += val * (vert_2[b_axis]/c)
+			vert_3[s_axis] += val * (vert_3[b_axis]/c)
+			
+			set_vertex(0 + (i * 3), vert_1)
+			set_vertex(1 + (i * 3), vert_2)
+			set_vertex(2 + (i * 3), vert_3)
+			
 		commit_to_surface(mesh_temp)
 		clear()
 		
@@ -66,4 +55,4 @@ func modifier(params, aabb, mesh):
 	
 func modifier_parameters(item, tree):
 	add_tree_combo(item, tree, 'Shear Axis', 'x,y,z')
-	add_tree_range(item, tree, 'Shear', 0, 0.01, -50)
+	add_tree_range(item, tree, 'Shear', 0, 0.1, -50)
