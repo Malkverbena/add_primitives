@@ -45,10 +45,9 @@ class DirectoryUtilities:
 			
 			while true:
 				list.append(get_next())
-				if list[list.size() - 1] != '.':
+				if list[list.size() - 1] != '':
 					continue
 				else:
-					list.append(get_next())
 					break
 					
 			list_dir_end()
@@ -531,6 +530,7 @@ class AddPrimitives:
 	var index = 0
 	
 	var hbox
+	var popup_menu
 	var add_mesh_popup
 	
 	var node
@@ -555,15 +555,12 @@ class AddPrimitives:
 		node = object
 		
 	func update_menu():
-		var popup_menu = get_node('spatial_toolbar_menu').get_popup()
-		popup_menu.set_name('spatial_menu')
-		
 		popup_menu.clear()
 		
 		for i in popup_menu.get_children():
 			if i.get_type() == 'PopupMenu':
 				popup_menu.remove_and_delete_child(i)
-		
+				
 		var dir = extra_modules['directory_utilites']
 		
 		var submenus = {}
@@ -574,7 +571,8 @@ class AddPrimitives:
 		scripts = dir.get_scripts_from_list(scripts)
 		
 		for name in scripts:
-			var key = 'Add ' + name.substr(0, name.find_last('.')).capitalize()
+			var key = name.substr(0, name.find_last('.')).replace('_', ' ')
+			key = 'Add ' + key.capitalize()
 			mesh_scripts[key] = path + '/meshes/' + name
 			
 			var temp_script = load(mesh_scripts[key]).new()
@@ -598,6 +596,9 @@ class AddPrimitives:
 			popup_menu.add_child(submenu)
 			popup_menu.add_submenu_item(i, i)
 			
+			if not submenu.is_connected("item_pressed", self, "popup_signal"):
+				submenu.connect("item_pressed", self, "popup_signal", [submenu])
+				
 			for j in submenus[i]:
 				submenu.add_item(j)
 			
@@ -605,14 +606,14 @@ class AddPrimitives:
 		popup_menu.add_item('Reload Menu')
 		
 		if not popup_menu.is_connected("item_pressed", self, "popup_signal"):
-			popup_menu.connect("item_pressed", self, "popup_signal")
+			popup_menu.connect("item_pressed", self, "popup_signal", [popup_menu])
 		
-	func popup_signal(id):
+	func popup_signal(id, menu):
 		current_script = null
 		
-		var popup = get_node('spatial_toolbar_menu').get_popup()
+		popup_menu.hide()
 		
-		var command = popup.get_item_text(popup.get_item_index(id))
+		var command = menu.get_item_text(menu.get_item_index(id))
 		
 		if command == 'Reload Menu':
 			update_menu()
@@ -634,7 +635,7 @@ class AddPrimitives:
 					print('built in: ', OS.get_ticks_msec() - start, ' milisecs')
 					print('====================================================')
 					
-				mesh.set_name(command.split(' ')[1])
+				mesh.set_name(command.replace('Add ', ''))
 				
 				if mesh != null:
 					add_mesh_instance(mesh)
@@ -762,6 +763,7 @@ class AddPrimitives:
 		var separator = VSeparator.new()
 		var spatial_menu = MenuButton.new()
 		spatial_menu.set_name('spatial_toolbar_menu')
+		popup_menu = spatial_menu.get_popup()
 		
 		var icon = load(get_plugins_folder() + '/Add Primitives/icon_mesh_instance_add.png')
 		spatial_menu.set_button_icon(icon)
