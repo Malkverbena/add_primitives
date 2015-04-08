@@ -14,16 +14,18 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 	var offset = Vector3(width/2, height/2, length/2) * -1
 	
+	var uv = [Vector2(1, 1), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0)]
+	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
 	
-	add_quad(build_plane_verts(right_dir, forward_dir, offset), [], reverse)
-	add_quad(build_plane_verts(up_dir, right_dir, offset), [], reverse)
+	add_quad(build_plane_verts(right_dir, forward_dir, offset), uv, reverse)
+	add_quad(build_plane_verts(up_dir, right_dir, offset), uv, reverse)
 	
 	offset.y += height
-	add_quad([offset, offset + right_dir, offset + Vector3(width, -height, length), offset + Vector3(0, -height, length)], [], reverse)
-	add_tri([offset, offset + Vector3(0, -height, length), offset - up_dir], [], reverse)
-	add_tri([offset + right_dir, (offset + right_dir) - up_dir, offset + Vector3(width, -height, length)], [], reverse)
+	add_quad([offset, offset + right_dir, offset + Vector3(width, -height, length), offset + Vector3(0, -height, length)], uv, reverse)
+	add_tri([offset, offset + Vector3(0, -height, length), offset - up_dir], [uv[0], uv[2], uv[3]], reverse)
+	add_tri([offset + right_dir, (offset + right_dir) - up_dir, offset + Vector3(width, -height, length)], [uv[0], uv[1], uv[2]], reverse)
 	
 	generate_normals()
 	var mesh = commit()

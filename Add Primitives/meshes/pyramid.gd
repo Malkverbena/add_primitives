@@ -12,15 +12,18 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 	var plane = build_plane_verts(Vector3(width,0,0), Vector3(0,0,length), -offset)
 	
+	var uv = [Vector2(1, 1), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0)]
+	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
 	
-	add_quad(plane, [], reverse)
+	add_quad(plane, uv, reverse)
 	
 	plane.append(plane[0])
 	
 	for idx in range(4):
-		add_tri([plane[idx+1], plane[idx], Vector3(0, height, 0)], [], false)
+		uv = [uv[0], uv[1], Vector2(0.5, 0.5)]
+		add_tri([plane[idx+1], plane[idx], Vector3(0, height, 0)], uv, false)
 		
 	generate_normals()
 	var mesh = commit()
