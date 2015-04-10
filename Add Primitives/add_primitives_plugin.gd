@@ -795,7 +795,7 @@ func edit(object):
 	add_primitives.edit(object)
 	
 func handles(object):
-	return object.is_type('Spatial')
+	return object.get_type() == 'Spatial'
 	
 func make_visible(visible):
 	if visible:
