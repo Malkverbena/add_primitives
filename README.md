@@ -10,6 +10,11 @@ A plugin capable of generating and adding procedual meshes
   * Cone
   * Capsule
   * Torus
+  * Tube
+  * Stair(Linear, Curved, Spiral)
+  * Pyramid
+  * Arch
+  * Wedge
 
 2. Popup Window:
   * Parameters tab
@@ -18,6 +23,9 @@ A plugin capable of generating and adding procedual meshes
 
 3. Custom Mesh System
 4. Modifier System
+  * Twist
+  * Shear
+  * Taper
 
 ###Installation
 Just copy and paste the 'Add Primitives' folder into godot plugins folder:
