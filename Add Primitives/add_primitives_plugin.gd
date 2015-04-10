@@ -316,7 +316,7 @@ class ModifierDialog:
 	func update():
 		modifiers.clear()
 		
-		items = []		
+		items = []
 
 		modifiers.set_hide_root(true)
 		modifiers.set_columns(2)
@@ -541,7 +541,8 @@ class AddPrimitives:
 	
 	var current_script
 	var mesh_scripts = {}
-	var modifier_scripts = {}
+	var modifiers
+	
 	var extra_modules = {}
 	
 	#Utilites
@@ -557,9 +558,9 @@ class AddPrimitives:
 	func update_menu():
 		popup_menu.clear()
 		
-		for i in popup_menu.get_children():
-			if i.get_type() == 'PopupMenu':
-				popup_menu.remove_and_delete_child(i)
+		for c in popup_menu.get_children():
+			if c.get_type() == 'PopupMenu':
+				c.free()
 				
 		var dir = extra_modules['directory_utilites']
 		
@@ -641,8 +642,7 @@ class AddPrimitives:
 					add_mesh_instance(mesh)
 					
 	func mesh_popup(key):
-		var dir = extra_modules['directory_utilites']
-		var path = get_plugins_folder() + '/Add Primitives/meshes/modifiers'
+		var path = get_plugins_folder() + '/Add Primitives/deform_modifier.gd'
 		
 		add_mesh_popup.set_title(key)
 		
@@ -652,15 +652,13 @@ class AddPrimitives:
 		
 		add_mesh_popup.get_parameter_dialog().create_parameters(current_script)
 		
-		if dir.dir_exists(path):
-			var modifiers = dir.get_file_list(path)
-			modifiers = dir.get_scripts_from_list(modifiers)
+		var temp = load(path).new()
+		modifiers = temp.get_modifiers()
+		
+		for mod in modifiers:
+			modifiers[mod] = modifiers[mod].new()
 			
-			for mod in modifiers:
-				var name = mod.substr(0, mod.find_last('.')).capitalize()
-				modifier_scripts[name] = load(path + '/' + mod).new()
-				
-		add_mesh_popup.get_modifier_dialog().update_menu(modifier_scripts)
+		add_mesh_popup.get_modifier_dialog().update_menu(modifiers)
 		add_mesh_popup.get_modifier_dialog().update()
 		
 		add_mesh_popup.get_transform_dialog().update()
@@ -699,7 +697,7 @@ class AddPrimitives:
 			var script
 			
 			if item.is_checked(1):
-				script = modifier_scripts[item.get_metadata(0)]
+				script = modifiers[item.get_metadata(0)]
 				count += 1
 				
 				var values = modifier.get_modifier_values(item)
