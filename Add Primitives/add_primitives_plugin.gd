@@ -762,6 +762,7 @@ class AddPrimitives:
 		var spatial_menu = MenuButton.new()
 		spatial_menu.set_name('spatial_toolbar_menu')
 		popup_menu = spatial_menu.get_popup()
+		popup_menu.set_custom_minimum_size(Vector2(120, 0))
 		
 		var icon = load(get_plugins_folder() + '/Add Primitives/icon_mesh_instance_add.png')
 		spatial_menu.set_button_icon(icon)
