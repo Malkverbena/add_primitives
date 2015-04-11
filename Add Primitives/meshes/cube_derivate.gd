@@ -15,7 +15,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 	var offset = Vector3(-w/2,-h/2,-l/2)
 	
-	begin(4)
+	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
 	var uv = [Vector2(1,1), Vector2(0,1), Vector2(0,0), Vector2(1,0)]
 	
@@ -24,7 +24,11 @@ func build_mesh(params, smooth = false, reverse = false):
 		add_quad(build_plane_verts(-rd, -fd, -offset), [uv[2], uv[1], uv[0], uv[3]], reverse)
 		add_quad(build_plane_verts(-ud, -rd, -offset), [uv[3], uv[0], uv[1], uv[2]], reverse)
 		
-	if shape == 'Corner':
+	elif shape == 'L Shape':
+		add_quad(build_plane_verts(ud, rd, offset), [uv[2], uv[3], uv[0], uv[1]], reverse)
+		add_quad(build_plane_verts(rd, fd, offset), uv, reverse)
+		
+	elif shape == 'Corner':
 		add_quad(build_plane_verts(-rd, -fd, -offset), [uv[2], uv[1], uv[0], uv[3]], reverse)
 		add_quad(build_plane_verts(-ud, -rd, -offset), [uv[3], uv[0], uv[1], uv[2]], reverse)
 		add_quad(build_plane_verts(-fd, -ud, -offset), [uv[0], uv[1], uv[2], uv[3]], reverse)
@@ -49,7 +53,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	return mesh
 	
 func mesh_parameters(settings):
-	add_tree_combo(settings, 'Derivate', 'C Shape,Corner,Remove Upper Face,Remove Caps')
+	add_tree_combo(settings, 'Derivate', 'C Shape,L Shape,Corner,Remove Upper Face,Remove Caps')
 	add_tree_range(settings, 'Width', 2, 0.1, 0.1, 100)
 	add_tree_range(settings, 'Length', 2, 0.1, 0.1, 100)
 	add_tree_range(settings, 'Heigth', 2, 0.1, 0.1, 100)

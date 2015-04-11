@@ -457,7 +457,7 @@ class ParameterDialog:
 #End ParameterDialog
 
 class MeshPopup:
-	extends AcceptDialog
+	extends ConfirmationDialog
 	
 	var index = 0
 	
@@ -466,6 +466,7 @@ class MeshPopup:
 	var main_panel
 	
 	var options
+	var color
 	var parameter_dialog
 	var modifier_dialog
 	var transform_dialog
@@ -488,9 +489,17 @@ class MeshPopup:
 			index = id
 			
 	func update_options():
+		color.set_color(Color(1,0,0))
+		
 		for i in main_panel.get_children():
 			options.add_item(i.get_name())
 			
+	func _color_changed(color):
+		emit_signal("display_changed", color)
+		
+	func _cancel():
+		emit_signal("cancel")
+		
 	func _init(base):
 		main_vbox = VBoxContainer.new()
 		add_child(main_vbox)
@@ -503,6 +512,22 @@ class MeshPopup:
 		options = OptionButton.new()
 		hb.add_child(options)
 		options.connect("item_selected", self, "set_current_dialog")
+		
+		var s = Control.new()
+		hb.add_child(s)
+		s.set_h_size_flags(SIZE_EXPAND_FILL)
+		
+		var l = Label.new()
+		l.set_text("Display")
+		hb.add_child(l)
+		
+		color = ColorPickerButton.new()
+		color.set_color(Color(1,0,0))
+		color.set_edit_alpha(false)
+		hb.add_child(color)
+		color.set_h_size_flags(SIZE_EXPAND_FILL)
+		
+		color.connect("color_changed", self, "_color_changed")
 		
 		main_panel = PanelContainer.new()
 		main_vbox.add_child(main_panel)
@@ -520,6 +545,11 @@ class MeshPopup:
 		transform_dialog.hide()
 		
 		update_options()
+		
+		get_cancel().connect("pressed", self, "_cancel")
+		
+		add_user_signal("cancel")
+		add_user_signal("display_changed", [color.get_color()])
 		
 #End MeshPopup
 
@@ -554,6 +584,9 @@ class AddPrimitives:
 		
 	func edit(object):
 		node = object
+		
+	func get_object():
+		return node
 		
 	func update_menu():
 		popup_menu.clear()
@@ -604,7 +637,7 @@ class AddPrimitives:
 				submenu.add_item(j)
 			
 		popup_menu.add_separator()
-		popup_menu.add_item('Reload Menu')
+		popup_menu.add_icon_item(popup_menu.get_icon('Reload', 'EditorIcons'), 'Reload Primitives')
 		
 		if not popup_menu.is_connected("item_pressed", self, "popup_signal"):
 			popup_menu.connect("item_pressed", self, "popup_signal", [popup_menu])
@@ -616,7 +649,7 @@ class AddPrimitives:
 		
 		var command = menu.get_item_text(menu.get_item_index(id))
 		
-		if command == 'Reload Menu':
+		if command == 'Reload Primitives':
 			update_menu()
 			
 		else:
@@ -660,8 +693,6 @@ class AddPrimitives:
 			
 		add_mesh_popup.get_modifier_dialog().update_menu(modifiers)
 		add_mesh_popup.get_modifier_dialog().update()
-		
-		add_mesh_popup.get_transform_dialog().update()
 		
 	func update_mesh():
 		var values = add_mesh_popup.get_parameter_dialog().get_parameters_values(current_script)
@@ -737,6 +768,10 @@ class AddPrimitives:
 			
 			mesh_instance.set_scale(val)
 			
+	func set_display_color(color):
+		if mesh_instance.get_material_override():
+			mesh_instance.get_material_override().set_parameter(0, color)
+			
 	func add_mesh_instance(mesh):
 		mesh_instance = MeshInstance.new()
 		#center geometry######
@@ -745,15 +780,30 @@ class AddPrimitives:
 		mesh_instance.set_mesh(mesh)
 		mesh_instance.set_name(mesh.get_name())
 		
-		var root
+		var root = get_tree().get_edited_scene_root()
+		node.add_child(mesh_instance)
+		mesh_instance.set_owner(root)
 		
-		if is_inside_tree():
-			root = get_tree().get_edited_scene_root()
+		original_mesh = mesh
+		
+		var fixed_material = FixedMaterial.new()
+		fixed_material.set_parameter(0, Color(1,0,0))
+		
+		mesh_instance.set_material_override(fixed_material)
+		
+		#Update transform dialog to default
+		add_mesh_popup.get_transform_dialog().update()
+		
+	func remove_mesh():
+		if mesh_instance.is_inside_tree():
+			mesh_instance.free()
 			
-			node.add_child(mesh_instance)
-			mesh_instance.set_owner(root)
+	func popup_hide():
+		if typeof(mesh_instance) == TYPE_NIL:
+			return
 			
-			original_mesh = mesh
+		if mesh_instance.get_material_override():
+			mesh_instance.set_material_override(null)
 			
 	func _init(editor_plugin, base):
 		extra_modules['directory_utilites'] = DirectoryUtilities.new()
@@ -778,6 +828,10 @@ class AddPrimitives:
 		add_mesh_popup = MeshPopup.new(base)
 		add_child(add_mesh_popup)
 		add_mesh_popup.hide()
+		
+		add_mesh_popup.connect("cancel", self, "remove_mesh")
+		add_mesh_popup.connect("display_changed", self, "set_display_color")
+		add_mesh_popup.connect("popup_hide", self, "popup_hide")
 		
 		add_mesh_popup.get_parameter_dialog().connect("parameter_edited", self, "update_mesh")
 		add_mesh_popup.get_modifier_dialog().connect("modifier_edited", self, "modify_mesh")
