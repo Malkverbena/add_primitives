@@ -26,14 +26,14 @@ func build_mesh(params, smooth = false, reverse = false):
 	add_quad([v[6]+h, v[7]+h, v[0]+h, v[1]+h], [], reverse)
 	
 	
-	add_quad([v[1],v[1]+h,v[2]+h,v[2]])
-	add_quad([v[2],v[2]+h,v[3]+h,v[3]])
-	add_quad([v[3],v[3]+h,v[0]+h,v[0]])
-	add_quad([v[0],v[0]+h,v[7]+h,v[7]])
-	add_quad([v[7],v[7]+h,v[4]+h,v[4]])
-	add_quad([v[4],v[4]+h,v[5]+h,v[5]])
-	add_quad([v[5],v[5]+h,v[6]+h,v[6]])
-	add_quad([v[6],v[6]+h,v[1]+h,v[1]])
+	add_quad([v[1],v[1]+h,v[2]+h,v[2]],[],reverse)
+	add_quad([v[2],v[2]+h,v[3]+h,v[3]],[],reverse)
+	add_quad([v[3],v[3]+h,v[0]+h,v[0]],[],reverse)
+	add_quad([v[0],v[0]+h,v[7]+h,v[7]],[],reverse)
+	add_quad([v[7],v[7]+h,v[4]+h,v[4]],[],reverse)
+	add_quad([v[4],v[4]+h,v[5]+h,v[5]],[],reverse)
+	add_quad([v[5],v[5]+h,v[6]+h,v[6]],[],reverse)
+	add_quad([v[6],v[6]+h,v[1]+h,v[1]],[],reverse)
 	
 	generate_normals()
 	var mesh = commit()

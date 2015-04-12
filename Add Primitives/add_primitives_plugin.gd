@@ -488,9 +488,14 @@ class MeshPopup:
 			options.select(id)
 			index = id
 			
-	func update_options():
-		color.set_color(Color(1,0,0))
+	func update():
+		color.set_color(Color(0,1,0))
 		
+		set_current_dialog(0)
+		show()
+		popup_centered(Vector2(220, 240))
+		
+	func update_options():
 		for i in main_panel.get_children():
 			options.add_item(i.get_name())
 			
@@ -522,7 +527,7 @@ class MeshPopup:
 		hb.add_child(l)
 		
 		color = ColorPickerButton.new()
-		color.set_color(Color(1,0,0))
+		color.set_color(Color(0,1,0))
 		color.set_edit_alpha(false)
 		hb.add_child(color)
 		color.set_h_size_flags(SIZE_EXPAND_FILL)
@@ -679,10 +684,7 @@ class AddPrimitives:
 		
 		add_mesh_popup.set_title(key)
 		
-		add_mesh_popup.set_current_dialog(0)
-		add_mesh_popup.show()
-		add_mesh_popup.popup_centered(Vector2(220, 240))
-		
+		add_mesh_popup.update()
 		add_mesh_popup.get_parameter_dialog().create_parameters(current_script)
 		
 		var temp = load(path).new()
@@ -786,11 +788,12 @@ class AddPrimitives:
 		
 		original_mesh = mesh
 		
-		var fixed_material = FixedMaterial.new()
-		fixed_material.set_parameter(0, Color(1,0,0))
-		
-		mesh_instance.set_material_override(fixed_material)
-		
+		if add_mesh_popup.is_visible():
+			var fixed_material = FixedMaterial.new()
+			fixed_material.set_parameter(0, Color(0,1,0))
+			
+			mesh_instance.set_material_override(fixed_material)
+			
 		#Update transform dialog to default
 		add_mesh_popup.get_transform_dialog().update()
 		
