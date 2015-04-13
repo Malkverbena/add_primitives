@@ -111,6 +111,22 @@ static func build_circle_verts(pos, segments, radius = 1, rotation = [], axis = 
 	
 	return circle_verts
 	
+static func plane_uv(start, end, last = true):
+	var u = 1
+	var v = 1
+	
+	if start < end:
+		u = start/end
+	elif end < start:
+		v = end/start
+		
+	var uv = [Vector2(u, v), Vector2(0, v), Vector2(0, 0), Vector2(u, 0)]
+	
+	if not last:
+		uv.remove(3)
+		
+	return uv
+	
 #Tree Item helper functions
 static func _create_item(tree):
 	var root = tree.get_root()

@@ -20,31 +20,31 @@ func build_mesh(params, smooth = false, reverse = false):
 	var uv = [Vector2(1,1), Vector2(0,1), Vector2(0,0), Vector2(1,0)]
 	
 	if shape == 'C Shape':
-		add_quad(build_plane_verts(rd, ud, offset), [uv[2], uv[3], uv[0], uv[1]], reverse)
-		add_quad(build_plane_verts(-rd, -fd, -offset), [uv[2], uv[1], uv[0], uv[3]], reverse)
-		add_quad(build_plane_verts(-ud, -rd, -offset), [uv[3], uv[0], uv[1], uv[2]], reverse)
+		add_quad(build_plane_verts(rd, ud, offset), plane_uv(l, h), reverse)
+		add_quad(build_plane_verts(-rd, -fd, -offset), plane_uv(l, w), reverse)
+		add_quad(build_plane_verts(-ud, -rd, -offset), plane_uv(h, l), reverse)
 		
 	elif shape == 'L Shape':
-		add_quad(build_plane_verts(ud, rd, offset), [uv[2], uv[3], uv[0], uv[1]], reverse)
-		add_quad(build_plane_verts(rd, fd, offset), uv, reverse)
+		add_quad(build_plane_verts(ud, rd, offset), plane_uv(h, l), reverse)
+		add_quad(build_plane_verts(rd, fd, offset), plane_uv(l, w), reverse)
 		
 	elif shape == 'Corner':
-		add_quad(build_plane_verts(-rd, -fd, -offset), [uv[2], uv[1], uv[0], uv[3]], reverse)
-		add_quad(build_plane_verts(-ud, -rd, -offset), [uv[3], uv[0], uv[1], uv[2]], reverse)
-		add_quad(build_plane_verts(-fd, -ud, -offset), [uv[0], uv[1], uv[2], uv[3]], reverse)
+		add_quad(build_plane_verts(-rd, -fd, -offset), plane_uv(l, w), reverse)
+		add_quad(build_plane_verts(-ud, -rd, -offset), plane_uv(h, l), reverse)
+		add_quad(build_plane_verts(-fd, -ud, -offset), plane_uv(w, h), reverse)
 		
 	elif shape == 'Remove Upper Face':
-		add_quad(build_plane_verts(fd, rd, offset), uv, reverse)
-		add_quad(build_plane_verts(rd, ud, offset), [uv[2], uv[3], uv[0], uv[1]], reverse)
-		add_quad(build_plane_verts(ud, fd, offset), [uv[0], uv[3], uv[2], uv[1]], reverse)
-		add_quad(build_plane_verts(-ud, -rd, -offset), [uv[3], uv[0], uv[1], uv[2]], reverse)
-		add_quad(build_plane_verts(-fd, -ud, -offset), [uv[0], uv[1], uv[2], uv[3]], reverse)
+		add_quad(build_plane_verts(fd, rd, offset), plane_uv(w, l), reverse)
+		add_quad(build_plane_verts(rd, ud, offset), plane_uv(l, h), reverse)
+		add_quad(build_plane_verts(ud, fd, offset), plane_uv(h, w), reverse)
+		add_quad(build_plane_verts(-ud, -rd, -offset), plane_uv(h, l), reverse)
+		add_quad(build_plane_verts(-fd, -ud, -offset), plane_uv(w, h), reverse)
 		
 	elif shape == 'Remove Caps':
-		add_quad(build_plane_verts(rd, ud, offset), [uv[2], uv[3], uv[0], uv[1]], reverse)
-		add_quad(build_plane_verts(ud, fd, offset), [uv[0], uv[3], uv[2], uv[1]], reverse)
-		add_quad(build_plane_verts(-ud, -rd, -offset), [uv[3], uv[0], uv[1], uv[2]], reverse)
-		add_quad(build_plane_verts(-fd, -ud, -offset), [uv[0], uv[1], uv[2], uv[3]], reverse)
+		add_quad(build_plane_verts(rd, ud, offset), plane_uv(l, h), reverse)
+		add_quad(build_plane_verts(ud, fd, offset), plane_uv(h, w), reverse)
+		add_quad(build_plane_verts(-ud, -rd, -offset), plane_uv(h, l), reverse)
+		add_quad(build_plane_verts(-fd, -ud, -offset), plane_uv(w, h), reverse)
 		
 	generate_normals()
 	var mesh = commit()

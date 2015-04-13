@@ -15,15 +15,9 @@ func build_mesh(params, smooth = false, reverse = false):
 	verts.append(Vector3(w/2,sh,l/2))
 	verts.append(Vector3(-w/2,sh,l/2))
 	
-	var uv = []
-	uv.append(Vector2(1, 1))
-	uv.append(Vector2(0, 1))
-	uv.append(Vector2(0, 0))
-	uv.append(Vector2(1, 0))
-	
 	begin(4)
 	add_smooth_group(smooth)
-	add_quad(verts, uv, reverse)
+	add_quad(verts, plane_uv(verts[0].distance_to(verts[1]), verts[0].distance_to(verts[3])), reverse)
 	generate_normals()
 	
 	var mesh = commit()
