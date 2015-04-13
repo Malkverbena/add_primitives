@@ -28,6 +28,8 @@ func build_mesh(params, smooth = false, reverse = false):
 	add_tri([offset + rd, (offset + rd) - ud, offset + Vector3(w, -h, l)], plane_uv(h, l, false), reverse)
 	
 	generate_normals()
+	index()
+	
 	var mesh = commit()
 	clear()
 	

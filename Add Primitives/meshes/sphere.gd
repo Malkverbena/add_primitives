@@ -43,6 +43,8 @@ func build_mesh(params, smooth = false, reverse = false):
 		pos = next_pos
 	
 	generate_normals()
+	index()
+	
 	var mesh = commit()
 	clear()
 	

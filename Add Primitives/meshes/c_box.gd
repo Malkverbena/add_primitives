@@ -36,6 +36,8 @@ func build_mesh(params, smooth = false, reverse = false):
 	add_quad([v[6],v[6]+h,v[1]+h,v[1]],[],reverse)
 	
 	generate_normals()
+	index()
+	
 	var mesh = commit()
 	clear()
 	

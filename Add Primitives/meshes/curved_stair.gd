@@ -40,8 +40,11 @@ func build_mesh(params, smooth = false, reverse = false):
 		add_quad([(vector*inner)+Vector3(0,-height*i,0), vector*inner, vector*outer, (vector*outer)+Vector3(0,-height*i,0)])
 		
 	generate_normals()
+	index()
+	
 	var mesh = commit()
 	clear()
+	
 	return mesh
 	
 func mesh_parameters(parameters):

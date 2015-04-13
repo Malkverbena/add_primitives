@@ -2,7 +2,7 @@ extends "builder/mesh_builder.gd"
 
 func build_mesh(params, smooth = false, reverse = false):
 	if params == DEFAULT:
-		params = [2, 1, 12, 8]
+		params = [0.8, 0.2, 16, 8]
 	var torus_radius = params[0]
 	var radius = params[1]
 	var steps_ = params[2]
@@ -38,13 +38,15 @@ func build_mesh(params, smooth = false, reverse = false):
 		add_quad([circle[idx], circle_2[idx], circle_2[idx + 1], circle[idx + 1]], [], reverse)
 	
 	generate_normals()
+	index()
+	
 	var mesh = commit()
 	clear()
 	
 	return mesh
 	
 func mesh_parameters(settings):
-	add_tree_range(settings, "Major Radius", 2, 0.1, 0.1, 100)
-	add_tree_range(settings, "Minor Radius", 1, 0.1, 0.1, 100)
-	add_tree_range(settings, "Steps", 12)
+	add_tree_range(settings, "Major Radius", 0.8, 0.1, 0.1, 100)
+	add_tree_range(settings, "Minor Radius", 0.2, 0.1, 0.1, 100)
+	add_tree_range(settings, "Steps", 16)
 	add_tree_range(settings, "Cuts", 8)

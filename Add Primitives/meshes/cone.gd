@@ -33,6 +33,8 @@ func build_mesh(params, smooth = false, reverse = false):
 		add_tri([circle[idx + 1], circle[idx], min_pos], uv_coords, reverse)
 		
 	generate_normals()
+	index()
+	
 	var mesh = commit()
 	clear()
 	

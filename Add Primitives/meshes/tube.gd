@@ -27,6 +27,8 @@ func build_mesh(params, smooth = false, reverse = false):
 		add_quad([inner_circle[idx] + off, inner_circle[idx + 1] + off, inner_circle[idx + 1] - off, inner_circle[idx] -off], [], reverse)
 		
 	generate_normals()
+	index()
+	
 	var mesh = commit()
 	clear()
 	

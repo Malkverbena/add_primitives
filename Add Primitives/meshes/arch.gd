@@ -40,6 +40,8 @@ func build_mesh(params, smooth = false, reverse = false):
 		add_quad(build_plane_verts(Vector3(0, 0, l), Vector3(r*2, 0, 0), Vector3(r, 0, l/2) * -1), uv, reverse)
 		
 	generate_normals()
+	index()
+	
 	var mesh = commit()
 	clear()
 	

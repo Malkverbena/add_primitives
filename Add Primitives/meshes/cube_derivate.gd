@@ -47,6 +47,8 @@ func build_mesh(params, smooth = false, reverse = false):
 		add_quad(build_plane_verts(-fd, -ud, -offset), plane_uv(w, h), reverse)
 		
 	generate_normals()
+	index()
+	
 	var mesh = commit()
 	clear()
 	

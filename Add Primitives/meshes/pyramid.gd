@@ -26,6 +26,8 @@ func build_mesh(params, smooth = false, reverse = false):
 		add_tri([plane[idx+1], plane[idx], Vector3(0, height, 0)], uv, false)
 		
 	generate_normals()
+	index()
+
 	var mesh = commit()
 	clear()
 	

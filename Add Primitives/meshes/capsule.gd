@@ -64,6 +64,8 @@ func build_mesh(params, smooth = false, reverse = false):
 		p = np
 	
 	generate_normals()
+	index()
+	
 	var mesh = commit()
 	clear()
 	

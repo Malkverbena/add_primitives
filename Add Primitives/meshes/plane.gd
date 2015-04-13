@@ -19,10 +19,13 @@ func build_mesh(params, smooth = false, reverse = false):
 	add_smooth_group(smooth)
 	add_quad(verts, plane_uv(verts[0].distance_to(verts[1]), verts[0].distance_to(verts[3])), reverse)
 	generate_normals()
+	index()
 	
 	var mesh = commit()
 	clear()
+	
 	return mesh
+	
 	
 func mesh_parameters(settings):
 	add_tree_range(settings, "Length", 2, 0.1, 0.1, 100)

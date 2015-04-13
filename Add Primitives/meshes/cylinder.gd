@@ -58,6 +58,8 @@ func build_mesh(params, smooth = false, reverse = false):
 		next_cut.y += h/c
 		
 	generate_normals()
+	index()
+	
 	var mesh = commit()
 	clear()
 	
