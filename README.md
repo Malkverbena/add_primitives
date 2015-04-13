@@ -15,6 +15,9 @@ A plugin capable of generating and adding procedual meshes
   * Pyramid
   * Arch
   * Wedge
+  * Cube Derivate
+  * C Box
+  * L Box
 
 2. Popup Window:
   * Parameters tab
@@ -34,4 +37,4 @@ Just copy and paste the 'Add Primitives' folder into godot plugins folder:
 * Linux/OSX: **~/.godot/plugins/**
 
 ###License
-This plugin is licensed under the [MIT license](https://github.com/TheHX/add_primitives/blob/master/LICENSE.txt).
+This plugin is licensed under the [MIT license](https://github.com/TheHX/add_primitives/blob/master/LICENSE.md).
