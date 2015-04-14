@@ -680,7 +680,7 @@ class AddPrimitives:
 					add_mesh_instance(mesh)
 					
 	func mesh_popup(key):
-		var path = get_plugins_folder() + '/Add Primitives/deform_modifier.gd'
+		var path = get_plugins_folder() + '/Add Primitives/modifiers.gd'
 		
 		add_mesh_popup.set_title(key)
 		
@@ -807,6 +807,10 @@ class AddPrimitives:
 			
 		if mesh_instance.get_material_override():
 			mesh_instance.set_material_override(null)
+			
+		original_mesh = null
+		meshes_to_modify.clear()
+		modifiers.clear()
 			
 	func _init(editor_plugin, base):
 		extra_modules['directory_utilites'] = DirectoryUtilities.new()

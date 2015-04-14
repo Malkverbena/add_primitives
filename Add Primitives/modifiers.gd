@@ -206,7 +206,42 @@ class TwistModifier:
 		
 #End TwistModifier
 
+class ArrayModifier:
+	extends Modifier
+	
+	static func get_name():
+		return "Array"
+		
+	func modifier(params, aabb, mesh):
+		var mesh_temp = Mesh.new()
+		var offset = Vector3(params[1], params[2], params[3])
+		
+		for surf in range(mesh.get_surface_count()):
+			create_from_surface(mesh, surf)
+			
+			commit_to_surface(mesh_temp)
+			
+			for c in range(params[0]):
+				for i in range(get_vertex_count()):
+					var v = get_vertex(i)
+					
+					v += offset
+					
+					set_vertex(i, v)
+					
+				commit_to_surface(mesh_temp)
+				
+			clear()
+			
+		print(mesh_temp.get_surface_count())
+		return mesh_temp
+		
+	func modifier_parameters(item, tree):
+		add_tree_range(item, tree, "Count", 0, 1, 0, 100)
+		add_tree_range(item, tree, "Offset X", 0, 0.1, -1000, 1000)
+		add_tree_range(item, tree, "Offset Y", 0, 0.1, -1000, 1000)
+		add_tree_range(item, tree, "Offset Z", 0, 0.1, -1000, 1000)
 #############################################################################################
 
 func get_modifiers():
-	return {"Taper":TaperModifier, "Shear":ShearModifier, "Twist":TwistModifier}
+	return {"Taper":TaperModifier, "Shear":ShearModifier, "Twist":TwistModifier, "Array":ArrayModifier}
