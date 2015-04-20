@@ -2,7 +2,7 @@
 A plugin capable of generating and adding procedual meshes
 
 ###Features
-1. Add Primtives:
+1. Primtives:
   * Plane
   * Cube
   * Cylinder
@@ -29,6 +29,7 @@ A plugin capable of generating and adding procedual meshes
   * Twist
   * Shear
   * Taper
+  * Array
 
 ###Installation
 Just copy and paste the 'Add Primitives' folder into godot plugins folder:
