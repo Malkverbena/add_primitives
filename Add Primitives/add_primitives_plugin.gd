@@ -327,13 +327,13 @@ class ModifierDialog:
 	func _init(base):
 		set_name("Modifiers")
 		
-		modifiers = Tree.new()
-		add_child(modifiers)
-		modifiers.set_v_size_flags(SIZE_EXPAND_FILL)
-		
 		var hbox_tools = HBoxContainer.new()
 		add_child(hbox_tools)
 		hbox_tools.set_h_size_flags(SIZE_EXPAND_FILL)
+		
+		modifiers = Tree.new()
+		add_child(modifiers)
+		modifiers.set_v_size_flags(SIZE_EXPAND_FILL)
 		
 		#Tools
 		var add = MenuButton.new()

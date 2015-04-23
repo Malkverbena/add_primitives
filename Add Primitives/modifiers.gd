@@ -214,8 +214,15 @@ class ArrayModifier:
 		
 	func modifier(params, aabb, mesh):
 		var mesh_temp = Mesh.new()
-		var offset = Vector3(params[1], params[2], params[3])
+		var offset = Vector3(params[2], params[3], params[4])
 		
+		if params[1]:
+			var x = aabb.get_endpoint(0).x - aabb.get_endpoint(7).x
+			var y = aabb.get_endpoint(0).y - aabb.get_endpoint(7).y
+			var z = aabb.get_endpoint(0).z - aabb.get_endpoint(7).z
+			
+			offset *= Vector3(x, y, z).abs()
+			
 		for surf in range(mesh.get_surface_count()):
 			create_from_surface(mesh, surf)
 			
@@ -233,15 +240,62 @@ class ArrayModifier:
 				
 			clear()
 			
-		print(mesh_temp.get_surface_count())
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
 		add_tree_range(item, tree, "Count", 0, 1, 0, 100)
+		add_tree_check(item, tree, "Relative", false)
 		add_tree_range(item, tree, "Offset X", 0, 0.1, -1000, 1000)
 		add_tree_range(item, tree, "Offset Y", 0, 0.1, -1000, 1000)
 		add_tree_range(item, tree, "Offset Z", 0, 0.1, -1000, 1000)
+		
+#End ArrayModifier
+
+class OffsetModifier:
+	extends Modifier
+	
+	static func get_name():
+		return 'Offset'
+		
+	func modifier(params, aabb, mesh):
+		var mesh_temp = Mesh.new()
+		
+		var offset = Vector3(params[1], params[2], params[3])
+		if params[0]:
+			var x = aabb.get_endpoint(0).x - aabb.get_endpoint(7).x
+			var y = aabb.get_endpoint(0).y - aabb.get_endpoint(7).y
+			var z = aabb.get_endpoint(0).z - aabb.get_endpoint(7).z
+			
+			offset *= Vector3(x,y,z).abs()
+			
+		for surf in range(mesh.get_surface_count()):
+			create_from_surface(mesh, surf)
+			
+			for i in range(get_vertex_count()):
+				var v = get_vertex(i)
+				
+				v += offset
+				
+				set_vertex(i, v)
+				
+			commit_to_surface(mesh_temp)
+			
+		clear()
+		
+		return mesh_temp
+		
+	func modifier_parameters(item, tree):
+		add_tree_check(item, tree, 'Relative', false)
+		add_tree_range(item, tree, 'X', 0, 0.1, -1000, 100)
+		add_tree_range(item, tree, 'Y', 0, 0.1, -1000, 100)
+		add_tree_range(item, tree, 'Z', 0, 0.1, -1000, 100)
+		
+#End OffsetArray
 #############################################################################################
 
 func get_modifiers():
-	return {"Taper":TaperModifier, "Shear":ShearModifier, "Twist":TwistModifier, "Array":ArrayModifier}
+	return {"Taper":TaperModifier,
+	        "Shear":ShearModifier,
+	        "Twist":TwistModifier,
+	        "Array":ArrayModifier, 
+	        "Offset":OffsetModifier}
