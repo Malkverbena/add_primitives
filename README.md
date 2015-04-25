@@ -1,5 +1,4 @@
 # Add Primitives
-A plugin capable of generating and adding procedual meshes
 
 ###Features
 1. Primitives:
@@ -24,8 +23,7 @@ A plugin capable of generating and adding procedual meshes
   * Modifier tab
   * Transform tab
 
-3. Custom Mesh System
-4. Modifier System
+3. Modifier System
   * Twist
   * Shear
   * Taper
@@ -40,3 +38,6 @@ Just copy and paste the 'Add Primitives' folder into godot plugins folder:
 
 ###License
 This plugin is licensed under the [MIT license](https://github.com/TheHX/add_primitives/blob/master/LICENSE.md).
+
+###Contributing
+If want contribute to this plugin, read [CONTRIBUTING.md](https://github.com/TheHX/add_primitives/blob/master/CONTRIBUTING.md).
