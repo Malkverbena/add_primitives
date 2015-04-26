@@ -40,4 +40,4 @@ Just copy and paste the 'Add Primitives' folder into godot plugins folder:
 This plugin is licensed under the [MIT license](https://github.com/TheHX/add_primitives/blob/master/LICENSE.md).
 
 ###Contributing
-If want contribute to this plugin, read [CONTRIBUTING.md](https://github.com/TheHX/add_primitives/blob/master/CONTRIBUTING.md).
+If you want contribute to this plugin, read [CONTRIBUTING.md](https://github.com/TheHX/add_primitives/blob/master/CONTRIBUTING.md).
