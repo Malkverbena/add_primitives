@@ -21,8 +21,8 @@ class Modifier:
 		tree_item.set_selectable(0, false)
 		
 		tree_item.set_cell_mode(1, 2)
-		tree_item.set_range(1, value)
 		tree_item.set_range_config(1, _min, _max, step)
+		tree_item.set_range(1, value)
 		tree_item.set_editable(1, true)
 		
 	func add_tree_combo(item, tree, text, items, selected = 0):
@@ -97,7 +97,7 @@ class TaperModifier:
 				
 				var v1 = get_vertex(i)
 				
-				v1 = m3.scaled(taper(v1, val, c, axis)) * v1
+				v1 = m3.scaled(taper(v1, val, c, axis)).xform(v1)
 				
 				set_vertex(i, v1)
 				
@@ -107,7 +107,7 @@ class TaperModifier:
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'Value', 0, 0.1, -100, 100)
+		add_tree_range(item, tree, 'Value', -0.5, 0.1, -100, 100)
 		add_tree_check(item, tree, 'Lock X Axis', false)
 		add_tree_check(item, tree, 'Lock Z Axis', false)
 		
@@ -165,7 +165,7 @@ class ShearModifier:
 		
 	func modifier_parameters(item, tree):
 		add_tree_combo(item, tree, 'Shear Axis', 'x,y,z')
-		add_tree_range(item, tree, 'Shear', 0, 0.1, -50)
+		add_tree_range(item, tree, 'Shear', 1, 0.1, -50)
 		
 #End ShearModifier
 
@@ -192,7 +192,7 @@ class TwistModifier:
 				
 				var vert_1 = get_vertex(i)
 				
-				vert_1 = m3.rotated(Vector3(0,1,0), deg2rad(val * (vert_1.y/c))) * vert_1
+				vert_1 = m3.rotated(Vector3(0,1,0), deg2rad(val * (vert_1.y/c))).xform(vert_1)
 				
 				set_vertex(i, vert_1)
 				
@@ -202,7 +202,7 @@ class TwistModifier:
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, "Angle", 0, 1, -180, 180)
+		add_tree_range(item, tree, "Angle", 30, 1, -180, 180)
 		
 #End TwistModifier
 
@@ -228,7 +228,7 @@ class ArrayModifier:
 			
 			commit_to_surface(mesh_temp)
 			
-			for c in range(params[0]):
+			for c in range(params[0] - 1):
 				for i in range(get_vertex_count()):
 					var v = get_vertex(i)
 					
@@ -243,9 +243,9 @@ class ArrayModifier:
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, "Count", 0, 1, 0, 100)
-		add_tree_check(item, tree, "Relative", false)
-		add_tree_range(item, tree, "Offset X", 0, 0.1, -1000, 1000)
+		add_tree_range(item, tree, "Count", 2, 1, 1, 100)
+		add_tree_check(item, tree, "Relative", true)
+		add_tree_range(item, tree, "Offset X", 1, 0.1, -1000, 1000)
 		add_tree_range(item, tree, "Offset Y", 0, 0.1, -1000, 1000)
 		add_tree_range(item, tree, "Offset Z", 0, 0.1, -1000, 1000)
 		
@@ -285,9 +285,9 @@ class OffsetModifier:
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_check(item, tree, 'Relative', false)
+		add_tree_check(item, tree, 'Relative', true)
 		add_tree_range(item, tree, 'X', 0, 0.1, -1000, 100)
-		add_tree_range(item, tree, 'Y', 0, 0.1, -1000, 100)
+		add_tree_range(item, tree, 'Y', 0.5, 0.1, -1000, 100)
 		add_tree_range(item, tree, 'Z', 0, 0.1, -1000, 100)
 		
 #End OffsetArray

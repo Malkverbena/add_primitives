@@ -25,8 +25,6 @@ extends SurfaceTool
 
 var parameters = []
 
-const DEFAULT = 1
-
 func add_tri(vertex = [], uv = [], reverse = false):
 	assert( vertex.size() == 3 )
 	
@@ -84,28 +82,40 @@ static func build_plane_verts(start, end, offset = Vector3(0,0,0)):
 	verts.append(Vector3(0,0,0) + offset)
 	return verts
 	
-static func build_circle_verts(pos, segments, radius = 1, rotation = [], axis = []):
+static func build_circle_verts_rot(pos, segments, radius = 1, rotation = [], axis = []):
 	var radians_circle = PI * 2
-	var _radius = Vector3(radius, 1, radius)
 	
 	var circle_verts = []
 	
-	var m3 = Matrix3()
+	for i in range(segments):
+		var angle = radians_circle * i/segments
+		var x = cos(angle) * radius
+		var z = sin(angle) * radius
+		
+		var vector = Vector3(x, 0, z)
+		
+		for i in range(rotation.size()):
+			vector = vector.rotated(axis[i], rotation[i])
+			
+		circle_verts.push_back(vector + pos)
+		
+	circle_verts.push_back(circle_verts[0])
+	
+	return circle_verts
+	
+static func build_circle_verts(pos, segments, radius = 1):
+	var radians_circle = PI * 2
+	
+	var circle_verts = []
 	
 	for i in range(segments):
 		var angle = radians_circle * i/segments
-		var x = cos(angle)
-		var z = sin(angle)
+		var x = cos(angle) * radius
+		var z = sin(angle) * radius
 		
-		var vector = Vector3(x, 0, z) * Vector3(radius, 1, radius)
+		var vector = Vector3(x, 0, z) + pos
 		
-		if not rotation.empty():
-			assert( axis.size() == rotation.size())
-			
-			for i in range(rotation.size()):
-				vector = m3.rotated(axis[i], rotation[i]) * vector
-				
-		circle_verts.push_back(vector + pos)
+		circle_verts.push_back(vector)
 		
 	circle_verts.push_back(circle_verts[0])
 	

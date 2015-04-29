@@ -1,9 +1,6 @@
 extends "builder/mesh_builder.gd"
 
 func build_mesh(params, smooth = false, reverse = false):
-	if params == DEFAULT:
-		params = [1, 2.0, 10, 1.0, 0.5]
-		
 	var spirals = params[0]
 	var height = params[1]
 	var segments = params[2]

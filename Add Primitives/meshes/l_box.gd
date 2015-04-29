@@ -1,9 +1,6 @@
 extends "builder/mesh_builder.gd"
 
 func build_mesh(params, smooth = false, reverse = false):
-	if params == DEFAULT:
-		params = [2, 1, 2, 1, 1]
-		
 	var fl = params[0]
 	var fw = params[1]
 	var sl = params[2]

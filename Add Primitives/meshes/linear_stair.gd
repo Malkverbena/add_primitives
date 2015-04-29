@@ -1,9 +1,6 @@
 extends "builder/mesh_builder.gd"
 
 func build_mesh(params, smooth = false, smooth = false):
-	if params == DEFAULT:
-		params = [10, 1, 0.2, 0.2, true, true]
-		
 	var steps = params[0]
 	var width = params[1]
 	var height = params[2]

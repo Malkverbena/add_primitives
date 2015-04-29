@@ -266,6 +266,8 @@ class ModifierDialog:
 		
 		create_modifier(modifiers_scripts[mod])
 		
+		emit_signal("modifier_edited")
+		
 	func modifier_tools(what):
 		var item = modifiers.get_selected()
 		
@@ -294,7 +296,10 @@ class ModifierDialog:
 		
 		modifiers_scripts = scripts
 		
-		for m in modifiers_scripts:
+		var keys = modifiers_scripts.keys()
+		keys.sort()
+		
+		for m in keys:
 			menu.add_item(m)
 			
 	func _item_edited():
@@ -608,6 +613,7 @@ class AddPrimitives:
 		
 		var scripts = dir.get_file_list(path + '/meshes')
 		scripts = dir.get_scripts_from_list(scripts)
+		scripts.sort()
 		
 		for name in scripts:
 			var key = name.substr(0, name.find_last('.')).replace('_', ' ')
@@ -629,7 +635,6 @@ class AddPrimitives:
 			popup_menu.add_separator()
 		
 		for i in submenus.keys():
-			
 			var submenu = PopupMenu.new()
 			submenu.set_name(i)
 			popup_menu.add_child(submenu)
@@ -642,7 +647,7 @@ class AddPrimitives:
 				submenu.add_item(j)
 			
 		popup_menu.add_separator()
-		popup_menu.add_icon_item(popup_menu.get_icon('Reload', 'EditorIcons'), 'Reload Primitives')
+		popup_menu.add_icon_item(get_icon('Reload', 'EditorIcons'), 'Reload Primitives')
 		
 		if not popup_menu.is_connected("item_pressed", self, "popup_signal"):
 			popup_menu.connect("item_pressed", self, "popup_signal", [popup_menu])
@@ -662,22 +667,23 @@ class AddPrimitives:
 			
 			if current_script.has_method('build_mesh'):
 				var mesh
+				
+				add_mesh_instance()
+				mesh_instance.set_name(command.replace('Add ', ''))
+				
 				if current_script.has_method('mesh_parameters'):
-					start = OS.get_ticks_msec()
-					mesh = current_script.build_mesh(1)
-					print('built in: ', OS.get_ticks_msec() - start, ' milisecs')
-					print('====================================================')
 					mesh_popup(command)
+					
+					start = OS.get_ticks_msec()
+					update_mesh()
+					
 				else:
 					start = OS.get_ticks_msec()
 					mesh = current_script.build_mesh()
-					print('built in: ', OS.get_ticks_msec() - start, ' milisecs')
-					print('====================================================')
+					#print('built in: ', OS.get_ticks_msec() - start, ' milisecs')
 					
-				mesh.set_name(command.replace('Add ', ''))
-				
-				if mesh != null:
-					add_mesh_instance(mesh)
+					mesh_instance.set_mesh(mesh)
+					mesh.set_name(mesh_instance.get_name().to_lower())
 					
 	func mesh_popup(key):
 		var path = get_plugins_folder() + '/Add Primitives/modifiers.gd'
@@ -688,6 +694,7 @@ class AddPrimitives:
 		add_mesh_popup.get_parameter_dialog().create_parameters(current_script)
 		
 		var temp = load(path).new()
+		
 		modifiers = temp.get_modifiers()
 		
 		for mod in modifiers:
@@ -696,6 +703,10 @@ class AddPrimitives:
 		add_mesh_popup.get_modifier_dialog().update_menu(modifiers)
 		add_mesh_popup.get_modifier_dialog().update()
 		
+		var fixed_material = FixedMaterial.new()
+		fixed_material.set_parameter(0, Color(0,1,0))
+		mesh_instance.set_material_override(fixed_material)
+		
 	func update_mesh():
 		var values = add_mesh_popup.get_parameter_dialog().get_parameters_values(current_script)
 		var smooth = add_mesh_popup.get_parameter_dialog().get_smooth()
@@ -703,18 +714,15 @@ class AddPrimitives:
 		
 		start = OS.get_ticks_msec()
 		var mesh = current_script.build_mesh(values, smooth, reverse)
-		print(' built in: ', OS.get_ticks_msec() - start, ' milisecs')
-		print('====================================================')
-		#center geometry######
-		mesh.center_geometry()
-		######################
+		#print('built in: ', OS.get_ticks_msec() - start, ' milisecs')
 		
 		assert( mesh.get_type() == 'Mesh' )
 		
+		mesh.set_name(mesh_instance.get_name().to_lower())
 		mesh_instance.set_mesh(mesh)
 		
 		original_mesh = mesh
-
+		
 		modify_mesh()
 		
 	func modify_mesh():
@@ -753,7 +761,7 @@ class AddPrimitives:
 				
 			if count == 0:
 				mesh_instance.set_mesh(original_mesh)
-		
+				
 	func transform_mesh(what):
 		if what == 0:
 			var val = add_mesh_popup.get_transform_dialog().get_translation()
@@ -774,26 +782,13 @@ class AddPrimitives:
 		if mesh_instance.get_material_override():
 			mesh_instance.get_material_override().set_parameter(0, color)
 			
-	func add_mesh_instance(mesh):
+	func add_mesh_instance():
 		mesh_instance = MeshInstance.new()
-		#center geometry######
-		mesh.center_geometry()
-		######################
-		mesh_instance.set_mesh(mesh)
-		mesh_instance.set_name(mesh.get_name())
 		
 		var root = get_tree().get_edited_scene_root()
 		node.add_child(mesh_instance)
 		mesh_instance.set_owner(root)
 		
-		original_mesh = mesh
-		
-		if add_mesh_popup.is_visible():
-			var fixed_material = FixedMaterial.new()
-			fixed_material.set_parameter(0, Color(0,1,0))
-			
-			mesh_instance.set_material_override(fixed_material)
-			
 		#Update transform dialog to default
 		add_mesh_popup.get_transform_dialog().update()
 		
@@ -811,7 +806,8 @@ class AddPrimitives:
 		original_mesh = null
 		meshes_to_modify.clear()
 		modifiers.clear()
-			
+		modifiers = null
+		
 	func _init(editor_plugin, base):
 		extra_modules['directory_utilites'] = DirectoryUtilities.new()
 		
@@ -819,9 +815,8 @@ class AddPrimitives:
 		var spatial_menu = MenuButton.new()
 		spatial_menu.set_name('spatial_toolbar_menu')
 		popup_menu = spatial_menu.get_popup()
-		popup_menu.set_custom_minimum_size(Vector2(120, 0))
 		
-		var icon = load(get_plugins_folder() + '/Add Primitives/icon_mesh_instance_add.png')
+		var icon = preload('icon_mesh_instance_add.png')
 		spatial_menu.set_button_icon(icon)
 		spatial_menu.set_tooltip("Add New MeshInstance")
 		

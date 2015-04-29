@@ -1,9 +1,6 @@
 extends "builder/mesh_builder.gd"
 
 func build_mesh(params, smooth = false, reverse = false):
-	if params == DEFAULT:
-		params = [90, 2.0, 10, 2, 1, true, true]
-		
 	var angle = deg2rad(params[0])
 	var segments = params[2]
 	var height = params[1]/segments
