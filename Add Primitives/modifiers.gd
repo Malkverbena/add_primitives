@@ -292,6 +292,45 @@ class OffsetModifier:
 		
 #End OffsetArray
 
+class RandomModifier:
+	extends Modifier
+	
+	static func get_name():
+		return "Random"
+		
+	func modifier(params, aabb, mesh):
+		var mesh_temp = Mesh.new()
+		
+		var rand = {}
+		
+		for surf in range(mesh.get_surface_count()):
+			create_from_surface(mesh, surf)
+			
+			for i in range(get_vertex_count()):
+				var v = get_vertex(i)
+				
+				if rand.has(v):
+					v += rand[v]
+					
+				else:
+					rand[v] = Vector3(randf() * params[0], randf() * params[1], randf() * params[2])
+					v += rand[v]
+					
+				set_vertex(i, v)
+				
+			commit_to_surface(mesh_temp)
+			
+		rand.clear()  
+		
+		return mesh_temp
+		
+	func modifier_parameters(item, tree):
+		add_tree_range(item, tree, 'X', 0.1, 0.1, -100, 100)
+		add_tree_range(item, tree, 'Y', 0.1, 0.1, -100, 100)
+		add_tree_range(item, tree, 'Z', 0.1, 0.1, -100, 100)
+		
+#End RandomModifier
+
 #############################################################################################
 
 func get_modifiers():
@@ -299,4 +338,5 @@ func get_modifiers():
 	        "Shear":ShearModifier,
 	        "Twist":TwistModifier,
 	        "Array":ArrayModifier, 
-	        "Offset":OffsetModifier}
+	        "Offset":OffsetModifier,
+	        "Random":RandomModifier}
