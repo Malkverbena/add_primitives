@@ -11,3 +11,6 @@
   
 3. **Requesting new Features**:  
   All improvements and new features of this plugin, until now, come from the mind of it owner. Now he want know what the others thinks of this plugin, and how it can be improved.
+  * New Primitives.
+  * New Parameters.
+  * New Modifiers.

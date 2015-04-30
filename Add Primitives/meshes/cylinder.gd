@@ -6,7 +6,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	var caps = params[2]
 	var s = params[3]    #Segments
 	#  1 cut means no cut
-	var c = float(params[4])    #Cuts
+	var c = float(params[4])    #Rings
 	
 	var circle = build_circle_verts(Vector3(0,h/2,0), s, r)
 	var circle_uv = build_circle_verts(Vector3(0.25,0,0.25), s, 0.25)
@@ -31,7 +31,7 @@ func build_mesh(params, smooth = false, reverse = false):
 			      Vector2(circle_uv[idx + 1].x + 0.5, circle_uv[idx + 1].z),
 			      Vector2(circle_uv[idx].x + 0.5, circle_uv[idx].z)]
 			             
-			add_tri([min_pos * 0.5, circle[idx + 1] + min_pos, circle[idx] + min_pos], uv, reverse)
+			add_tri([min_pos/2, circle[idx + 1] + min_pos, circle[idx] + min_pos], uv, reverse)
 			
 	var next_cut = min_pos + Vector3(0, h/c, 0)
 	var uv_offset = Vector2(0, 0.5)

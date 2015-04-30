@@ -291,6 +291,7 @@ class OffsetModifier:
 		add_tree_range(item, tree, 'Z', 0, 0.1, -1000, 100)
 		
 #End OffsetArray
+
 #############################################################################################
 
 func get_modifiers():

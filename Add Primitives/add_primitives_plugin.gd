@@ -1,6 +1,6 @@
 #==============================================================================#
 # Copyright (c) 2015 Franklin Sobrinho.                                        #
-#                                                                              #                                                   
+#                                                                              #
 # Permission is hereby granted, free of charge, to any person obtaining        #
 # a copy of this software and associated documentation files (the "Software"), #
 # to deal in the Software without restriction, including without               #
@@ -45,6 +45,7 @@ class DirectoryUtilities:
 			
 			while true:
 				list.append(get_next())
+				
 				if list[list.size() - 1] != '':
 					continue
 				else:
@@ -253,7 +254,10 @@ class ModifierDialog:
 					values.append(text[i.get_range(1)])
 				else:
 					values.append(i.get_range(1))
-			
+					
+			elif cell == i.CELL_MODE_CUSTOM:
+				values.append(i.get_metadata(1))
+				
 			i = i.get_next()
 			
 			if i == null:
@@ -497,10 +501,11 @@ class MeshPopup:
 		color.set_color(Color(0,1,0))
 		
 		set_current_dialog(0)
-		show()
 		popup_centered(Vector2(220, 240))
 		
 	func update_options():
+		options.clear()
+		
 		for i in main_panel.get_children():
 			options.add_item(i.get_name())
 			
@@ -521,6 +526,7 @@ class MeshPopup:
 		hb.set_h_size_flags(SIZE_EXPAND_FILL)
 		options = OptionButton.new()
 		hb.add_child(options)
+		options.set_custom_minimum_size(Vector2(100,0))
 		options.connect("item_selected", self, "set_current_dialog")
 		
 		var s = Control.new()
@@ -559,19 +565,15 @@ class MeshPopup:
 		get_cancel().connect("pressed", self, "_cancel")
 		
 		add_user_signal("cancel")
-		add_user_signal("display_changed", [color.get_color()])
+		add_user_signal("display_changed", [Color()])
 		
 #End MeshPopup
 
 class AddPrimitives:
 	extends HBoxContainer
 	
-	var start
-	var index = 0
-	
-	var hbox
 	var popup_menu
-	var add_mesh_popup
+	var mesh_popup
 	
 	var node
 	var mesh_instance
@@ -581,11 +583,12 @@ class AddPrimitives:
 	
 	var current_script
 	var mesh_scripts = {}
+	
 	var modifiers
 	
-	var extra_modules = {}
-	
 	#Utilites
+	var dir
+	
 	static func get_plugins_folder():
 		var path = OS.get_data_dir()
 		path = path.substr(0, path.find_last('/'))
@@ -598,6 +601,9 @@ class AddPrimitives:
 	func get_object():
 		return node
 		
+	func get_mesh_popup():
+		return mesh_popup
+		
 	func update_menu():
 		popup_menu.clear()
 		
@@ -605,8 +611,6 @@ class AddPrimitives:
 			if c.get_type() == 'PopupMenu':
 				c.free()
 				
-		var dir = extra_modules['directory_utilites']
-		
 		var submenus = {}
 		
 		var path = get_plugins_folder() + '/Add Primitives'
@@ -624,6 +628,10 @@ class AddPrimitives:
 			
 			if temp_script.has_method('container'):
 				var container = temp_script.container()
+				
+				container = container.replace(' ', '_')
+				container = container.to_lower()
+				
 				if submenus.has(container):
 					submenus[container].append(key)
 				else:
@@ -638,7 +646,11 @@ class AddPrimitives:
 			var submenu = PopupMenu.new()
 			submenu.set_name(i)
 			popup_menu.add_child(submenu)
-			popup_menu.add_submenu_item(i, i)
+			
+			var n = i.replace('_', ' ')
+			n = n.capitalize()
+			
+			popup_menu.add_submenu_item(n, i)
 			
 			if not submenu.is_connected("item_pressed", self, "popup_signal"):
 				submenu.connect("item_pressed", self, "popup_signal", [submenu])
@@ -674,11 +686,11 @@ class AddPrimitives:
 				if current_script.has_method('mesh_parameters'):
 					mesh_popup(command)
 					
-					start = OS.get_ticks_msec()
+					#start = OS.get_ticks_msec()
 					update_mesh()
 					
 				else:
-					start = OS.get_ticks_msec()
+					#start = OS.get_ticks_msec()
 					mesh = current_script.build_mesh()
 					#print('built in: ', OS.get_ticks_msec() - start, ' milisecs')
 					
@@ -688,10 +700,10 @@ class AddPrimitives:
 	func mesh_popup(key):
 		var path = get_plugins_folder() + '/Add Primitives/modifiers.gd'
 		
-		add_mesh_popup.set_title(key)
+		mesh_popup.set_title(key)
 		
-		add_mesh_popup.update()
-		add_mesh_popup.get_parameter_dialog().create_parameters(current_script)
+		mesh_popup.update()
+		mesh_popup.get_parameter_dialog().create_parameters(current_script)
 		
 		var temp = load(path).new()
 		
@@ -700,19 +712,19 @@ class AddPrimitives:
 		for mod in modifiers:
 			modifiers[mod] = modifiers[mod].new()
 			
-		add_mesh_popup.get_modifier_dialog().update_menu(modifiers)
-		add_mesh_popup.get_modifier_dialog().update()
+		mesh_popup.get_modifier_dialog().update_menu(modifiers)
+		mesh_popup.get_modifier_dialog().update()
 		
 		var fixed_material = FixedMaterial.new()
-		fixed_material.set_parameter(0, Color(0,1,0))
+		fixed_material.set_parameter(fixed_material.PARAM_DIFFUSE, Color(0,1,0))
 		mesh_instance.set_material_override(fixed_material)
 		
 	func update_mesh():
-		var values = add_mesh_popup.get_parameter_dialog().get_parameters_values(current_script)
-		var smooth = add_mesh_popup.get_parameter_dialog().get_smooth()
-		var reverse = add_mesh_popup.get_parameter_dialog().get_reverse()
+		var values = mesh_popup.get_parameter_dialog().get_parameters_values(current_script)
+		var smooth = mesh_popup.get_parameter_dialog().get_smooth()
+		var reverse = mesh_popup.get_parameter_dialog().get_reverse()
 		
-		start = OS.get_ticks_msec()
+		#start = OS.get_ticks_msec()
 		var mesh = current_script.build_mesh(values, smooth, reverse)
 		#print('built in: ', OS.get_ticks_msec() - start, ' milisecs')
 		
@@ -726,7 +738,7 @@ class AddPrimitives:
 		modify_mesh()
 		
 	func modify_mesh():
-		var modifier = add_mesh_popup.get_modifier_dialog()
+		var modifier = mesh_popup.get_modifier_dialog()
 		
 		meshes_to_modify.clear()
 		
@@ -735,17 +747,14 @@ class AddPrimitives:
 		mesh_instance.set_mesh(original_mesh)
 		
 		for item in modifier.get_items():
-			var script
-			
 			if item.is_checked(1):
-				script = modifiers[item.get_metadata(0)]
 				count += 1
+				
+				var script = modifiers[item.get_metadata(0)]
 				
 				var values = modifier.get_modifier_values(item)
 				
-				assert( not values.empty() )
-				
-				assert( mesh_instance.get_mesh() )
+				assert( not values.empty() or mesh_instance.get_mesh() )
 				
 				if count == 1:
 					mesh_instance.set_mesh(script.modifier(values, mesh_instance.get_aabb(), original_mesh))
@@ -757,29 +766,29 @@ class AddPrimitives:
 					mesh_instance.set_mesh(meshes_to_modify[count - 2])
 					mesh_instance.set_mesh(script.modifier(values, mesh_instance.get_aabb(), meshes_to_modify[count - 2]))
 					
-				values.clear()
-				
 			if count == 0:
 				mesh_instance.set_mesh(original_mesh)
 				
+		mesh_instance.get_mesh().set_name(mesh_instance.get_name().to_lower())
+		
 	func transform_mesh(what):
 		if what == 0:
-			var val = add_mesh_popup.get_transform_dialog().get_translation()
+			var val = mesh_popup.get_transform_dialog().get_translation()
 			
 			mesh_instance.set_translation(val)
 			
 		elif what == 1:
-			var val = add_mesh_popup.get_transform_dialog().get_rotation()
+			var val = mesh_popup.get_transform_dialog().get_rotation()
 			
 			mesh_instance.set_rotation(val)
 			
 		elif what == 2:
-			var val = add_mesh_popup.get_transform_dialog().get_scale()
+			var val = mesh_popup.get_transform_dialog().get_scale()
 			
 			mesh_instance.set_scale(val)
 			
 	func set_display_color(color):
-		if mesh_instance.get_material_override():
+		if mesh_popup.is_visible() and mesh_instance.is_type("MeshInstance"):
 			mesh_instance.get_material_override().set_parameter(0, color)
 			
 	func add_mesh_instance():
@@ -790,54 +799,52 @@ class AddPrimitives:
 		mesh_instance.set_owner(root)
 		
 		#Update transform dialog to default
-		add_mesh_popup.get_transform_dialog().update()
+		mesh_popup.get_transform_dialog().update()
 		
 	func remove_mesh():
 		if mesh_instance.is_inside_tree():
 			mesh_instance.free()
 			
 	func popup_hide():
-		if typeof(mesh_instance) == TYPE_NIL:
-			return
-			
-		if mesh_instance.get_material_override():
-			mesh_instance.set_material_override(null)
-			
+		if typeof(mesh_instance) != TYPE_NIL:
+			if mesh_instance.get_material_override():
+				mesh_instance.set_material_override(null)
+				
 		original_mesh = null
 		meshes_to_modify.clear()
 		modifiers.clear()
 		modifiers = null
 		
 	func _init(editor_plugin, base):
-		extra_modules['directory_utilites'] = DirectoryUtilities.new()
+		dir = DirectoryUtilities.new()
 		
 		var separator = VSeparator.new()
-		var spatial_menu = MenuButton.new()
-		spatial_menu.set_name('spatial_toolbar_menu')
-		popup_menu = spatial_menu.get_popup()
+		add_child(separator)
 		
 		var icon = preload('icon_mesh_instance_add.png')
+		var spatial_menu = MenuButton.new()
+		popup_menu = spatial_menu.get_popup()
 		spatial_menu.set_button_icon(icon)
 		spatial_menu.set_tooltip("Add New MeshInstance")
 		
-		add_child(separator)
 		add_child(spatial_menu)
 		
 		editor_plugin.add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, self)
 		
 		update_menu()
 		
-		add_mesh_popup = MeshPopup.new(base)
-		add_child(add_mesh_popup)
-		add_mesh_popup.hide()
+		mesh_popup = MeshPopup.new(base)
+		base.add_child(mesh_popup)
 		
-		add_mesh_popup.connect("cancel", self, "remove_mesh")
-		add_mesh_popup.connect("display_changed", self, "set_display_color")
-		add_mesh_popup.connect("popup_hide", self, "popup_hide")
+		mesh_popup.connect("cancel", self, "remove_mesh")
+		mesh_popup.connect("display_changed", self, "set_display_color")
+		mesh_popup.connect("popup_hide", self, "popup_hide")
 		
-		add_mesh_popup.get_parameter_dialog().connect("parameter_edited", self, "update_mesh")
-		add_mesh_popup.get_modifier_dialog().connect("modifier_edited", self, "modify_mesh")
-		add_mesh_popup.get_transform_dialog().connect("transform_changed", self, "transform_mesh")
+		mesh_popup.get_parameter_dialog().connect("parameter_edited", self, "update_mesh")
+		mesh_popup.get_modifier_dialog().connect("modifier_edited", self, "modify_mesh")
+		mesh_popup.get_transform_dialog().connect("transform_changed", self, "transform_mesh")
+		
+		hide()
 		
 #End AddPrimitives
 
@@ -864,6 +871,7 @@ func _init():
 	print("ADD PRIMITIVES INIT")
 	
 func _enter_tree():
+	var start = OS.get_ticks_msec()
 	gui_base = get_node("/root/EditorNode").get_gui_base()
 	
 	add_primitives = AddPrimitives.new(self, gui_base)
@@ -871,8 +879,10 @@ func _enter_tree():
 	if not add_primitives.is_inside_tree():
 		add_child(add_primitives)
 		
-	add_primitives.hide()
+	print('start in: ', OS.get_ticks_msec() - start, ' milisecs')
 	
 func _exit_tree():
+	edit(null)
+	add_primitives.get_mesh_popup().free()
 	add_primitives.free()
 	
