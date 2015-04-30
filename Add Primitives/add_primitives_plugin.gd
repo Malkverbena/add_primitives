@@ -871,15 +871,12 @@ func _init():
 	print("ADD PRIMITIVES INIT")
 	
 func _enter_tree():
-	var start = OS.get_ticks_msec()
 	gui_base = get_node("/root/EditorNode").get_gui_base()
 	
 	add_primitives = AddPrimitives.new(self, gui_base)
 	
 	if not add_primitives.is_inside_tree():
 		add_child(add_primitives)
-		
-	print('start in: ', OS.get_ticks_msec() - start, ' milisecs')
 	
 func _exit_tree():
 	edit(null)
