@@ -309,11 +309,11 @@ class RandomModifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				if rand.has(v):
+				if rand.has(v): 
 					v += rand[v]
 					
 				else:
-					rand[v] = Vector3(randf() * params[0], randf() * params[1], randf() * params[2])
+					rand[v] = Vector3(rand_range(-1, 1)*params[0], rand_range(-1, 1)*params[1], rand_range(-1, 1)*params[2])
 					v += rand[v]
 					
 				set_vertex(i, v)
@@ -325,9 +325,9 @@ class RandomModifier:
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'X', 0.1, 0.1, -100, 100)
-		add_tree_range(item, tree, 'Y', 0.1, 0.1, -100, 100)
-		add_tree_range(item, tree, 'Z', 0.1, 0.1, -100, 100)
+		add_tree_range(item, tree, 'X', 0.1, 0.1, 0, 100)
+		add_tree_range(item, tree, 'Y', 0.1, 0.1, 0, 100)
+		add_tree_range(item, tree, 'Z', 0.1, 0.1, 0, 100)
 		
 #End RandomModifier
 
