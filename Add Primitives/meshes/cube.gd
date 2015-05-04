@@ -11,7 +11,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 	var offset = Vector3(-w/2,-h/2,-l/2)
 	
-	begin(4)
+	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
 	var uv = [Vector2(1,1), Vector2(0,1), Vector2(0,0), Vector2(1,0)]
 	

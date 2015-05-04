@@ -1,6 +1,6 @@
 extends Node
 
-class Modifier:
+class ModifierBase:
 	extends MeshDataTool
 	
 	#Tree Item helper functions
@@ -60,7 +60,7 @@ class Modifier:
 #End Modifier
 
 class TaperModifier:
-	extends Modifier
+	extends ModifierBase
 	
 	static func get_name():
 		return "Taper"
@@ -114,7 +114,7 @@ class TaperModifier:
 #End TaperModifer
 
 class ShearModifier:
-	extends Modifier
+	extends ModifierBase
 	
 	static func get_name():
 		return "Shear"
@@ -170,7 +170,7 @@ class ShearModifier:
 #End ShearModifier
 
 class TwistModifier:
-	extends Modifier
+	extends ModifierBase
 	
 	static func get_name():
 		return "Twist"
@@ -207,7 +207,7 @@ class TwistModifier:
 #End TwistModifier
 
 class ArrayModifier:
-	extends Modifier
+	extends ModifierBase
 	
 	static func get_name():
 		return "Array"
@@ -252,7 +252,7 @@ class ArrayModifier:
 #End ArrayModifier
 
 class OffsetModifier:
-	extends Modifier
+	extends ModifierBase
 	
 	static func get_name():
 		return 'Offset'
@@ -293,7 +293,7 @@ class OffsetModifier:
 #End OffsetArray
 
 class RandomModifier:
-	extends Modifier
+	extends ModifierBase
 	
 	static func get_name():
 		return "Random"
@@ -320,7 +320,7 @@ class RandomModifier:
 				
 			commit_to_surface(mesh_temp)
 			
-		rand.clear()  
+		rand.clear()
 		
 		return mesh_temp
 		
@@ -340,3 +340,4 @@ func get_modifiers():
 	        "Array":ArrayModifier, 
 	        "Offset":OffsetModifier,
 	        "Random":RandomModifier}
+	

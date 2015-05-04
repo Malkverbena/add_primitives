@@ -12,7 +12,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	verts.append(Vector3(w/2,sh,l/2))
 	verts.append(Vector3(-w/2,sh,l/2))
 	
-	begin(4)
+	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
 	add_quad(verts, plane_uv(verts[0].distance_to(verts[1]), verts[0].distance_to(verts[3])), reverse)
 	generate_normals()

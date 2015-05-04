@@ -20,7 +20,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 	for idx in range(4):
 		uv = [uv[0], uv[1], Vector2(0.5, 0.5)]
-		add_tri([plane[idx+1], plane[idx], Vector3(0, height, 0)], uv, false)
+		add_tri([plane[idx+1], plane[idx], Vector3(0, height, 0)], uv, [])
 		
 	generate_normals()
 	index()

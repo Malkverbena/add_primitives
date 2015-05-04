@@ -60,13 +60,13 @@ class DirectoryUtilities:
 class TransformDialog:
 	extends VBoxContainer
 	
-	var AXIS = {
+	const AXIS = {
 		X = Vector3.AXIS_X,
 		Y = Vector3.AXIS_Y,
 		Z = Vector3.AXIS_Z
 	}
 	
-	var TRANSFORM = {
+	const TRANSFORM = {
 		TRANSLATION = 0,
 		ROTATION = 1,
 		SCALE = 2
@@ -195,7 +195,7 @@ class TransformDialog:
 class ModifierDialog:
 	extends VBoxContainer
 	
-	var TOOL = {
+	const TOOL = {
 		ERASE = 0,
 		MOVEUP = 1,
 		MOVEDOWN = 2
@@ -678,21 +678,16 @@ class AddPrimitives:
 			current_script = load(mesh_scripts[command]).new()
 			
 			if current_script.has_method('build_mesh'):
-				var mesh
-				
 				add_mesh_instance()
 				mesh_instance.set_name(command.replace('Add ', ''))
 				
 				if current_script.has_method('mesh_parameters'):
 					mesh_popup(command)
 					
-					#start = OS.get_ticks_msec()
 					update_mesh()
 					
 				else:
-					#start = OS.get_ticks_msec()
-					mesh = current_script.build_mesh()
-					#print('built in: ', OS.get_ticks_msec() - start, ' milisecs')
+					var mesh = current_script.build_mesh()
 					
 					mesh_instance.set_mesh(mesh)
 					mesh.set_name(mesh_instance.get_name().to_lower())
@@ -724,9 +719,7 @@ class AddPrimitives:
 		var smooth = mesh_popup.get_parameter_dialog().get_smooth()
 		var reverse = mesh_popup.get_parameter_dialog().get_reverse()
 		
-		#start = OS.get_ticks_msec()
 		var mesh = current_script.build_mesh(values, smooth, reverse)
-		#print('built in: ', OS.get_ticks_msec() - start, ' milisecs')
 		
 		assert( mesh.get_type() == 'Mesh' )
 		
@@ -821,11 +814,11 @@ class AddPrimitives:
 		var separator = VSeparator.new()
 		add_child(separator)
 		
-		var icon = preload('icon_mesh_instance_add.png')
 		var spatial_menu = MenuButton.new()
 		popup_menu = spatial_menu.get_popup()
+		var icon = preload('icon_mesh_instance_add.png')
 		spatial_menu.set_button_icon(icon)
-		spatial_menu.set_tooltip("Add New MeshInstance")
+		spatial_menu.set_tooltip("Add New Primitive")
 		
 		add_child(spatial_menu)
 		
@@ -877,7 +870,7 @@ func _enter_tree():
 	
 	if not add_primitives.is_inside_tree():
 		add_child(add_primitives)
-	
+		
 func _exit_tree():
 	edit(null)
 	add_primitives.get_mesh_popup().free()

@@ -9,7 +9,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	var inner_circle = build_circle_verts(Vector3(0,0,0), steps, radius_inner)
 	var outer_circle = build_circle_verts(Vector3(0,0,0), steps, radius_outer)
 	
-	begin(4)
+	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(false)
 	
 	var off = Vector3(0, height/2, 0)

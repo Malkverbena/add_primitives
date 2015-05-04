@@ -13,7 +13,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	var rd = Vector3(sin(angle_inc), 0, sin(angle_inc))    #Cuts Radius
 	var pos
 	
-	begin(4)
+	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
 	
 	for idx in range(s):

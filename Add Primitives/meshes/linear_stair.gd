@@ -1,6 +1,6 @@
 extends "builder/mesh_builder.gd"
 
-func build_mesh(params, smooth = false, smooth = false):
+func build_mesh(params, smooth = false, reverse = false):
 	var steps = params[0]
 	var width = params[1]
 	var height = params[2]
@@ -8,19 +8,19 @@ func build_mesh(params, smooth = false, smooth = false):
 	var fill_end = params[4]
 	var fill_bottom = params[5]
 	
-	begin(4)
-	add_smooth_group(false)
+	begin(VS.PRIMITIVE_TRIANGLES)
+	add_smooth_group(smooth)
 	
 	for i in range(steps):
-		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, 0, length), Vector3(0, (i+1) * height, i * length)), [], true)
-		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, height, 0), Vector3(0, i * height, i * length)), [], true)
-		add_quad(build_plane_verts(Vector3(0, (i+1)*height, 0), Vector3(0, 0, length), Vector3(0, 0, i * length)), [], true)
-		add_quad(build_plane_verts(Vector3(0, (i+1)*height, 0), Vector3(0, 0, length), Vector3(width, 0, i * length)))
+		add_quad(build_plane_verts(Vector3(0, 0, length), Vector3(width, 0, 0), Vector3(0, (i+1) * height, i * length)), [], reverse)
+		add_quad(build_plane_verts(Vector3(0, height, 0), Vector3(width, 0, 0), Vector3(0, i * height, i * length)), [], reverse)
+		add_quad(build_plane_verts(Vector3(0, 0, length), Vector3(0, (i+1)*height, 0), Vector3(0, 0, i * length)), [], reverse)
+		add_quad(build_plane_verts(Vector3(0, (i+1)*height, 0), Vector3(0, 0, length), Vector3(width, 0, i * length)), [], reverse)
 		
 	if fill_end:
-		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, steps * height, 0), Vector3(0, 0, steps*length)))
+		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, steps * height, 0), Vector3(0, 0, steps*length)), [], reverse)
 	if fill_bottom:
-		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, 0, steps * length)))
+		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, 0, steps * length)), [], reverse)
 		
 	generate_normals()
 	index()

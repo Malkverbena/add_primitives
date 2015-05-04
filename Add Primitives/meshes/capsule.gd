@@ -14,7 +14,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	var r = Vector3(sin(angle_inc), 0, sin(angle_inc))    #Radius
 	var p    #Positions
 	
-	begin(4)
+	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
 	
 	for idx in range(s):
@@ -44,11 +44,12 @@ func build_mesh(params, smooth = false, reverse = false):
 		
 		if i == ((c - 2)/2):
 			r = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
-		
+			
 		var np = Vector3(0, -cos(angle_inc * (i + 1)) + h, 0) * rd
 		
 		for idx in range(s):
 			add_quad([circle[idx+1] * r + p, circle[idx+1] * nr + np, circle[idx] * nr + np, circle[idx] * r + p], [], reverse)
+			
 		p = np
 	
 	generate_normals()

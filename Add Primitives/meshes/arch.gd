@@ -19,11 +19,12 @@ func build_mesh(params, smooth = false, reverse = false):
 	add_smooth_group(smooth)
 	
 	for i in range(s):
+		i = float(i)
+		
 		var vector = m3.xform(Vector3(l/2, sin(angle_inc*i), cos(angle_inc*i)) * radius)
 		var vector_2 = m3.xform(Vector3(l/2, sin(angle_inc*(i+1)), cos(angle_inc*(i+1))) * radius)
 		
-		uv = [Vector2(float(i+1)/s, 0), Vector2(float(i+1)/s, 1), Vector2(float(i)/s, 1), Vector2(float(i)/s, 0)]
-		
+		uv = [Vector2((i+1)/s, 0), Vector2((i+1)/s, 1), Vector2(i/s, 1), Vector2(i/s, 0)]
 		add_quad([vector_2, vector_2 + next_pos, vector + next_pos, vector], uv, reverse)
 		
 	add_smooth_group(false)

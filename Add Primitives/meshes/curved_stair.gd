@@ -11,30 +11,34 @@ func build_mesh(params, smooth = false, reverse = false):
 	var fill_bottom = params[5]
 	var fill_end = params[6]
 	
-	begin(4)
-	add_smooth_group(false)
+	begin(VS.PRIMITIVE_TRIANGLES)
+	add_smooth_group(smooth)
 	
 	for i in range(segments):
 		var vector = Vector3(cos(angle_inc*i), (i+1)*height, sin(angle_inc*i))
 		var vector_2 = Vector3(cos(angle_inc*(i+1)), (i+1)*height, sin(angle_inc*(i+1)))
 		
-		add_quad([vector*inner, vector*outer, vector_2*outer, vector_2*inner])
-		add_quad([(vector*outer)+Vector3(0,-height,0), vector*outer, vector*inner, (vector*inner)+Vector3(0,-height,0)])
-		add_quad([(vector_2*outer)+Vector3(0,-height*(i+1),0), vector_2*outer, vector*outer, (vector*outer)+Vector3(0,-height*(i+1),0)])
-		add_quad([(vector*inner)+Vector3(0,-height*(i+1),0), vector*inner, vector_2*inner, (vector_2*inner)+Vector3(0,-height*(i+1),0)])
+		var h = Vector3(0, -height, 0)
+		
+		add_quad([vector*inner, vector*outer, vector_2*outer, vector_2*inner], [], reverse)
+		add_quad([(vector*outer) + h, vector*outer, vector*inner, (vector*inner) + h], [], reverse)
+		
+		h.y *= i + 1
+		add_quad([(vector_2*outer) + h, vector_2*outer, vector*outer, (vector*outer) + h], [], reverse)
+		add_quad([(vector*inner) + h, vector*inner, vector_2*inner, (vector_2*inner) + h], [], reverse)
 		
 		if fill_bottom:
 			vector.y = 0
 			vector_2.y = 0
 			
-			add_quad([vector_2*inner, vector_2*outer,  vector*outer, vector*inner])
+			add_quad([vector_2*inner, vector_2*outer,  vector*outer, vector*inner], [], reverse)
 			
 	if fill_end:
 		var i = segments
 		var vector = Vector3(cos(angle_inc*i), i*height, sin(angle_inc*i))
 		var vector_2 = Vector3(cos(angle_inc*(i+1)), i*height, sin(angle_inc*(i+1)))
 		
-		add_quad([(vector*inner)+Vector3(0,-height*i,0), vector*inner, vector*outer, (vector*outer)+Vector3(0,-height*i,0)])
+		add_quad([(vector*inner)+Vector3(0,-height*i,0), vector*inner, vector*outer, (vector*outer)+Vector3(0,-height*i,0)], [], reverse)
 		
 	generate_normals()
 	index()
