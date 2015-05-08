@@ -586,6 +586,8 @@ class AddPrimitives:
 	
 	var modifiers
 	
+	var extra_modules = {}
+	
 	#Utilites
 	var dir
 	
@@ -658,11 +660,37 @@ class AddPrimitives:
 			for j in submenus[i]:
 				submenu.add_item(j)
 			
+		load_modules()
+		
+		if not extra_modules.empty():
+			popup_menu.add_separator()
+			
+			for module in extra_modules:
+				popup_menu.add_item(module)
+				
 		popup_menu.add_separator()
-		popup_menu.add_icon_item(get_icon('Reload', 'EditorIcons'), 'Reload Primitives')
+		popup_menu.add_icon_item(get_icon('Reload', 'EditorIcons'), 'Reload')
 		
 		if not popup_menu.is_connected("item_pressed", self, "popup_signal"):
 			popup_menu.connect("item_pressed", self, "popup_signal", [popup_menu])
+		
+	func load_modules():
+		extra_modules.clear()
+		
+		var path = get_plugins_folder() + '/Add Primitives/modules'
+		
+		var modules = dir.get_file_list(path)
+		modules = dir.get_scripts_from_list(modules)
+		
+		for mod in modules:
+			var temp = load(path + '/' + mod)
+			
+			if temp.can_instance():
+				temp = temp.new(self)
+				
+				extra_modules[temp.get_name()] = temp
+				
+		modules.clear()
 		
 	func popup_signal(id, menu):
 		current_script = null
@@ -671,8 +699,11 @@ class AddPrimitives:
 		
 		var command = menu.get_item_text(menu.get_item_index(id))
 		
-		if command == 'Reload Primitives':
+		if command == 'Reload':
 			update_menu()
+			
+		elif extra_modules.has(command):
+			extra_modules[command].main(get_object())
 			
 		else:
 			current_script = load(mesh_scripts[command]).new()
@@ -816,6 +847,7 @@ class AddPrimitives:
 		
 		var spatial_menu = MenuButton.new()
 		popup_menu = spatial_menu.get_popup()
+		popup_menu.set_custom_minimum_size(Vector2(140, 0))
 		var icon = preload('icon_mesh_instance_add.png')
 		spatial_menu.set_button_icon(icon)
 		spatial_menu.set_tooltip("Add New Primitive")
@@ -873,6 +905,6 @@ func _enter_tree():
 		
 func _exit_tree():
 	edit(null)
-	add_primitives.get_mesh_popup().free()
-	add_primitives.free()
+	add_primitives.get_mesh_popup().queue_free()
+	add_primitives.queue_free()
 	
