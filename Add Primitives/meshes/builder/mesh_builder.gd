@@ -25,6 +25,12 @@ extends SurfaceTool
 
 var parameters = []
 
+func commit():
+	var mesh = .commit()
+	mesh.regen_normalmaps()
+	
+	return mesh
+	
 func add_tri(vertex = [], uv = [], reverse = false):
 	assert( vertex.size() == 3 )
 	
