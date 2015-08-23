@@ -9,7 +9,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	var rd = Vector3(w, 0, 0)
 	var ud = Vector3(0, h, 0)
 	
-	var offset = Vector3(w/2, h/2, l/2) * -1
+	var offset = -Vector3(w/2, h/2, l/2)# * -1
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
@@ -22,25 +22,24 @@ func build_mesh(params, smooth = false, reverse = false):
 	var d = offset.distance_to(offset + Vector3(0, -h, l))
 	
 	offset.y += h
+	
 	add_quad([offset, offset + rd, offset + Vector3(w, -h, l), offset + Vector3(0, -h, l)], plane_uv(w, d), reverse)
 	add_tri([offset + Vector3(0, -h, l), offset - ud, offset], plane_uv(l, h, false), reverse)
 	add_tri([offset + rd, (offset + rd) - ud, offset + Vector3(w, -h, l)], plane_uv(h, l, false), reverse)
 	
-	generate_normals()
-	index()
-	
 	var mesh = commit()
-	clear()
 	
 	return mesh
 	
-func mesh_parameters(parameters):
-	add_tree_range(parameters, 'Width', 1, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Height', 1, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Length', 2, 0.1, 0.1, 100)
-	add_tree_empty(parameters)
-	add_tree_check(parameters, 'Fill Bottom', true)
-	add_tree_check(parameters, 'Fill End', true)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Width', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Height', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Length', 2, 0.1, 0.1, 100)
+	add_tree_empty(tree)
+	add_tree_check(tree, 'Fill Bottom', true)
+	add_tree_check(tree, 'Fill End', true)
 	
 func container():
 	return "Extra Objects"
+	
+

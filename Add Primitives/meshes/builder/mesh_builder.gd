@@ -1,6 +1,5 @@
 #==============================================================================#
-# Copyright (c) 2015 Franklin Sobrinho.                                        #
-#                                                                              #                                                   
+# Copyright (c) 2015 Franklin Sobrinho.                                        # #                                                                              #
 # Permission is hereby granted, free of charge, to any person obtaining        #
 # a copy of this software and associated documentation files (the "Software"), #
 # to deal in the Software without restriction, including without               #
@@ -23,11 +22,26 @@
 
 extends SurfaceTool
 
-var parameters = []
-
 func commit():
-	var mesh = .commit()
-	mesh.regen_normalmaps()
+	var mesh = Mesh.new()
+	
+	generate_normals()
+	index()
+	
+	.commit(mesh)
+	
+	var regen_normalmaps = true
+	
+	for i in range(mesh.get_surface_count()):
+		if not mesh.surface_get_format(i) & mesh.ARRAY_FORMAT_TEX_UV:
+			regen_normalmaps = false
+			
+			break
+			
+	if regen_normalmaps:
+		mesh.regen_normalmaps()
+	
+	clear()
 	
 	return mesh
 	
@@ -82,44 +96,52 @@ func add_quad(vertex = [], uv = [], reverse = false):
 		
 static func build_plane_verts(start, end, offset = Vector3(0,0,0)):
 	var verts = []
-	verts.append(Vector3(0,0,0) + offset + end)
-	verts.append(Vector3(0,0,0) + offset + end + start)
-	verts.append(Vector3(0,0,0) + offset + start)
-	verts.append(Vector3(0,0,0) + offset)
+	
+	verts.push_back(offset + end)
+	verts.push_back(offset + end + start)
+	verts.push_back(offset + start)
+	verts.push_back(offset)
+	
 	return verts
 	
-static func build_circle_verts_rot(pos, segments, radius = 1, rotation = [], axis = []):
-	var radians_circle = PI * 2
-	
+static func build_circle_verts(pos, segments, radius = 1):
 	var circle_verts = []
+	
+	var radians_circle = PI * 2
 	
 	for i in range(segments):
 		var angle = radians_circle * i/segments
-		var x = cos(angle) * radius
-		var z = sin(angle) * radius
 		
-		var vector = Vector3(x, 0, z)
+		var vector = Vector3()
 		
-		for i in range(rotation.size()):
-			vector = vector.rotated(axis[i], rotation[i])
-			
-		circle_verts.push_back(vector + pos)
+		vector.x = cos(angle) * radius
+		vector.z = sin(angle) * radius 
+		
+		vector += pos
+		
+		circle_verts.push_back(vector)
 		
 	circle_verts.push_back(circle_verts[0])
 	
 	return circle_verts
 	
-static func build_circle_verts(pos, segments, radius = 1):
-	var radians_circle = PI * 2
-	
+static func build_circle_verts_rot(pos, segments, radius = 1, rotation = [], axis = []):
 	var circle_verts = []
+	
+	var radians_circle = PI * 2
 	
 	for i in range(segments):
 		var angle = radians_circle * i/segments
-		var x = cos(angle) * radius
-		var z = sin(angle) * radius
 		
-		var vector = Vector3(x, 0, z) + pos
+		var vector = Vector3()
+		
+		vector.x = cos(angle) * radius
+		vector.z = sin(angle) * radius
+		
+		for i in range(rotation.size()):
+			vector = vector.rotated(axis[i], rotation[i])
+			
+		vector += pos
 		
 		circle_verts.push_back(vector)
 		
@@ -143,23 +165,24 @@ static func plane_uv(start, end, last = true):
 		
 	return uv
 	
-#Tree Item helper functions
+# Tree Item helper functions
 static func _create_item(tree):
 	var root = tree.get_root()
+	
 	if not root:
 		root = tree.create_item()
 		
 	var item = tree.create_item(root)
+	
 	return item
 	
 static func add_tree_empty(tree):
 	var tree_item = _create_item(tree)
 	
-	tree_item.set_collapsed(true)
 	tree_item.set_selectable(0, false)
 	tree_item.set_selectable(1, false)
 	
-func add_tree_range(tree, text, value, step = 1, _min = 1, _max = 50):
+static func add_tree_range(tree, text, value, step = 1, _min = 1, _max = 50):
 	var tree_item = _create_item(tree)
 	
 	tree_item.set_text(0, text)
@@ -175,9 +198,7 @@ func add_tree_range(tree, text, value, step = 1, _min = 1, _max = 50):
 	tree_item.set_range(1, value)
 	tree_item.set_editable(1, true)
 	
-	parameters.append(tree_item)
-	
-func add_tree_combo(tree, text, items, selected = 0):
+static func add_tree_combo(tree, text, items, selected = 0):
 	var tree_item = _create_item(tree)
 	
 	tree_item.set_text(0, text)
@@ -188,9 +209,7 @@ func add_tree_combo(tree, text, items, selected = 0):
 	tree_item.set_range(1, selected)
 	tree_item.set_editable(1, true)
 	
-	parameters.append(tree_item)
-	
-func add_tree_check(tree, text, checked = false):
+static func add_tree_check(tree, text, checked = false):
 	var tree_item = _create_item(tree)
 	
 	tree_item.set_text(0, text)
@@ -201,9 +220,7 @@ func add_tree_check(tree, text, checked = false):
 	tree_item.set_text(1, 'On')
 	tree_item.set_editable(1, true)
 	
-	parameters.append(tree_item)
-	
-func add_tree_entry(tree, text, string = ''):
+static func add_tree_entry(tree, text, string = ''):
 	var tree_item = _create_item(tree)
 	
 	tree_item.set_text(0, text)
@@ -213,7 +230,4 @@ func add_tree_entry(tree, text, string = ''):
 	tree_item.set_text(1, string)
 	tree_item.set_editable(1, true)
 	
-	parameters.append(tree_item)
-	
-func get_parameters():
-	return parameters
+

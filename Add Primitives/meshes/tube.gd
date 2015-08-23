@@ -24,16 +24,14 @@ func build_mesh(params, smooth = false, reverse = false):
 		add_quad([outer_circle[idx + 1] + off, outer_circle[idx] + off, outer_circle[idx] - off, outer_circle[idx + 1] -off], [], reverse)
 		add_quad([inner_circle[idx] + off, inner_circle[idx + 1] + off, inner_circle[idx + 1] - off, inner_circle[idx] -off], [], reverse)
 		
-	generate_normals()
-	index()
-	
 	var mesh = commit()
-	clear()
 	
 	return mesh
 
-func mesh_parameters(parameters):
-	add_tree_range(parameters, 'Height', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Inner Radius', 0.5, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Outer Radius', 1, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Steps', 16, 1, 1, 50)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Height', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Inner Radius', 0.5, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Outer Radius', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Steps', 16, 1, 1, 50)
+	
+

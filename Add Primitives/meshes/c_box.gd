@@ -22,7 +22,6 @@ func build_mesh(params, smooth = false, reverse = false):
 	add_quad([v[7]+h, v[6]+h, v[5]+h, v[4]+h],[], reverse)
 	add_quad([v[6]+h, v[7]+h, v[0]+h, v[1]+h], [], reverse)
 	
-	
 	add_quad([v[1],v[1]+h,v[2]+h,v[2]],[],reverse)
 	add_quad([v[2],v[2]+h,v[3]+h,v[3]],[],reverse)
 	add_quad([v[3],v[3]+h,v[0]+h,v[0]],[],reverse)
@@ -32,21 +31,18 @@ func build_mesh(params, smooth = false, reverse = false):
 	add_quad([v[5],v[5]+h,v[6]+h,v[6]],[],reverse)
 	add_quad([v[6],v[6]+h,v[1]+h,v[1]],[],reverse)
 	
-	generate_normals()
-	index()
-	
 	var mesh = commit()
-	clear()
 	
 	return mesh
 	
-func mesh_parameters(parameters):
-	add_tree_range(parameters, 'Center Length', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Center Width', 1, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Side Length', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Side Width', 0.5, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Height', 1, 0.1, 0.1, 100)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Center Length', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Center Width', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Side Length', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Side Width', 0.5, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Height', 1, 0.1, 0.1, 100)
 	
 func container():
 	return "Extra Objects"
 	
+

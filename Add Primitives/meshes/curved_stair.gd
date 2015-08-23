@@ -4,12 +4,13 @@ func build_mesh(params, smooth = false, reverse = false):
 	var angle = deg2rad(params[0])
 	var segments = params[2]
 	var height = params[1]/segments
-	var angle_inc = angle/segments
 	var outer = Vector3(params[3], 1, params[3])
 	var inner = Vector3(params[4], 1, params[4])
 	
 	var fill_bottom = params[5]
 	var fill_end = params[6]
+	
+	var angle_inc = angle/segments
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
@@ -24,6 +25,7 @@ func build_mesh(params, smooth = false, reverse = false):
 		add_quad([(vector*outer) + h, vector*outer, vector*inner, (vector*inner) + h], [], reverse)
 		
 		h.y *= i + 1
+		
 		add_quad([(vector_2*outer) + h, vector_2*outer, vector*outer, (vector*outer) + h], [], reverse)
 		add_quad([(vector*inner) + h, vector*inner, vector_2*inner, (vector_2*inner) + h], [], reverse)
 		
@@ -35,29 +37,27 @@ func build_mesh(params, smooth = false, reverse = false):
 			
 	if fill_end:
 		var i = segments
+		
 		var vector = Vector3(cos(angle_inc*i), i*height, sin(angle_inc*i))
 		var vector_2 = Vector3(cos(angle_inc*(i+1)), i*height, sin(angle_inc*(i+1)))
 		
 		add_quad([(vector*inner)+Vector3(0,-height*i,0), vector*inner, vector*outer, (vector*outer)+Vector3(0,-height*i,0)], [], reverse)
 		
-	generate_normals()
-	index()
-	
 	var mesh = commit()
-	clear()
 	
 	return mesh
 	
-func mesh_parameters(parameters):
-	add_tree_range(parameters, 'Angle', 90, 1, 1, 360)
-	add_tree_range(parameters, 'Stair Height', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Steps', 8, 1, 2, 100)
-	add_tree_range(parameters, 'Outer Radius', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Inner Radius', 1, 0.1, 0.1, 100)
-	add_tree_empty(parameters)
-	add_tree_check(parameters, 'Fill Bottom', true)
-	add_tree_check(parameters, 'Fill End', true)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Angle', 90, 1, 1, 360)
+	add_tree_range(tree, 'Stair Height', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Steps', 8, 1, 2, 100)
+	add_tree_range(tree, 'Outer Radius', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Inner Radius', 1, 0.1, 0.1, 100)
+	add_tree_empty(tree)
+	add_tree_check(tree, 'Fill Bottom', true)
+	add_tree_check(tree, 'Fill End', true)
 	
 func container():
 	return "Add Stair"
 	
+

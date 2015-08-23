@@ -4,7 +4,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	var r = params[0]    #Radius
 	var s = params[1]    #Segments
 	var c = params[2]    #Rings
-		
+	
 	var angle_inc = PI/c
 	var cc = Vector3(0,-r,0)    #Caps Center
 	
@@ -22,7 +22,7 @@ func build_mesh(params, smooth = false, reverse = false):
 		
 		pos = Vector3(0,-cos(angle_inc * (c - 1)) * r,0)
 		add_tri([ -cc, circle[idx] * rd + pos, circle[idx + 1] * rd + pos], [], reverse)
-	
+		
 	pos = Vector3(0,-cos(angle_inc) * r,0)
 	
 	for i in range(c - 2):
@@ -32,22 +32,20 @@ func build_mesh(params, smooth = false, reverse = false):
 		var next_pos = Vector3(0,-cos(angle_inc * (i + 2)) * r, 0)
 		
 		for idx in range(s):
-			
-			add_quad([circle[idx + 1] * rd + pos, circle[idx + 1] * next_radius + next_pos,\
-			          circle[idx] * next_radius + next_pos,\
+			add_quad([circle[idx + 1] * rd + pos,
+			          circle[idx + 1] * next_radius + next_pos,
+			          circle[idx] * next_radius + next_pos,
 			          circle[idx] * rd + pos], [], reverse)
 			
 		pos = next_pos
-	
-	generate_normals()
-	index()
-	
+		
 	var mesh = commit()
-	clear()
 	
 	return mesh
 	
-func mesh_parameters(settings):
-		add_tree_range(settings, 'Radius', 1, 0.1, 0.1, 100)
-		add_tree_range(settings, 'Segments', 16, 1, 3, 50)
-		add_tree_range(settings, 'Rings', 8, 1, 3, 50)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Radius', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Segments', 16, 1, 3, 50)
+	add_tree_range(tree, 'Rings', 8, 1, 3, 50)
+	
+

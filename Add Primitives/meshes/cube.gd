@@ -13,7 +13,6 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
-	var uv = [Vector2(1,1), Vector2(0,1), Vector2(0,0), Vector2(1,0)]
 	
 	add_quad(build_plane_verts(fd, rd, offset), plane_uv(w, l), reverse)
 	add_quad(build_plane_verts(rd, ud, offset), plane_uv(l, h), reverse)
@@ -22,15 +21,13 @@ func build_mesh(params, smooth = false, reverse = false):
 	add_quad(build_plane_verts(-ud, -rd, -offset), plane_uv(h, l), reverse)
 	add_quad(build_plane_verts(-fd, -ud, -offset), plane_uv(w, h), reverse)
 	
-	generate_normals()
-	index()
-	
 	var mesh = commit()
-	clear()
 	
 	return mesh
 	
-func mesh_parameters(settings):
-	add_tree_range(settings, 'Width', 2, 0.1, 0.1, 100)
-	add_tree_range(settings, 'Length', 2, 0.1, 0.1, 100)
-	add_tree_range(settings, 'Heigth', 2, 0.1, 0.1, 100)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Width', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Length', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Heigth', 2, 0.1, 0.1, 100)
+	
+

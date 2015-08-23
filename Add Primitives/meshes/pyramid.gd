@@ -16,25 +16,22 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 	add_quad(plane, uv, reverse)
 	
-	plane.append(plane[0])
+	plane.push_back(plane[0])
 	
 	for idx in range(4):
 		uv = [uv[0], uv[1], Vector2(0.5, 0.5)]
 		add_tri([plane[idx+1], plane[idx], Vector3(0, height, 0)], uv, reverse)
 		
-	generate_normals()
-	index()
-
 	var mesh = commit()
-	clear()
 	
 	return mesh
 	
-func mesh_parameters(parameters):
-	add_tree_range(parameters, 'Width', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Length', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Height', 1, 0.1, 0.1, 100)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Width', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Length', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Height', 1, 0.1, 0.1, 100)
 	
 func container():
 	return "Extra Objects"
-	 
+	
+

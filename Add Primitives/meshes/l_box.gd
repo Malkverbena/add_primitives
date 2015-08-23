@@ -24,23 +24,22 @@ func build_mesh(params, smooth = false, reverse = false):
 	add_quad([Vector3(0,0,fl), Vector3(0,h,fl), Vector3(fw,h,fl), Vector3(fw,0,fl)], [], reverse)
 	
 	center.y = h
+	
 	add_quad([center, Vector3(fw, h, sw), Vector3(fw, h, fl), Vector3(0, h, fl)], [], reverse)
 	add_quad([center, Vector3(sl, h, 0), Vector3(sl, h, sw), Vector3(fw, h, sw)], [], reverse)
 	
-	generate_normals()
-	index()
-	
 	var mesh = commit()
-	clear()
 	
 	return mesh
 	
-func mesh_parameters(parameters):
-	add_tree_range(parameters, 'Front Length', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Front Width', 1, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Side Length', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Side Width', 1, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Height', 1, 0.1, 0.1, 100)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Front Length', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Front Width', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Side Length', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Side Width', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Height', 1, 0.1, 0.1, 100)
 	
 func container():
 	return "Extra Objects"
+	
+

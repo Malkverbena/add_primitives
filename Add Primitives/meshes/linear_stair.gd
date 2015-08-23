@@ -22,22 +22,20 @@ func build_mesh(params, smooth = false, reverse = false):
 	if fill_bottom:
 		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, 0, steps * length)), [], reverse)
 		
-	generate_normals()
-	index()
-	
 	var mesh = commit()
-	clear()
 	
 	return mesh
 	
-func mesh_parameters(parameters):
-	add_tree_range(parameters, 'Steps', 10, 1, 1, 100)
-	add_tree_range(parameters, 'Step Width', 1, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Step Height', 0.2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Step Length', 0.2, 0.1, 0.1, 100)
-	add_tree_empty(parameters)
-	add_tree_check(parameters, 'Fill End', true)
-	add_tree_check(parameters, 'Fill Bottom', true)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Steps', 10, 1, 1, 100)
+	add_tree_range(tree, 'Step Width', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Step Height', 0.2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Step Length', 0.2, 0.1, 0.1, 100)
+	add_tree_empty(tree)
+	add_tree_check(tree, 'Fill End', true)
+	add_tree_check(tree, 'Fill Bottom', true)
 
 func container():
 	return "Add Stair"
+	
+

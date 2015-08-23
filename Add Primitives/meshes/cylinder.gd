@@ -81,17 +81,15 @@ func build_mesh(params, smooth = false, reverse = false):
 		min_pos = next_cut
 		next_cut.y += h
 		
-	generate_normals()
-	index()
-	
 	var mesh = commit()
-	clear()
 	
 	return mesh
 	
-func mesh_parameters(settings):
-	add_tree_range(settings, 'Radius', 1, 0.1, 0.1, 100)
-	add_tree_range(settings, 'Heigth', 2, 0.1, 0.1, 100)
-	add_tree_check(settings, 'Caps', true)
-	add_tree_range(settings, 'Segments', 16)
-	add_tree_range(settings, 'Rings', 1, 1, 1, 50)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Radius', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Heigth', 2, 0.1, 0.1, 100)
+	add_tree_check(tree, 'Caps', true)
+	add_tree_range(tree, 'Segments', 16)
+	add_tree_range(tree, 'Rings', 1, 1, 1, 50)
+	
+

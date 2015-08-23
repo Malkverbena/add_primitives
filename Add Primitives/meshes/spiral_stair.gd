@@ -4,10 +4,11 @@ func build_mesh(params, smooth = false, reverse = false):
 	var spirals = params[0]
 	var height = params[1]
 	var segments = params[2]
-	var angle_inc = (PI*2)/segments
 	var outer = Vector3(params[3], 1, params[3])
 	var inner = Vector3(params[4], 1, params[4])
 	var eh = params[5]    #Extra Parameters
+	
+	var angle_inc = (PI*2)/segments
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
@@ -33,22 +34,19 @@ func build_mesh(params, smooth = false, reverse = false):
 			
 			add_quad([vector_2*inner, vector_2*outer,  vector*outer, vector*inner], [], reverse)
 			
-	generate_normals()
-	index()
-	
 	var mesh = commit()
-	clear()
 	
 	return mesh
 	
-func mesh_parameters(parameters):
-	add_tree_range(parameters, 'Spirals', 1, 1, 1, 720)
-	add_tree_range(parameters, 'Spiral Height', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Steps per Spiral', 8, 1, 2, 100)
-	add_tree_range(parameters, 'Outer Radius', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Inner Radius', 1, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Extra Step Height', 0, 0.01, -100, 100)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Spirals', 1, 1, 1, 720)
+	add_tree_range(tree, 'Spiral Height', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Steps per Spiral', 8, 1, 2, 100)
+	add_tree_range(tree, 'Outer Radius', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Inner Radius', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Extra Step Height', 0, 0.01, -100, 100)
 	
 func container():
 	return "Add Stair"
 	
+

@@ -33,20 +33,18 @@ func build_mesh(params, smooth = false, reverse = false):
 		uv = [Vector2(1, 1), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0)]
 		add_quad(build_plane_verts(Vector3(0, 0, l), Vector3(r*2, 0, 0), Vector3(r, 0, l/2) * -1), uv, reverse)
 		
-	generate_normals()
-	index()
-	
 	var mesh = commit()
-	clear()
 	
 	return mesh
 	
-func mesh_parameters(parameters):
-	add_tree_range(parameters, 'Radius', 1, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Length', 2, 0.1, 0.1, 100)
-	add_tree_range(parameters, 'Segments', 16, 1, 2, 50)
-	add_tree_empty(parameters)
-	add_tree_check(parameters, 'Fill Bottom', true)
+func mesh_parameters(tree):
+	add_tree_range(tree, 'Radius', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Length', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Segments', 16, 1, 2, 50)
+	add_tree_empty(tree)
+	add_tree_check(tree, 'Fill Bottom', true)
 	
 func container():
 	return 'Extra Objects'
+	
+
