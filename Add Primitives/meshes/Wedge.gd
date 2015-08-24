@@ -15,7 +15,7 @@ func build_mesh(params, smooth = false, reverse = false):
 	var rd = Vector3(w, 0, 0)
 	var ud = Vector3(0, h, 0)
 	
-	var offset = -Vector3(w/2, h/2, l/2)# * -1
+	var offset = -Vector3(w/2, h/2, l/2)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	add_smooth_group(smooth)
