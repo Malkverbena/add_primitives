@@ -611,6 +611,9 @@ func clear():
 	extrude_dialog.clear_canvas()
 	
 func edit_primitive():
+	if not extrude_dialog.get_mesh_instance():
+		return
+		
 	extrude_dialog.show_dialog()
 	
 func exec(object):
