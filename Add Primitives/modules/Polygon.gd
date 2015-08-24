@@ -365,6 +365,14 @@ class ExtrudeDialog:
 		
 		emit_signal("poly_edited")
 		
+	func _cancel():
+		if mesh_instance:
+			mesh_instance.queue_free()
+			
+		mesh_instance = null
+		
+		clear_canvas()
+		
 	func _changed(arg1 = null):
 		emit_signal("poly_edited")
 		
@@ -567,6 +575,8 @@ class ExtrudeDialog:
 		
 		canvas.connect("input_event", self, "_canvas_input_event")
 		canvas.connect("draw", self, "_canvas_draw")
+		
+		get_cancel().connect("pressed", self, "_cancel")
 		
 		connect("poly_edited", self, "update_mesh")
 		
