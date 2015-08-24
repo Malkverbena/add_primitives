@@ -700,11 +700,11 @@ class AddPrimitives:
 		scripts.sort()
 		
 		for name in scripts:
-			var key = name.basename().replace('_', ' ').capitalize()
+			var p = path + '/meshes/' + name
 			
-			mesh_scripts[key] = path + '/meshes/' + name
+			var temp_script = load(p).new()
 			
-			var temp_script = load(mesh_scripts[key]).new()
+			var key = temp_script.get_name()
 			
 			if temp_script.has_method('container'):
 				var container = temp_script.container()
@@ -719,6 +719,8 @@ class AddPrimitives:
 			else:
 				popup_menu.add_item(key)
 				
+			mesh_scripts[key] = p
+			
 		if submenus.size():
 			popup_menu.add_separator()
 			
@@ -1009,7 +1011,7 @@ class AddPrimitives:
 		mesh_popup.get_transform_dialog().connect("transform_changed", self, "transform_mesh")
 		
 		# Load modifiers
-		var m_path = get_data_dir() + '/modifiers.gd'
+		var m_path = get_data_dir() + '/Modifiers.gd'
 		
 		var temp = load(m_path).new()
 		var t_mod = temp.get_modifiers()

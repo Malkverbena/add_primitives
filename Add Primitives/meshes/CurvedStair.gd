@@ -1,5 +1,8 @@
-extends "builder/mesh_builder.gd"
+extends "builder/MeshBuilder.gd"
 
+static func get_name():
+	return "Curved Stair"
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var angle = deg2rad(params[0])
 	var segments = params[2]

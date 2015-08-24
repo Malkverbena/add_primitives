@@ -1,5 +1,8 @@
-extends "builder/mesh_builder.gd"
+extends "builder/MeshBuilder.gd"
 
+static func get_name():
+	return "L Box"
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var fl = params[0]
 	var fw = params[1]

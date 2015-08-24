@@ -1,5 +1,8 @@
-extends "builder/mesh_builder.gd"
+extends "builder/MeshBuilder.gd"
 
+static func get_name():
+	return "Wedge"
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var w = params[0]
 	var h = params[1]

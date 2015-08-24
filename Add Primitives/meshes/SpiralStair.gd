@@ -1,5 +1,8 @@
-extends "builder/mesh_builder.gd"
+extends "builder/MeshBuilder.gd"
 
+static func get_name():
+	return "Spiral Stair"
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var spirals = params[0]
 	var height = params[1]

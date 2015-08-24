@@ -1,4 +1,4 @@
-extends "builder/mesh_builder.gd"
+extends "builder/MeshBuilder.gd"
 
 const Derivate = {
 	C_SHAPE = 0,
@@ -8,6 +8,9 @@ const Derivate = {
 	REMOVE_CAPS = 4
 }
 
+static func get_name():
+	return "Cube Derivate"
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var drv = params[0]  #Derivate
 	var w = params[1]    #Width

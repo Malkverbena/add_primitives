@@ -1,5 +1,8 @@
-extends "builder/mesh_builder.gd"
+extends "builder/MeshBuilder.gd"
 
+static func get_name():
+	return "Arch"
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var r = params[0]    #Radius
 	var l = params[1]    #Length

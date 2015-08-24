@@ -1,4 +1,7 @@
-extends "builder/mesh_builder.gd"
+extends "builder/MeshBuilder.gd"
+
+static func get_name():
+	return "Plane"
 	
 func build_mesh(params, smooth = false, reverse = false):
 	var l = params[0]     #Lenght
