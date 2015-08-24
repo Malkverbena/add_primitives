@@ -32,18 +32,27 @@
   * Offset
   * Random
 
-###Installation
+###Install
+
+##install.py (Linux and OSX)
+```
+git clone https://github.com/TheHX/add_primitives.git
+cd app_primitives
+python3 install.py
+```
+
+##Manual Install
 Just copy and paste the 'Add Primitives' folder into godot plugins folder:
 
 * Windows: **%APPDATA%\Godot\plugins**
 * Linux/OSX: **~/.godot/plugins/**
 
+###Usage
 Open Godot, and in editor go to Settings->Editor Settings, and select "Plugins" tab, and enable the plugin. 
 
 If you don't see the plugin, click on reload button. If it don't appear, check if the plugin is in the 
 right folder. Else you can open a issue to see what's is wrong.
 
-###Usage
 After enabling the plugin:
 
 1. Add a Spatial node to scene
