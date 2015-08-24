@@ -37,7 +37,7 @@
 ####install.py (Linux and OSX)
 ```
 git clone https://github.com/TheHX/add_primitives.git
-cd app_primitives
+cd add_primitives
 python install.py
 ```
 
