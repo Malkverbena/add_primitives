@@ -699,27 +699,26 @@ class AddPrimitives:
 		scripts = dir.get_scripts_from_list(scripts)
 		scripts.sort()
 		
-		for name in scripts:
-			var p = path + '/meshes/' + name
+		for f_name in scripts:
+			var p = path + '/meshes/' + f_name
 			
-			var temp_script = load(p).new()
+			var temp_script = load(p)
 			
-			var key = temp_script.get_name()
+			var name = temp_script.get_name()
+			var container = temp_script.get_container()
 			
-			if temp_script.has_method('container'):
-				var container = temp_script.container()
-				
+			if container:
 				container = container.replace(' ', '_').to_lower()
 				
 				if not submenus.has(container):
 					submenus[container] = []
 					
-				submenus[container].push_back(key)
+				submenus[container].push_back(name)
 				
 			else:
-				popup_menu.add_item(key)
+				popup_menu.add_item(name)
 				
-			mesh_scripts[key] = p
+			mesh_scripts[name] = p
 			
 		if submenus.size():
 			popup_menu.add_separator()

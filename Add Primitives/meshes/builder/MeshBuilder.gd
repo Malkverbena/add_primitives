@@ -22,6 +22,12 @@
 
 extends SurfaceTool
 
+static func get_name():
+	return ""
+	
+static func get_container():
+	return ""
+	
 func commit():
 	var mesh = Mesh.new()
 	

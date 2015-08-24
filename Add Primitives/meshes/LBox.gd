@@ -3,6 +3,9 @@ extends "builder/MeshBuilder.gd"
 static func get_name():
 	return "L Box"
 	
+static func get_container():
+	return "Extra Objects"
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var fl = params[0]
 	var fw = params[1]
@@ -41,8 +44,5 @@ func mesh_parameters(tree):
 	add_tree_range(tree, 'Side Length', 2, 0.1, 0.1, 100)
 	add_tree_range(tree, 'Side Width', 1, 0.1, 0.1, 100)
 	add_tree_range(tree, 'Height', 1, 0.1, 0.1, 100)
-	
-func container():
-	return "Extra Objects"
 	
 

@@ -3,6 +3,9 @@ extends "builder/MeshBuilder.gd"
 static func get_name():
 	return "Spiral Stair"
 	
+static func get_container():
+	return "Add Stair"
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var spirals = params[0]
 	var height = params[1]
@@ -48,8 +51,5 @@ func mesh_parameters(tree):
 	add_tree_range(tree, 'Outer Radius', 2, 0.1, 0.1, 100)
 	add_tree_range(tree, 'Inner Radius', 1, 0.1, 0.1, 100)
 	add_tree_range(tree, 'Extra Step Height', 0, 0.01, -100, 100)
-	
-func container():
-	return "Add Stair"
 	
 

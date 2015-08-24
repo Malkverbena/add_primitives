@@ -11,6 +11,9 @@ const Derivate = {
 static func get_name():
 	return "Cube Derivate"
 	
+static func get_container():
+	return "Extra Objects"
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var drv = params[0]  #Derivate
 	var w = params[1]    #Width
@@ -62,8 +65,5 @@ func mesh_parameters(tree):
 	add_tree_range(tree, 'Width', 2, 0.1, 0.1, 100)
 	add_tree_range(tree, 'Length', 2, 0.1, 0.1, 100)
 	add_tree_range(tree, 'Heigth', 2, 0.1, 0.1, 100)
-	
-func container():
-	return "Extra Objects"
 	
 

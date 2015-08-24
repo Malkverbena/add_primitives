@@ -3,6 +3,9 @@ extends "builder/MeshBuilder.gd"
 static func get_name():
 	return "Arch"
 	
+static func get_container():
+	return 'Extra Objects'
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var r = params[0]    #Radius
 	var l = params[1]    #Length
@@ -46,8 +49,5 @@ func mesh_parameters(tree):
 	add_tree_range(tree, 'Segments', 16, 1, 2, 50)
 	add_tree_empty(tree)
 	add_tree_check(tree, 'Fill Bottom', true)
-	
-func container():
-	return 'Extra Objects'
 	
 

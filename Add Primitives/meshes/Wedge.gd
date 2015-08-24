@@ -3,6 +3,9 @@ extends "builder/MeshBuilder.gd"
 static func get_name():
 	return "Wedge"
 	
+static func get_container():
+	return "Extra Objects"
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var w = params[0]
 	var h = params[1]
@@ -41,8 +44,5 @@ func mesh_parameters(tree):
 	add_tree_empty(tree)
 	add_tree_check(tree, 'Fill Bottom', true)
 	add_tree_check(tree, 'Fill End', true)
-	
-func container():
-	return "Extra Objects"
 	
 

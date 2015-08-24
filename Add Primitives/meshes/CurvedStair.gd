@@ -3,6 +3,9 @@ extends "builder/MeshBuilder.gd"
 static func get_name():
 	return "Curved Stair"
 	
+static func get_container():
+	return "Add Stair"
+	
 func build_mesh(params, smooth = false, reverse = false):
 	var angle = deg2rad(params[0])
 	var segments = params[2]
@@ -59,8 +62,5 @@ func mesh_parameters(tree):
 	add_tree_empty(tree)
 	add_tree_check(tree, 'Fill Bottom', true)
 	add_tree_check(tree, 'Fill End', true)
-	
-func container():
-	return "Add Stair"
 	
 
