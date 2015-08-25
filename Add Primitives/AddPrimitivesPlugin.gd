@@ -234,15 +234,13 @@ class ModifierDialog:
 	
 	const Tool = {
 		ERASE = 0,
-		MOVEUP = 1,
-		MOVEDOWN = 2
+		RELOAD = 1
 	}
 	
 	var modifiers
 	var menu
 	var remove
-	var move_up
-	var move_down
+	var reload
 	
 	var items = []
 	
@@ -266,6 +264,9 @@ class ModifierDialog:
 		item.set_text(1, 'On')
 		item.set_editable(1, true)
 		item.set_selectable(1, false)
+		
+		item.set_custom_bg_color(0, get_color('prop_category', 'Editor'))
+		item.set_custom_bg_color(1, get_color('prop_category', 'Editor'))
 		
 		item.set_metadata(0, script.get_name())
 		
@@ -301,21 +302,17 @@ class ModifierDialog:
 	func modifier_tools(what):
 		var item = modifiers.get_selected()
 		
-		if what == Tool.MOVEUP:
-			if item.get_prev() != null:
-				item.move_to_top()
-				
-		elif what == Tool.MOVEDOWN:
-			if item.get_next() != null:
-				item.move_to_bottom()
-				
+		if what == Tool.RELOAD:
+			emit_signal("modifier_edited")
+			
 		elif what == Tool.ERASE:
 			items.erase(item)
 			item.get_parent().remove_child(item)
 			
+			if items.empty() and not reload.is_disabled():
+				reload.set_disabled(true)
+				
 			remove.set_disabled(true)
-			move_up.set_disabled(true)
-			move_down.set_disabled(true)
 			
 		modifiers.update()
 		
@@ -354,6 +351,9 @@ class ModifierDialog:
 		
 		create_modifier(modifiers_scripts[mod])
 		
+		if items.size() and reload.is_disabled():
+			reload.set_disabled(false)
+			
 		emit_signal("modifier_edited")
 		
 	func _item_edited():
@@ -364,13 +364,9 @@ class ModifierDialog:
 		
 		if item.get_parent() == modifiers.get_root():
 			remove.set_disabled(false)
-			move_up.set_disabled(false)
-			move_down.set_disabled(false)
 			
 		else:
 			remove.set_disabled(true)
-			move_up.set_disabled(true)
-			move_down.set_disabled(true)
 			
 	func _init(base):
 		set_name("Modifiers")
@@ -402,21 +398,14 @@ class ModifierDialog:
 		hbox_tools.add_child(s)
 		s.set_h_size_flags(SIZE_EXPAND_FILL)
 		
-		move_up = ToolButton.new()
-		move_up.set_button_icon(base.get_icon('MoveUp', 'EditorIcons'))
-		move_up.set_tooltip("Move to Top")
-		move_up.set_disabled(true)
-		hbox_tools.add_child(move_up)
-		
-		move_down = ToolButton.new()
-		move_down.set_button_icon(base.get_icon('MoveDown', 'EditorIcons'))
-		move_down.set_tooltip("Move to Bottom")
-		move_down.set_disabled(true)
-		hbox_tools.add_child(move_down)
+		reload = ToolButton.new()
+		reload.set_button_icon(base.get_icon('Reload', 'EditorIcons'))
+		reload.set_tooltip("Reload Modifiers")
+		reload.set_disabled(true)
+		hbox_tools.add_child(reload)
 		
 		remove.connect("pressed", self, "modifier_tools", [Tool.ERASE])
-		move_up.connect("pressed", self, "modifier_tools", [Tool.MOVEUP])
-		move_down.connect("pressed", self, "modifier_tools", [Tool.MOVEDOWN])
+		reload.connect("pressed", self, "modifier_tools", [Tool.RELOAD])
 		
 		modifiers.connect("item_edited", self, "_item_edited")
 		modifiers.connect("cell_selected", self, "_item_selected")
@@ -1020,8 +1009,9 @@ class AddPrimitives:
 			
 # End AddPrimitives
 
-var add_primitives
 var gui_base
+
+var add_primitives
 
 static func get_name():
 	return "Add Primitives"
