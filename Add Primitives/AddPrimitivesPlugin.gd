@@ -639,7 +639,7 @@ class AddPrimitives:
 	
 	var mesh_scripts = {}
 	var modifiers = {}
-	var extra_modules = {}
+	var modules = {}
 	
 	# Utilites
 	var dir 
@@ -674,10 +674,11 @@ class AddPrimitives:
 		
 	func update_menu():
 		popup_menu.clear()
+		mesh_scripts.clear()
 		
 		for c in popup_menu.get_children():
-			if c.get_type() == 'PopupMenu':
-				c.queue_free()
+			if c.is_type("PopupMenu"):
+				c.free()
 				
 		var submenus = {}
 		
@@ -715,6 +716,7 @@ class AddPrimitives:
 			for i in submenus.keys():
 				var submenu = PopupMenu.new()
 				submenu.set_name(i)
+				
 				popup_menu.add_child(submenu)
 				
 				var n = i.replace('_', ' ')
@@ -728,13 +730,11 @@ class AddPrimitives:
 				for j in submenus[i]:
 					submenu.add_item(j)
 					
-		load_modules()
-		
-		if not extra_modules.empty():
+		if not modules.empty():
 			popup_menu.add_separator()
 			
-			for module in extra_modules:
-				popup_menu.add_item(module)
+			for m in modules:
+				popup_menu.add_item(m)
 				
 		popup_menu.add_separator()
 		
@@ -749,22 +749,20 @@ class AddPrimitives:
 			popup_menu.connect("item_pressed", self, "popup_signal", [popup_menu])
 			
 	func load_modules():
-		extra_modules.clear()
-		
 		var path = get_data_dir() + '/modules'
 		
-		var modules = dir.get_file_list(path)
-		modules = dir.get_scripts_from_list(modules)
+		var mods = dir.get_file_list(path)
+		mods = dir.get_scripts_from_list(mods)
 		
-		for mod in modules:
-			var temp = load(path + '/' + mod)
+		for m in mods:
+			var temp = load(path + '/' + m)
 			
 			if temp.can_instance():
 				temp = temp.new(self)
 				
-				extra_modules[temp.get_name()] = temp
+				modules[temp.get_name()] = temp
 				
-		modules.clear()
+		mods.clear()
 		
 	func popup_signal(id, menu):
 		popup_menu.hide()
@@ -773,7 +771,7 @@ class AddPrimitives:
 		
 		if command == 'Edit Primitive':
 			if last_module:
-				module_call(extra_modules[last_module], "edit_primitive")
+				module_call(modules[last_module], "edit_primitive")
 				
 				return
 				
@@ -795,8 +793,8 @@ class AddPrimitives:
 		elif command == 'Reload':
 			update_menu()
 			
-		elif extra_modules.has(command):
-			module_call(extra_modules[command], "exec", node)
+		elif modules.has(command):
+			module_call(modules[command], "exec", node)
 			
 			last_module = command
 			
@@ -804,7 +802,7 @@ class AddPrimitives:
 			
 		else:
 			if last_module:
-				module_call(extra_modules[last_module], "clear")
+				module_call(modules[last_module], "clear")
 				
 			last_module = ""
 			
@@ -965,8 +963,8 @@ class AddPrimitives:
 		meshes_to_modify.clear()
 		
 		mesh_scripts.clear()
-		extra_modules.clear()
 		modifiers.clear()
+		modules.clear()
 		
 	func _init(editor_plugin, base):
 		dir = DirectoryUtilities.new()
@@ -984,6 +982,8 @@ class AddPrimitives:
 		add_child(spatial_menu)
 		
 		editor_plugin.add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, self)
+		
+		load_modules()
 		
 		update_menu()
 		
