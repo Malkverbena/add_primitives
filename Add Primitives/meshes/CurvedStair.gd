@@ -1,53 +1,79 @@
 extends "builder/MeshBuilder.gd"
 
+var angle = PI/2
+var stair_height = 2.0
+var steps = 8
+var outer_radius = 2.0
+var inner_radius = 1.0
+var fill_bottom = true
+var fill_end = true
+
 static func get_name():
 	return "Curved Stair"
 	
 static func get_container():
 	return "Add Stair"
 	
-func build_mesh(params, smooth = false, reverse = false):
-	var angle = deg2rad(params[0])
-	var segments = params[2]
-	var height = params[1]/segments
-	var outer = Vector3(params[3], 1, params[3])
-	var inner = Vector3(params[4], 1, params[4])
+func set_parameter(name, value):
+	if name == 'Angle':
+		angle = deg2rad(value)
+		
+	elif name == 'Stair Height':
+		stair_height = value
+		
+	elif name == 'Steps':
+		steps = value
+		
+	elif name == 'Outer Radius':
+		outer_radius = value
+		
+	elif name == 'Inner Radius':
+		inner_radius = value
+		
+	elif name == 'Fill Bottom':
+		fill_bottom = value
+		
+	elif name == 'Fill End':
+		fill_end = value
+		
+func build_mesh(smooth = false, reverse = false):
+	var h = stair_height/steps
+	var or_ = Vector3(outer_radius, 1, outer_radius)
+	var ir = Vector3(inner_radius, 1, inner_radius)
 	
-	var fill_bottom = params[5]
-	var fill_end = params[6]
-	
-	var angle_inc = angle/segments
+	var angle_inc = angle/steps
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
+	
 	add_smooth_group(smooth)
 	
-	for i in range(segments):
-		var vector = Vector3(cos(angle_inc*i), (i+1)*height, sin(angle_inc*i))
-		var vector_2 = Vector3(cos(angle_inc*(i+1)), (i+1)*height, sin(angle_inc*(i+1)))
+	for i in range(steps):
+		var v = Vector3(cos(angle_inc*i), (i+1)*h, sin(angle_inc*i))
+		var v2 = Vector3(cos(angle_inc*(i+1)), (i+1)*h, sin(angle_inc*(i+1)))
 		
-		var h = Vector3(0, -height, 0)
+		var base = Vector3(0, -h, 0)
 		
-		add_quad([vector*inner, vector*outer, vector_2*outer, vector_2*inner], [], reverse)
-		add_quad([(vector*outer) + h, vector*outer, vector*inner, (vector*inner) + h], [], reverse)
+		add_quad([v*ir, v*or_, v2*or_, v2*ir], [], reverse)
+		add_quad([v*or_ + base, v*or_, v*ir, v*ir + base], [], reverse)
 		
-		h.y *= i + 1
+		base.y *= i + 1
 		
-		add_quad([(vector_2*outer) + h, vector_2*outer, vector*outer, (vector*outer) + h], [], reverse)
-		add_quad([(vector*inner) + h, vector*inner, vector_2*inner, (vector_2*inner) + h], [], reverse)
+		add_quad([v2*or_ + base, v2*or_, v*or_, v*or_ + base], [], reverse)
+		add_quad([v*ir + base, v*ir, v2*ir, v2*ir + base], [], reverse)
 		
 		if fill_bottom:
-			vector.y = 0
-			vector_2.y = 0
+			v.y = 0
+			v2.y = 0
 			
-			add_quad([vector_2*inner, vector_2*outer,  vector*outer, vector*inner], [], reverse)
+			add_quad([v2*ir, v2*or_, v*or_, v*ir], [], reverse)
 			
 	if fill_end:
-		var i = segments
+		var i = steps
 		
-		var vector = Vector3(cos(angle_inc*i), i*height, sin(angle_inc*i))
-		var vector_2 = Vector3(cos(angle_inc*(i+1)), i*height, sin(angle_inc*(i+1)))
+		var v = Vector3(cos(angle_inc*i), i*h, sin(angle_inc*i))
+		var v2 = Vector3(cos(angle_inc*(i+1)), i*h, sin(angle_inc*(i+1)))
 		
-		add_quad([(vector*inner)+Vector3(0,-height*i,0), vector*inner, vector*outer, (vector*outer)+Vector3(0,-height*i,0)], [], reverse)
+		add_quad([v*ir + Vector3(0,-h*i,0), v*ir, v*or_, v*or_ + Vector3(0,-h*i,0)], [], reverse)
 		
 	var mesh = commit()
 	
@@ -55,10 +81,10 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 func mesh_parameters(tree):
 	add_tree_range(tree, 'Angle', 90, 1, 1, 360)
-	add_tree_range(tree, 'Stair Height', 2, 0.1, 0.1, 100)
-	add_tree_range(tree, 'Steps', 8, 1, 2, 100)
-	add_tree_range(tree, 'Outer Radius', 2, 0.1, 0.1, 100)
-	add_tree_range(tree, 'Inner Radius', 1, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Stair Height', 2)
+	add_tree_range(tree, 'Steps', 8, 1, 2, 64)
+	add_tree_range(tree, 'Outer Radius', 2)
+	add_tree_range(tree, 'Inner Radius', 1)
 	add_tree_empty(tree)
 	add_tree_check(tree, 'Fill Bottom', true)
 	add_tree_check(tree, 'Fill End', true)

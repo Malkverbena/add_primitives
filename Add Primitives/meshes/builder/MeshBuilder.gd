@@ -58,7 +58,7 @@ func add_tri(vertex = [], uv = [], reverse = false):
 		vertex.invert()
 		uv.invert()
 		
-	if uv.size() == 3:
+	if uv.size():
 		add_uv(uv[0])
 		add_vertex(vertex[0])
 		add_uv(uv[1])
@@ -188,7 +188,7 @@ static func add_tree_empty(tree):
 	tree_item.set_selectable(0, false)
 	tree_item.set_selectable(1, false)
 	
-static func add_tree_range(tree, text, value, step = 1, _min = 1, _max = 50):
+static func add_tree_range(tree, text, value, step = 0.01, min_ = 0.01, max_ = 100):
 	var tree_item = _create_item(tree)
 	
 	tree_item.set_text(0, text)
@@ -200,7 +200,7 @@ static func add_tree_range(tree, text, value, step = 1, _min = 1, _max = 50):
 	tree_item.set_selectable(0, false)
 	
 	tree_item.set_cell_mode(1, 2)
-	tree_item.set_range_config(1, _min, _max, step)
+	tree_item.set_range_config(1, min_, max_, step)
 	tree_item.set_range(1, value)
 	tree_item.set_editable(1, true)
 	

@@ -1,56 +1,71 @@
 extends "builder/MeshBuilder.gd"
 
+var radius = 1
+var height = 1
+var segments = 16
+var height_segments = 8
+
 static func get_name():
 	return "Capsule"
 	
-func build_mesh(params, smooth = false, reverse = false):
-	var sr = params[0]   #Sphere Radius
-	var h = params[1]    #Height
-	var s = params[2]    #Segments
-	var c = params[3]    #Cuts
+func set_parameter(name, value):
+	if name == 'Radius':
+		radius = value
 		
-	var angle_inc = PI/c
-	var cc = Vector3(0,sr + h,0)    #Caps Center
+	elif name == 'Height':
+		height = value
+		
+	elif name == 'Segments':
+		segments = value
+		
+	elif name == 'Height Segments':
+		height_segments = value
+		
+func build_mesh(smooth = false, reverse = false):
+	var angle = PI/height_segments
 	
-	var circle = build_circle_verts(Vector3(0,0,0), s, sr)
+	var cc = Vector3(0,radius + height,0)
 	
-	var r = Vector3(sin(angle_inc), 0, sin(angle_inc))    #Radius
+	var circle = build_circle_verts(Vector3(0,0,0), segments, radius)
+	
+	var r = Vector3(sin(angle), 0, sin(angle))    #Radius
 	var p    #Positions
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
+	
 	add_smooth_group(smooth)
 	
-	for idx in range(s):
-		p = Vector3(0,-cos(angle_inc) * sr - h,0)
+	for idx in range(segments):
+		p = Vector3(0,-cos(angle) * radius - height, 0)
 		add_tri([(circle[idx + 1] * r) + p, (circle[idx] * r) + p, -cc], [], reverse)
 		
-		p = Vector3(0,-cos(angle_inc * (c - 1)) * sr + h,0)
+		p = Vector3(0,-cos(angle * (height_segments - 1)) * radius + height,0)
 		add_tri([cc, (circle[idx] * r) + p, (circle[idx + 1] * r + p)], [], reverse)
 		
-	for i in range((c - 2)/2):
-		r = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
-		var nr = Vector3(sin(angle_inc * (i + 2)), 0, sin(angle_inc * (i + 2)))    #Next Radius
+	for i in range((height_segments - 2)/2):
+		r = Vector3(sin(angle * (i + 1)), 0, sin(angle * (i + 1)))
+		var nr = Vector3(sin(angle * (i + 2)), 0, sin(angle * (i + 2)))    #Next Radius
 		
-		var np = Vector3(0, -cos(angle_inc * (i + 2)) * sr - h, 0)
+		var np = Vector3(0, -cos(angle * (i + 2)) * radius - height, 0)
 		
 		if i == 0:
-			p = Vector3(0,-cos(angle_inc) * sr - h,0)
+			p = Vector3(0,-cos(angle) * radius - height,0)
 		
-		for idx in range(s):
+		for idx in range(segments):
 			add_quad([circle[idx+1] * r + p, circle[idx+1] * nr + np, circle[idx] * nr + np, circle[idx] * r + p], [], reverse)
 		p = np
 		
-	for i in range(((c - 2)/2), c - 1):
-		r = Vector3(sin(angle_inc * i), 0, sin(angle_inc * i))
+	for i in range(((height_segments - 2)/2), height_segments - 1):
+		r = Vector3(sin(angle * i), 0, sin(angle * i))
 		
-		var nr = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
+		var nr = Vector3(sin(angle * (i + 1)), 0, sin(angle * (i + 1)))
 		
-		if i == ((c - 2)/2):
-			r = Vector3(sin(angle_inc * (i + 1)), 0, sin(angle_inc * (i + 1)))
+		if i == ((height_segments - 2)/2):
+			r = Vector3(sin(angle * (i + 1)), 0, sin(angle * (i + 1)))
 			
-		var np = Vector3(0, -cos(angle_inc * (i + 1)) * sr + h, 0)
+		var np = Vector3(0, -cos(angle * (i + 1)) * radius + height, 0)
 		
-		for idx in range(s):
+		for idx in range(segments):
 			add_quad([circle[idx+1] * r + p, circle[idx+1] * nr + np, circle[idx] * nr + np, circle[idx] * r + p], [], reverse)
 			
 		p = np
@@ -60,9 +75,9 @@ func build_mesh(params, smooth = false, reverse = false):
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_range(tree, 'S. Radius', 1, 0.1, 0.1, 100)
-	add_tree_range(tree, 'C. Heigth', 1, 0.1, 0.1, 100)
-	add_tree_range(tree, 'Segments', 16, 1, 3, 50)
-	add_tree_range(tree, 'Cuts', 8, 2, 4, 50)
+	add_tree_range(tree, 'Radius', 1)
+	add_tree_range(tree, 'Height', 1)
+	add_tree_range(tree, 'Segments', 16, 1, 3, 64)
+	add_tree_range(tree, 'Height Segments', 8, 2, 4, 64)
 	
 

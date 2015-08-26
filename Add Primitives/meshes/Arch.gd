@@ -1,22 +1,34 @@
 extends "builder/MeshBuilder.gd"
 
+var radius = 1.0
+var length = 2.0
+var segments = 16
+var fill_bottom = true
+
 static func get_name():
 	return "Arch"
 	
 static func get_container():
 	return 'Extra Objects'
 	
-func build_mesh(params, smooth = false, reverse = false):
-	var r = params[0]    #Radius
-	var l = params[1]    #Length
-	var s = params[2]    #Segments
-	var fill_bottom = params[3]
+func set_parameter(name, value):
+	if name == 'Radius':
+		radius = value
+		
+	elif name == 'Length':
+		length = value
+		
+	elif name == 'Segments':
+		segments = value
+		
+	elif name == 'Fill Bottom':
+		fill_bottom = value
+		
+func build_mesh(smooth = false, reverse = false):
+	var angle = PI/segments
+	var r = Vector3(radius, radius, 1)
 	
-	var angle_inc = PI/s
-	var radius = Vector3(1, r, r)
-	
-	var next_pos = Vector3(0, 0, l) * -1
-	var m3 = Matrix3(Vector3(0,1,0), PI/2)
+	var next_pos = Vector3(0, 0, -length)
 	
 	var uv
 	
@@ -24,29 +36,32 @@ func build_mesh(params, smooth = false, reverse = false):
 	
 	add_smooth_group(smooth)
 	
-	for i in range(s):
+	for i in range(segments):
 		i = float(i)
 		
-		var vector = m3.xform(Vector3(l/2, sin(angle_inc*i), cos(angle_inc*i)) * radius)
-		var vector_2 = m3.xform(Vector3(l/2, sin(angle_inc*(i+1)), cos(angle_inc*(i+1))) * radius)
+		var v = Vector3(cos(angle*(i+1)), sin(angle*(i+1)), length/2) * r
+		var v2 = Vector3(cos(angle*i), sin(angle*i), length/2) * r
 		
-		uv = [Vector2((i+1)/s, 0), Vector2((i+1)/s, 1), Vector2(i/s, 1), Vector2(i/s, 0)]
-		add_quad([vector_2, vector_2 + next_pos, vector + next_pos, vector], uv, reverse)
+		uv = [Vector2(i/segments, 0), Vector2(i/segments, 1),\
+		      Vector2((i+1)/segments, 1), Vector2((i+1)/segments, 0)]
+		
+		add_quad([v2, v2 + next_pos, v + next_pos, v], uv, reverse)
 		
 	add_smooth_group(false)
 		
 	if fill_bottom:
 		uv = [Vector2(1, 1), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0)]
-		add_quad(build_plane_verts(Vector3(0, 0, l), Vector3(r*2, 0, 0), Vector3(r, 0, l/2) * -1), uv, reverse)
+		
+		add_quad(build_plane_verts(Vector3(0, 0, length), Vector3(radius*2, 0, 0), -Vector3(radius, 0, length/2)), uv, reverse)
 		
 	var mesh = commit()
 	
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_range(tree, 'Radius', 1, 0.1, 0.1, 100)
-	add_tree_range(tree, 'Length', 2, 0.1, 0.1, 100)
-	add_tree_range(tree, 'Segments', 16, 1, 2, 50)
+	add_tree_range(tree, 'Radius', 1)
+	add_tree_range(tree, 'Length', 2)
+	add_tree_range(tree, 'Segments', 16, 1, 2, 64)
 	add_tree_empty(tree)
 	add_tree_check(tree, 'Fill Bottom', true)
 	

@@ -1,46 +1,67 @@
 extends "builder/MeshBuilder.gd"
 
+var width = 1.0
+var height = 1.0
+var length = 2.0
+var fill_bottom = true
+var fill_end = true
+
 static func get_name():
 	return "Wedge"
 	
 static func get_container():
 	return "Extra Objects"
 	
-func build_mesh(params, smooth = false, reverse = false):
-	var w = params[0]
-	var h = params[1]
-	var l = params[2]
+func set_parameter(name, value):
+	if name == 'Width':
+		width = value
+		
+	elif name == 'Height':
+		height = value
+		
+	elif name == 'Length':
+		length = value
+		
+	elif name == 'Fill Bottom':
+		fill_bottom = value
+		
+	elif name == 'Fill End':
+		fill_end = value
+		
+func build_mesh(smooth = false, reverse = false):
+	var fd = Vector3(0, 0, length)
+	var rd = Vector3(width, 0, 0)
+	var ud = Vector3(0, height, 0)
 	
-	var fd = Vector3(0, 0, l)
-	var rd = Vector3(w, 0, 0)
-	var ud = Vector3(0, h, 0)
-	
-	var offset = -Vector3(w/2, h/2, l/2)
+	var off = -Vector3(width/2, height/2, length/2)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
+	
 	add_smooth_group(smooth)
 	
-	if params[3]:
-		add_quad(build_plane_verts(rd, fd, offset), plane_uv(w, l), reverse)
-	if params[4]:
-		add_quad(build_plane_verts(ud, rd, offset), plane_uv(h, w), reverse)
+	if fill_bottom:
+		add_quad(build_plane_verts(rd, fd, off), plane_uv(width, length), reverse)
 		
-	var d = offset.distance_to(offset + Vector3(0, -h, l))
+	if fill_end:
+		add_quad(build_plane_verts(ud, rd, off), plane_uv(height, width), reverse)
+		
+	var d = off.distance_to(off + Vector3(0, -height, length))
 	
-	offset.y += h
+	off.y += height
 	
-	add_quad([offset, offset + rd, offset + Vector3(w, -h, l), offset + Vector3(0, -h, l)], plane_uv(w, d), reverse)
-	add_tri([offset + Vector3(0, -h, l), offset - ud, offset], plane_uv(l, h, false), reverse)
-	add_tri([offset + rd, (offset + rd) - ud, offset + Vector3(w, -h, l)], plane_uv(h, l, false), reverse)
+	add_quad([off, off + rd, off + Vector3(width, -height, length), off + Vector3(0, -height, length)], plane_uv(width, d), reverse)
+	
+	add_tri([off + Vector3(0, -height, length), off - ud, off], plane_uv(length, height, false), reverse)
+	add_tri([off + rd, off + rd - ud, off + Vector3(width, -height, length)], plane_uv(height, length, false), reverse)
 	
 	var mesh = commit()
 	
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_range(tree, 'Width', 1, 0.1, 0.1, 100)
-	add_tree_range(tree, 'Height', 1, 0.1, 0.1, 100)
-	add_tree_range(tree, 'Length', 2, 0.1, 0.1, 100)
+	add_tree_range(tree, 'Width', 1)
+	add_tree_range(tree, 'Height', 1)
+	add_tree_range(tree, 'Length', 2)
 	add_tree_empty(tree)
 	add_tree_check(tree, 'Fill Bottom', true)
 	add_tree_check(tree, 'Fill End', true)

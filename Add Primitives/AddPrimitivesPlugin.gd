@@ -419,7 +419,7 @@ class ParameterDialog:
 	var smooth_button
 	var reverse_button
 	
-	signal parameter_edited
+	signal parameter_edited(name, value)
 	
 	func get_smooth():
 		return smooth_button.is_pressed()
@@ -442,40 +442,33 @@ class ParameterDialog:
 		smooth_button.set_pressed(false)
 		reverse_button.set_pressed(false)
 		
-	func get_parameters_values(script):
-		var values = []
-		
-		var item = parameters.get_root().get_children()
-		
-		while item:
-			var cell = item.get_cell_mode(1)
-			
-			var val
-			
-			if cell == item.CELL_MODE_CHECK:
-				val = item.is_checked(1)
-				
-			elif cell == item.CELL_MODE_STRING:
-				val = item.get_text(1)
-				
-			elif cell == item.CELL_MODE_RANGE:
-				val = item.get_range(1)
-				
-			elif cell == item.CELL_MODE_CUSTOM:
-				val = item.get_metadata(1)
-				
-			if item.is_selectable(1):
-				values.push_back(val)
-				
-			item = item.get_next()
-			
-		return values
-		
 	func clear():
 		parameters.clear()
 		
+	func _check_box_pressed():
+		emit_signal("parameter_edited", "", null)
+		
 	func _item_edited():
-		emit_signal("parameter_edited")
+		var item = parameters.get_edited()
+		
+		var cell = item.get_cell_mode(1)
+		
+		var name = item.get_text(0)
+		var value
+		
+		if cell == item.CELL_MODE_CHECK:
+			value = item.is_checked(1)
+			
+		elif cell == item.CELL_MODE_STRING:
+			value = item.get_text(1)
+			
+		elif cell == item.CELL_MODE_RANGE:
+			value = item.get_range(1)
+			
+		elif cell == item.CELL_MODE_CUSTOM:
+			value = item.get_metadata(1)
+			
+		emit_signal("parameter_edited", name, value)
 		
 	func _init():
 		set_name("Parameters")
@@ -492,8 +485,8 @@ class ParameterDialog:
 		reverse_button.set_text('Reverse Normals')
 		add_child(reverse_button)
 		
-		smooth_button.connect("pressed", self, "_item_edited")
-		reverse_button.connect("pressed", self, "_item_edited")
+		smooth_button.connect("pressed", self, "_check_box_pressed")
+		reverse_button.connect("pressed", self, "_check_box_pressed")
 		parameters.connect("item_edited", self, "_item_edited")
 		
 # End ParameterDialog
@@ -510,6 +503,7 @@ class MeshPopup:
 	
 	var options
 	var color
+	var text_display
 	var parameter_dialog
 	var modifier_dialog
 	var transform_dialog
@@ -517,6 +511,9 @@ class MeshPopup:
 	signal cancel
 	signal display_changed(color)
 	
+	func get_text_display():
+		return text_display
+		
 	func get_parameter_dialog():
 		return parameter_dialog
 		
@@ -539,7 +536,9 @@ class MeshPopup:
 		
 		set_current_dialog(0)
 		
-		popup_centered(Vector2(220, 240))
+		var sy = 240 + text_display.get_size().y
+		
+		popup_centered(Vector2(240, sy))
 		
 	func update_options():
 		options.clear()
@@ -571,6 +570,7 @@ class MeshPopup:
 		var hb = HBoxContainer.new()
 		main_vbox.add_child(hb)
 		hb.set_h_size_flags(SIZE_EXPAND_FILL)
+		
 		options = OptionButton.new()
 		hb.add_child(options)
 		options.set_custom_minimum_size(Vector2(100,0))
@@ -592,9 +592,9 @@ class MeshPopup:
 		color.set_edit_alpha(false)
 		color_hb.add_child(color)
 		
-		var s = color.get_minimum_size()
+		var sy = color.get_minimum_size().y
 		
-		color.set_custom_minimum_size(Vector2(s.y, s.y))
+		color.set_custom_minimum_size(Vector2(sy, sy))
 		
 		color.connect("color_changed", self, "_color_changed")
 		
@@ -615,6 +615,10 @@ class MeshPopup:
 		
 		update_options()
 		
+		text_display = Label.new()
+		text_display.set_align(text_display.ALIGN_CENTER)
+		main_vbox.add_child(text_display)
+		
 		var cancel = add_cancel("Cancel")
 		
 		cancel.connect("pressed", self, "_cancel")
@@ -625,6 +629,7 @@ class AddPrimitives:
 	extends HBoxContainer
 	
 	var last_module = ""
+	var exec_time = 0
 	
 	var popup_menu
 	var mesh_popup
@@ -794,7 +799,7 @@ class AddPrimitives:
 			update_menu()
 			
 		elif modules.has(command):
-			module_call(modules[command], "exec", node)
+			mesh_instance = module_call(modules[command], "exec", node)
 			
 			last_module = command
 			
@@ -828,11 +833,15 @@ class AddPrimitives:
 			return
 			
 		if object.has_method(method):
+			var vr
+			
 			if arg:
-				object.call(method, arg)
+				vr = object.call(method, arg)
 			else:
-				object.call(method)
+				vr = object.call(method)
 				
+			return vr
+			
 	func mesh_popup(key):
 		mesh_popup.set_title('New ' + key)
 		
@@ -862,12 +871,16 @@ class AddPrimitives:
 			
 			mesh_instance.queue_free()
 			
-	func update_mesh():
-		var values = mesh_popup.get_parameter_dialog().get_parameters_values(current_script)
+	func update_mesh(name = "", value = null):
+		var start = OS.get_ticks_msec()
+		
 		var smooth = mesh_popup.get_parameter_dialog().get_smooth()
 		var reverse = mesh_popup.get_parameter_dialog().get_reverse()
 		
-		original_mesh = current_script.build_mesh(values, smooth, reverse)
+		if name and value != null:
+			current_script.set_parameter(name, value)
+			
+		original_mesh = current_script.build_mesh(smooth, reverse)
 		
 		assert( original_mesh.is_type('Mesh') )
 		
@@ -876,7 +889,13 @@ class AddPrimitives:
 		
 		modify_mesh()
 		
+		exec_time = OS.get_ticks_msec() - start
+		
+		mesh_popup.get_text_display().set_text("Generation time: " + str(exec_time) + " ms")
+		
 	func modify_mesh():
+		var start = OS.get_ticks_msec()
+		
 		var modifier = mesh_popup.get_modifier_dialog()
 		
 		meshes_to_modify.clear()
@@ -911,6 +930,8 @@ class AddPrimitives:
 				mesh_instance.set_mesh(original_mesh)
 				
 		mesh_instance.get_mesh().set_name(mesh_instance.get_name().to_lower())
+		
+		mesh_popup.get_text_display().set_text("Generation time: " + str(exec_time) + " ms")
 		
 	func transform_mesh(what):
 		if what == 0:
@@ -954,6 +975,13 @@ class AddPrimitives:
 		original_mesh = null
 		meshes_to_modify.clear()
 		
+	func _node_removed(node):
+		if node == mesh_instance:
+			_set_edit_disabled(true)
+			
+			if mesh_popup.is_visible():
+				_mesh_popup_hide()
+				
 	func _exit_tree():
 		popup_menu.clear()
 		
@@ -1007,6 +1035,8 @@ class AddPrimitives:
 		for m in t_mod:
 			modifiers[m] = t_mod[m].new()
 			
+		get_tree().connect("node_removed", self, "_node_removed")
+		
 # End AddPrimitives
 
 var gui_base

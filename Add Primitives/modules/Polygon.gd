@@ -640,6 +640,8 @@ func exec(object):
 	
 	extrude_dialog.show_dialog()
 	
+	return instance
+	
 func _init(base):
 	var gui_base = base.get_node("/root/EditorNode").get_gui_base()
 	
