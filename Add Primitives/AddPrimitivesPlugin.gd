@@ -902,8 +902,9 @@ class AddPrimitives:
 		
 		var count = 0
 		
-		mesh_instance.set_mesh(original_mesh)
-		
+		if mesh_instance.get_mesh() != original_mesh:
+			mesh_instance.set_mesh(original_mesh)
+			
 		for item in modifier.get_items():
 			if item.is_checked(1):
 				count += 1
@@ -923,13 +924,16 @@ class AddPrimitives:
 					meshes_to_modify.resize(count - 1)
 					meshes_to_modify[count - 2] = mesh_instance.get_mesh()
 					
-					mesh_instance.set_mesh(meshes_to_modify[count - 2])
-					mesh_instance.set_mesh(script.modifier(values, aabb, meshes_to_modify[count - 2]))
+					var mesh = script.modifier(values, aabb, meshes_to_modify[count - 2])
+					
+					mesh_instance.set_mesh(mesh)
 					
 			if count == 0:
 				mesh_instance.set_mesh(original_mesh)
 				
 		mesh_instance.get_mesh().set_name(mesh_instance.get_name().to_lower())
+		
+		exec_time = OS.get_ticks_msec() - start
 		
 		mesh_popup.get_text_display().set_text("Generation time: " + str(exec_time) + " ms")
 		
