@@ -13,7 +13,7 @@ func set_parameter(name, value):
 	elif name == 'Segments':
 		segments = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var c = Vector3(0,0,0)
 	
 	var circle = build_circle_verts(c, segments, radius)
@@ -27,7 +27,7 @@ func build_mesh(smooth = false, reverse = false):
 		var uv = [Vector2(0.5,0.5), Vector2(circle_uv[i].x, circle_uv[i].z), 
 		          Vector2(circle_uv[i+1].x, circle_uv[i+1].z)]
 		
-		add_tri([c, circle[i], circle[i+1]], uv, reverse)
+		add_tri([c, circle[i], circle[i+1]], uv, invert)
 		
 	var mesh = commit()
 	

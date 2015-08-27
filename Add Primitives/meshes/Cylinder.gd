@@ -25,13 +25,13 @@ func set_parameter(name, value):
 	elif name == 'Height Segments':
 		height_segments = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var circle = build_circle_verts(Vector3(0,height/2,0), segments, radius)
 	var circle_uv = build_circle_verts(Vector3(0.25,0,0.25), segments, 0.25)
 	
 	var h = height
 	
-	if reverse:
+	if invert:
 		circle.invert()
 		circle_uv.invert()
 		

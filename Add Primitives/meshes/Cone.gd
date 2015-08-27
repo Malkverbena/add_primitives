@@ -17,7 +17,7 @@ func set_parameter(name, value):
 	elif name == 'Segments':
 		segments = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var center_top = Vector3(0, height/2, 0)
 	var min_pos = Vector3(0, -height/2, 0)
 	
@@ -34,7 +34,7 @@ func build_mesh(smooth = false, reverse = false):
 		uv_coords = [Vector2(0.25, 0.25), Vector2(circle_uv[idx].x, circle_uv[idx].z),
 		             Vector2(circle_uv[idx + 1].x, circle_uv[idx + 1].z)]
 		
-		add_tri([center_top, circle[idx], circle[idx + 1]], uv_coords, reverse)
+		add_tri([center_top, circle[idx], circle[idx + 1]], uv_coords, invert)
 		
 	add_smooth_group(false)
 	
@@ -42,7 +42,7 @@ func build_mesh(smooth = false, reverse = false):
 		uv_coords = [Vector2(0.5 + circle_uv[idx + 1].x, circle_uv[idx + 1].z),
 		             Vector2(0.5 + circle_uv[idx].x, circle_uv[idx].z), Vector2(0.75, 0.25)]
 		
-		add_tri([circle[idx + 1], circle[idx], min_pos], uv_coords, reverse)
+		add_tri([circle[idx + 1], circle[idx], min_pos], uv_coords, invert)
 		
 	var mesh = commit()
 	

@@ -28,7 +28,7 @@ func set_parameter(name, value):
 	elif name == 'Height':
 		height = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var h = Vector3(0, height, 0)
 	
 	var v = [Vector3(0, 0, 0),
@@ -43,19 +43,19 @@ func build_mesh(smooth = false, reverse = false):
 	
 	add_smooth_group(smooth)
 	
-	add_quad([v[0]+h, v[1]+h, v[2]+h, v[3]+h], [], reverse)
-	add_quad([v[0]+h, v[4]+h, v[5]+h, v[6]+h], [], reverse)
+	add_quad([v[0]+h, v[1]+h, v[2]+h, v[3]+h], [], invert)
+	add_quad([v[0]+h, v[4]+h, v[5]+h, v[6]+h], [], invert)
 	
 	if h.y:
-		add_quad([v[3], v[2], v[1], v[0]], [], reverse)
-		add_quad([v[1], v[5], v[4], v[0]], [], reverse)
+		add_quad([v[3], v[2], v[1], v[0]], [], invert)
+		add_quad([v[1], v[5], v[4], v[0]], [], invert)
 		
-		add_quad([v[0]+h, v[3]+h, v[3], v[0]], [], reverse)
-		add_quad([v[0], v[4], v[4]+h, v[0]+h], [], reverse)
-		add_quad([v[5], v[5]+h, v[4]+h, v[4]], [], reverse)
-		add_quad([v[1], v[1]+h, v[5]+h, v[5]], [], reverse)
-		add_quad([v[2], v[2]+h, v[1]+h, v[1]], [], reverse)
-		add_quad([v[3], v[3]+h, v[2]+h, v[2]], [], reverse)
+		add_quad([v[0]+h, v[3]+h, v[3], v[0]], [], invert)
+		add_quad([v[0], v[4], v[4]+h, v[0]+h], [], invert)
+		add_quad([v[5], v[5]+h, v[4]+h, v[4]], [], invert)
+		add_quad([v[1], v[1]+h, v[5]+h, v[5]], [], invert)
+		add_quad([v[2], v[2]+h, v[1]+h, v[1]], [], invert)
+		add_quad([v[3], v[3]+h, v[2]+h, v[2]], [], invert)
 		
 	var mesh = commit()
 	

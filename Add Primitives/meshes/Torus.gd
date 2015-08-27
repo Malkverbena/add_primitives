@@ -21,7 +21,7 @@ func set_parameter(name, value):
 	elif name == 'Segments':
 		segments = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var radians = PI*2
 	var bend_radius = major_radius/radians
 	
@@ -44,12 +44,12 @@ func build_mesh(smooth = false, reverse = false):
 			temp_circle = c2
 			
 		for idx in range(segments):
-			add_quad([c[idx], c2[idx], c2[idx + 1], c[idx + 1]], [], reverse)
+			add_quad([c[idx], c2[idx], c2[idx + 1], c[idx + 1]], [], invert)
 			
 	c2 = build_circle_verts_rot(s[0], segments, minor_radius, [PI/2, angle * 0], [Vector3(1,0,0), Vector3(0,1,0)])
 	
 	for idx in range(segments):
-		add_quad([temp_circle[idx], c2[idx], c2[idx + 1], temp_circle[idx + 1]], [], reverse)
+		add_quad([temp_circle[idx], c2[idx], c2[idx + 1], temp_circle[idx + 1]], [], invert)
 		
 	var mesh = commit()
 	

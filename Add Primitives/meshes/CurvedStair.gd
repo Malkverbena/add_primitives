@@ -36,7 +36,7 @@ func set_parameter(name, value):
 	elif name == 'Fill End':
 		fill_end = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var h = stair_height/steps
 	var or_ = Vector3(outer_radius, 1, outer_radius)
 	var ir = Vector3(inner_radius, 1, inner_radius)
@@ -53,19 +53,19 @@ func build_mesh(smooth = false, reverse = false):
 		
 		var base = Vector3(0, -h, 0)
 		
-		add_quad([v*ir, v*or_, v2*or_, v2*ir], [], reverse)
-		add_quad([v*or_ + base, v*or_, v*ir, v*ir + base], [], reverse)
+		add_quad([v*ir, v*or_, v2*or_, v2*ir], [], invert)
+		add_quad([v*or_ + base, v*or_, v*ir, v*ir + base], [], invert)
 		
 		base.y *= i + 1
 		
-		add_quad([v2*or_ + base, v2*or_, v*or_, v*or_ + base], [], reverse)
-		add_quad([v*ir + base, v*ir, v2*ir, v2*ir + base], [], reverse)
+		add_quad([v2*or_ + base, v2*or_, v*or_, v*or_ + base], [], invert)
+		add_quad([v*ir + base, v*ir, v2*ir, v2*ir + base], [], invert)
 		
 		if fill_bottom:
 			v.y = 0
 			v2.y = 0
 			
-			add_quad([v2*ir, v2*or_, v*or_, v*ir], [], reverse)
+			add_quad([v2*ir, v2*or_, v*or_, v*ir], [], invert)
 			
 	if fill_end:
 		var i = steps
@@ -73,7 +73,7 @@ func build_mesh(smooth = false, reverse = false):
 		var v = Vector3(cos(angle_inc*i), i*h, sin(angle_inc*i))
 		var v2 = Vector3(cos(angle_inc*(i+1)), i*h, sin(angle_inc*(i+1)))
 		
-		add_quad([v*ir + Vector3(0,-h*i,0), v*ir, v*or_, v*or_ + Vector3(0,-h*i,0)], [], reverse)
+		add_quad([v*ir + Vector3(0,-h*i,0), v*ir, v*or_, v*or_ + Vector3(0,-h*i,0)], [], invert)
 		
 	var mesh = commit()
 	

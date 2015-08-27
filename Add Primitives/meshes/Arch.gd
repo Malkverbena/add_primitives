@@ -24,7 +24,7 @@ func set_parameter(name, value):
 	elif name == 'Fill Bottom':
 		fill_bottom = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var angle = PI/segments
 	var r = Vector3(radius, radius, 1)
 	
@@ -45,14 +45,14 @@ func build_mesh(smooth = false, reverse = false):
 		uv = [Vector2(i/segments, 0), Vector2(i/segments, 1),\
 		      Vector2((i+1)/segments, 1), Vector2((i+1)/segments, 0)]
 		
-		add_quad([v2, v2 + next_pos, v + next_pos, v], uv, reverse)
+		add_quad([v2, v2 + next_pos, v + next_pos, v], uv, invert)
 		
 	add_smooth_group(false)
 		
 	if fill_bottom:
 		uv = [Vector2(1, 1), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0)]
 		
-		add_quad(build_plane_verts(Vector3(0, 0, length), Vector3(radius*2, 0, 0), -Vector3(radius, 0, length/2)), uv, reverse)
+		add_quad(build_plane_verts(Vector3(0, 0, length), Vector3(radius*2, 0, 0), -Vector3(radius, 0, length/2)), uv, invert)
 		
 	var mesh = commit()
 	

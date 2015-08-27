@@ -17,7 +17,7 @@ func set_parameter(name, value):
 	elif name == 'Height Segments':
 		height_segments = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var angle = PI/height_segments
 	var cc = Vector3(0,-radius,0)
 	
@@ -32,10 +32,10 @@ func build_mesh(smooth = false, reverse = false):
 	
 	for idx in range(segments):
 		pos = Vector3(0, -cos(angle) * radius, 0)
-		add_tri([circle[idx + 1] * rd + pos, circle[idx] * rd + pos, cc], [], reverse)
+		add_tri([circle[idx + 1] * rd + pos, circle[idx] * rd + pos, cc], [], invert)
 		
 		pos = Vector3(0, -cos(angle * (height_segments - 1)) * radius, 0)
-		add_tri([-cc, circle[idx] * rd + pos, circle[idx + 1] * rd + pos], [], reverse)
+		add_tri([-cc, circle[idx] * rd + pos, circle[idx + 1] * rd + pos], [], invert)
 		
 	pos = Vector3(0, -cos(angle) * radius, 0)
 	
@@ -49,7 +49,7 @@ func build_mesh(smooth = false, reverse = false):
 			add_quad([circle[idx + 1] * rd + pos,
 			          circle[idx + 1] * next_radius + next_pos,
 			          circle[idx] * next_radius + next_pos,
-			          circle[idx] * rd + pos], [], reverse)
+			          circle[idx] * rd + pos], [], invert)
 			
 		pos = next_pos
 		

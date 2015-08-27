@@ -17,7 +17,7 @@ func set_parameter(name, value):
 	elif name == 'Segments':
 		segments = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var circle = build_circle_verts(Vector3(), segments, 1)
 	var c_uv = build_circle_verts(Vector3(), segments, 1)
 	
@@ -32,7 +32,7 @@ func build_mesh(smooth = false, reverse = false):
 		          Vector2(c_uv[i+1].x, c_uv[i+1].z) * inner_radius]
 		
 		add_quad([circle[i] * inner_radius, circle[i] * outer_radius,
-		          circle[i+1] * outer_radius, circle[i+1] * inner_radius], uv, reverse)
+		          circle[i+1] * outer_radius, circle[i+1] * inner_radius], uv, invert)
 		
 	var mesh = commit()
 	

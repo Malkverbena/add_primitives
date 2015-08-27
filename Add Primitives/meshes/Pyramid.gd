@@ -20,7 +20,7 @@ func set_parameter(name, value):
 	elif name == 'Height':
 		height = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var offset = Vector3(width/2, height/2, length/2)
 	
 	var plane = build_plane_verts(Vector3(width,0,0), Vector3(0,0,length), -offset)
@@ -33,17 +33,17 @@ func build_mesh(smooth = false, reverse = false):
 	
 	add_smooth_group(smooth)
 	
-	add_quad(plane, uv, reverse)
+	add_quad(plane, uv, invert)
 	
 	uv = [uv[0], uv[1], Vector2(0.5, 0.5)]
 	
-	if reverse:
+	if invert:
 		plane.invert()
 		
-	add_tri([ch, plane[1], plane[0]], uv, reverse)
-	add_tri([ch, plane[2], plane[1]], uv, reverse)
-	add_tri([ch, plane[3], plane[2]], uv, reverse)
-	add_tri([ch, plane[0], plane[3]], uv, reverse)
+	add_tri([ch, plane[1], plane[0]], uv, invert)
+	add_tri([ch, plane[2], plane[1]], uv, invert)
+	add_tri([ch, plane[3], plane[2]], uv, invert)
+	add_tri([ch, plane[0], plane[3]], uv, invert)
 	
 	var mesh = commit()
 	

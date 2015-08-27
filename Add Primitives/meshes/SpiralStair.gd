@@ -32,7 +32,7 @@ func set_parameter(name, value):
 	elif name == 'Extra Step Height':
 		extra_height = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var angle = (PI*2)/steps
 	
 	var or_ = Vector3(outer_radius, 1, outer_radius)
@@ -52,16 +52,16 @@ func build_mesh(smooth = false, reverse = false):
 			var v = Vector3(cos(angle*i), (i+1)*s + extra_height, sin(angle*i)) + off
 			var v2 = Vector3(cos(angle*(i+1)), (i+1)*s + extra_height, sin(angle*(i+1))) + off
 			
-			add_quad([v*ir, v*or_, v2*or_, v2*ir], [], reverse)
-			add_quad([v*or_ + h, v*or_, v*ir, v*ir + h], [], reverse)
-			add_quad([v2*or_ + h, v2*or_, v*or_, v*or_ + h], [], reverse)
-			add_quad([v*ir + h, v*ir, v2*ir, v2*ir + h], [], reverse)
-			add_quad([v2*ir + h, v2*ir, v2*or_, v2*or_ + h], [], reverse)
+			add_quad([v*ir, v*or_, v2*or_, v2*ir], [], invert)
+			add_quad([v*or_ + h, v*or_, v*ir, v*ir + h], [], invert)
+			add_quad([v2*or_ + h, v2*or_, v*or_, v*or_ + h], [], invert)
+			add_quad([v*ir + h, v*ir, v2*ir, v2*ir + h], [], invert)
+			add_quad([v2*ir + h, v2*ir, v2*or_, v2*or_ + h], [], invert)
 			
 			v += h
 			v2 += h
 			
-			add_quad([v2*ir, v2*or_, v*or_, v*ir], [], reverse)
+			add_quad([v2*ir, v2*or_, v*or_, v*ir], [], invert)
 			
 	var mesh = commit()
 	

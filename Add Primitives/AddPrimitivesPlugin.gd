@@ -482,7 +482,7 @@ class ParameterDialog:
 		add_child(smooth_button)
 		
 		reverse_button = CheckBox.new()
-		reverse_button.set_text('Reverse Normals')
+		reverse_button.set_text('Invert Normals')
 		add_child(reverse_button)
 		
 		smooth_button.connect("pressed", self, "_check_box_pressed")
@@ -813,7 +813,7 @@ class AddPrimitives:
 			
 			current_script = load(mesh_scripts[command]).new()
 			
-			if current_script.has_method('build_mesh'):
+			if current_script.has_method('create'):
 				add_mesh_instance()
 				mesh_instance.set_name(command)
 				
@@ -823,7 +823,7 @@ class AddPrimitives:
 					update_mesh()
 					
 				else:
-					var mesh = current_script.build_mesh()
+					var mesh = current_script.create()
 					
 					mesh_instance.set_mesh(mesh)
 					mesh.set_name(mesh_instance.get_name().to_lower())
@@ -880,9 +880,9 @@ class AddPrimitives:
 		if name and value != null:
 			current_script.set_parameter(name, value)
 			
-		original_mesh = current_script.build_mesh(smooth, reverse)
+		original_mesh = current_script.create(smooth, reverse)
 		
-		assert( original_mesh.is_type('Mesh') )
+		assert( original_mesh != null )
 		
 		original_mesh.set_name(mesh_instance.get_name().to_lower())
 		mesh_instance.set_mesh(original_mesh)

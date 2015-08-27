@@ -21,7 +21,7 @@ func set_parameter(name, value):
 	elif name == 'Segments':
 		segments = value
 		
-func build_mesh(smooth = false, reverse = false):
+func create(smooth = false, invert = false):
 	var ic = build_circle_verts(Vector3(0,0,0), segments, inner_radius)
 	var oc = build_circle_verts(Vector3(0,0,0), segments, outer_radius)
 	
@@ -32,14 +32,14 @@ func build_mesh(smooth = false, reverse = false):
 	var off = Vector3(0, height/2, 0)
 	
 	for idx in range(segments):
-		add_quad([oc[idx + 1] + off, ic[idx + 1] + off, ic[idx] + off, oc[idx] + off], [], reverse)
-		add_quad([oc[idx] - off, ic[idx] - off, ic[idx + 1] - off, oc[idx + 1] - off], [], reverse)
+		add_quad([oc[idx + 1] + off, ic[idx + 1] + off, ic[idx] + off, oc[idx] + off], [], invert)
+		add_quad([oc[idx] - off, ic[idx] - off, ic[idx + 1] - off, oc[idx + 1] - off], [], invert)
 	
 	add_smooth_group(smooth)
 	
 	for idx in range(segments ):
-		add_quad([oc[idx + 1] + off, oc[idx] + off, oc[idx] - off, oc[idx + 1] -off], [], reverse)
-		add_quad([ic[idx] + off, ic[idx + 1] + off, ic[idx + 1] - off, ic[idx] -off], [], reverse)
+		add_quad([oc[idx + 1] + off, oc[idx] + off, oc[idx] - off, oc[idx + 1] -off], [], invert)
+		add_quad([ic[idx] + off, ic[idx + 1] + off, ic[idx + 1] - off, ic[idx] -off], [], invert)
 		
 	var mesh = commit()
 	
