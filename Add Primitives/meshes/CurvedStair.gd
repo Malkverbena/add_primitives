@@ -80,13 +80,13 @@ func create(smooth = false, invert = false):
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_range(tree, 'Angle', 90, 1, 1, 360)
-	add_tree_range(tree, 'Stair Height', 2)
-	add_tree_range(tree, 'Steps', 8, 1, 2, 64)
-	add_tree_range(tree, 'Outer Radius', 2)
-	add_tree_range(tree, 'Inner Radius', 1)
+	add_tree_range(tree, 'Angle', angle, 1, 1, 360)
+	add_tree_range(tree, 'Stair Height', stair_height)
+	add_tree_range(tree, 'Steps', steps, 1, 2, 64)
+	add_tree_range(tree, 'Outer Radius', outer_radius)
+	add_tree_range(tree, 'Inner Radius', inner_radius)
 	add_tree_empty(tree)
-	add_tree_check(tree, 'Fill Bottom', true)
-	add_tree_check(tree, 'Fill End', true)
+	add_tree_check(tree, 'Fill Bottom', fill_bottom)
+	add_tree_check(tree, 'Fill End', fill_end)
 	
 

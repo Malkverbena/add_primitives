@@ -68,11 +68,11 @@ func create(smooth = false, invert = false):
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_range(tree, 'Spirals', 1, 1, 1, 64)
-	add_tree_range(tree, 'Spiral Height', 2)
-	add_tree_range(tree, 'Steps per Spiral', 8, 1, 3, 64)
-	add_tree_range(tree, 'Outer Radius', 2)
-	add_tree_range(tree, 'Inner Radius', 1)
-	add_tree_range(tree, 'Extra Step Height', 0, 0.01, -100, 100)
+	add_tree_range(tree, 'Spirals', spirals, 1, 1, 64)
+	add_tree_range(tree, 'Spiral Height', height)
+	add_tree_range(tree, 'Steps per Spiral', steps, 1, 3, 64)
+	add_tree_range(tree, 'Outer Radius', outer_radius)
+	add_tree_range(tree, 'Inner Radius', inner_radius)
+	add_tree_range(tree, 'Extra Step Height', extra_height, 0.01, -100, 100)
 	
 

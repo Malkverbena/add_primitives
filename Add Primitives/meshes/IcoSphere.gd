@@ -106,7 +106,7 @@ func create(smooth = false, invert = false):
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_range(tree, 'Radius', 1)
-	add_tree_range(tree, 'Subdivisions', 2, 1, 0, 4)
+	add_tree_range(tree, 'Radius', radius)
+	add_tree_range(tree, 'Subdivisions', subdivisions, 1, 0, 4)
 	
 

@@ -62,10 +62,10 @@ func create(smooth = false, invert = false):
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_range(tree, 'Front Length', 2)
-	add_tree_range(tree, 'Front Width', 1)
-	add_tree_range(tree, 'Side Length', 2)
-	add_tree_range(tree, 'Side Width', 1)
-	add_tree_range(tree, 'Height', 1, 0.01, 0, 100)
+	add_tree_range(tree, 'Front Length', front_length)
+	add_tree_range(tree, 'Front Width', front_width)
+	add_tree_range(tree, 'Side Length', side_length)
+	add_tree_range(tree, 'Side Width', side_width)
+	add_tree_range(tree, 'Height', height, 0.01, 0, 100)
 	
 

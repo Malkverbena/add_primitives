@@ -56,9 +56,9 @@ func create(smooth = false, invert = false):
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_range(tree, "Major Radius", 0.8)
-	add_tree_range(tree, "Minor Radius", 0.2)
-	add_tree_range(tree, "Torus Segments", 16, 1, 3, 64)
-	add_tree_range(tree, "Segments", 8, 1, 3, 64)
+	add_tree_range(tree, "Major Radius", major_radius)
+	add_tree_range(tree, "Minor Radius", minor_radius)
+	add_tree_range(tree, "Torus Segments", steps, 1, 3, 64)
+	add_tree_range(tree, "Segments", segments, 1, 3, 64)
 	
 
