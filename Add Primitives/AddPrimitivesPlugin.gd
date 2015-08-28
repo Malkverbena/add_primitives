@@ -27,6 +27,22 @@ extends EditorPlugin
 class DirectoryUtilities:
 	extends Directory
 	
+	# Get plugin folder path
+	func get_data_dir():
+		var path
+		
+		# X11 and OSX
+		if OS.has_environment('HOME'):
+			path = OS.get_environment('HOME') + '/.godot'
+			 
+		# Windows
+		elif OS.has_environment('APPDATA'):
+			path = OS.get_environment('APPDATA') + '/Godot'
+			
+		path += '/plugins/Add Primitives'
+		
+		return path
+	
 	func get_scripts_from_list(list_files):
 		var scripts = []
 		
@@ -60,12 +76,6 @@ class DirectoryUtilities:
 class TransformDialog:
 	extends VBoxContainer
 	
-	const Axis = {
-		X = Vector3.AXIS_X,
-		Y = Vector3.AXIS_Y,
-		Z = Vector3.AXIS_Z
-	}
-	
 	const Transform_ = {
 		TRANSLATION = 0,
 		ROTATION = 1,
@@ -73,7 +83,6 @@ class TransformDialog:
 	}
 	
 	var emit = true
-	
 	var translation = Vector3(0,0,0)
 	var rotation = Vector3(0,0,0)
 	var scale = Vector3(1,1,1)
@@ -145,6 +154,8 @@ class TransformDialog:
 		spin.set_meta('DEFAULT', value)
 		spin_boxes.push_back(spin)
 		
+		spin.set_h_size_flags(SIZE_EXPAND)
+		
 		return spin
 		
 	func update_from_instance(instance):
@@ -154,17 +165,17 @@ class TransformDialog:
 		
 		emit = false
 		
-		spin_boxes[0].set_val(tns[Axis.X])
-		spin_boxes[1].set_val(tns[Axis.Y])
-		spin_boxes[2].set_val(tns[Axis.Z])
+		spin_boxes[0].set_val(tns[Vector3.X])
+		spin_boxes[1].set_val(tns[Vector3.Y])
+		spin_boxes[2].set_val(tns[Vector3.Z])
 		
-		spin_boxes[3].set_val(rot[Axis.X])
-		spin_boxes[4].set_val(rot[Axis.Y])
-		spin_boxes[5].set_val(rot[Axis.Z])
+		spin_boxes[3].set_val(rot[Vector3.X])
+		spin_boxes[4].set_val(rot[Vector3.Y])
+		spin_boxes[5].set_val(rot[Vector3.Z])
 		
-		spin_boxes[6].set_val(scl[Axis.X])
-		spin_boxes[7].set_val(scl[Axis.Y])
-		spin_boxes[8].set_val(scl[Axis.Z])
+		spin_boxes[6].set_val(scl[Vector3.X])
+		spin_boxes[7].set_val(scl[Vector3.Y])
+		spin_boxes[8].set_val(scl[Vector3.Z])
 		
 		emit = true
 		
@@ -189,13 +200,13 @@ class TransformDialog:
 		
 		hb = add_row()
 		
-		var tx = add_spinbox(hb, 'x', 0, 0.1, -500, 500)
-		var ty = add_spinbox(hb, 'y', 0, 0.1, -500, 500)
-		var tz = add_spinbox(hb, 'z', 0, 0.1, -500, 500)
+		var tx = add_spinbox(hb, 'x', 0, 0.01, -500, 500)
+		var ty = add_spinbox(hb, 'y', 0, 0.01, -500, 500)
+		var tz = add_spinbox(hb, 'z', 0, 0.01, -500, 500)
 		
-		tx.connect("value_changed", self, "set_translation", [Axis.X])
-		ty.connect("value_changed", self, "set_translation", [Axis.Y])
-		tz.connect("value_changed", self, "set_translation", [Axis.Z])
+		tx.connect("value_changed", self, "set_translation", [Vector3.X])
+		ty.connect("value_changed", self, "set_translation", [Vector3.Y])
+		tz.connect("value_changed", self, "set_translation", [Vector3.Z])
 		
 		add_spacer(self)
 		hb = add_row()
@@ -208,9 +219,9 @@ class TransformDialog:
 		var ry = add_spinbox(hb, 'y', 0, 1, -360, 360) 
 		var rz = add_spinbox(hb, 'z', 0, 1, -360, 360) 
 		
-		rx.connect("value_changed", self, "set_rotation", [Axis.X])
-		ry.connect("value_changed", self, "set_rotation", [Axis.Y])
-		rz.connect("value_changed", self, "set_rotation", [Axis.Z])
+		rx.connect("value_changed", self, "set_rotation", [Vector3.X])
+		ry.connect("value_changed", self, "set_rotation", [Vector3.Y])
+		rz.connect("value_changed", self, "set_rotation", [Vector3.Z])
 		
 		add_spacer(self)
 		hb = add_row()
@@ -219,13 +230,13 @@ class TransformDialog:
 		
 		hb = add_row()
 		
-		var sx = add_spinbox(hb, 'x', 1, 0.1, -100, 100)
-		var sy = add_spinbox(hb, 'y', 1, 0.1, -100, 100)
-		var sz = add_spinbox(hb, 'z', 1, 0.1, -100, 100)
+		var sx = add_spinbox(hb, 'x', 1, 0.01, -100, 100)
+		var sy = add_spinbox(hb, 'y', 1, 0.01, -100, 100)
+		var sz = add_spinbox(hb, 'z', 1, 0.01, -100, 100)
 		
-		sx.connect("value_changed", self, "set_scale", [Axis.X])
-		sy.connect("value_changed", self, "set_scale", [Axis.Y])
-		sz.connect("value_changed", self, "set_scale", [Axis.Z])
+		sx.connect("value_changed", self, "set_scale", [Vector3.X])
+		sy.connect("value_changed", self, "set_scale", [Vector3.Y])
+		sz.connect("value_changed", self, "set_scale", [Vector3.Z])
 		
 # End TransformDialog
 
@@ -237,6 +248,8 @@ class ModifierDialog:
 		RELOAD = 1
 	}
 	
+	var edited_modifier = null
+	
 	var modifiers
 	var menu
 	var remove
@@ -246,10 +259,13 @@ class ModifierDialog:
 	
 	var modifiers_scripts = {}
 	
-	signal modifier_edited
+	signal modifier_edited(name, value)
 	
 	func get_items():
 		return items
+		
+	func get_edited_modifier():
+		return edited_modifier
 		
 	func create_modifier(script):
 		var root = modifiers.get_root()
@@ -268,45 +284,24 @@ class ModifierDialog:
 		item.set_custom_bg_color(0, get_color('prop_category', 'Editor'))
 		item.set_custom_bg_color(1, get_color('prop_category', 'Editor'))
 		
-		item.set_metadata(0, script.get_name())
+		var obj = script.new()
 		
-		if script.has_method('modifier_parameters'):
-			script.modifier_parameters(item, modifiers)
+		item.set_metadata(0, obj)
+		
+		if obj.has_method('modifier_parameters'):
+			obj.modifier_parameters(item, modifiers)
 			
 		items.push_back(item)
-		
-	func get_modifier_values(item):
-		var values = []
-		
-		var i = item.get_children()
-		
-		while i:
-			var cell = i.get_cell_mode(1)
-			
-			if cell == i.CELL_MODE_STRING:
-				values.push_back(i.get_text(1))
-				
-			elif cell == i.CELL_MODE_CHECK:
-				values.push_back(i.is_checked(1))
-				
-			elif cell == i.CELL_MODE_RANGE:
-				values.push_back(i.get_range(1))
-				
-			elif cell == i.CELL_MODE_CUSTOM:
-				values.push_back(i.get_metadata(1))
-				
-			i = i.get_next()
-			
-		return values
 		
 	func modifier_tools(what):
 		var item = modifiers.get_selected()
 		
-		if what == Tool.RELOAD:
-			emit_signal("modifier_edited")
-			
-		elif what == Tool.ERASE:
+		if what == Tool.ERASE:
 			items.erase(item)
+			
+			if item == edited_modifier:
+				edited_modifier = null
+				
 			item.get_parent().remove_child(item)
 			
 			if items.empty() and not reload.is_disabled():
@@ -316,7 +311,7 @@ class ModifierDialog:
 			
 		modifiers.update()
 		
-		emit_signal("modifier_edited")
+		emit_signal("modifier_edited", "", null)
 		
 	func update():
 		modifiers.clear()
@@ -354,10 +349,38 @@ class ModifierDialog:
 		if items.size() and reload.is_disabled():
 			reload.set_disabled(false)
 			
-		emit_signal("modifier_edited")
+		emit_signal("modifier_edited", "", null)
 		
 	func _item_edited():
-		emit_signal("modifier_edited")
+		var item = modifiers.get_edited()
+		
+		var parent = item.get_parent()
+		
+		if parent == modifiers.get_root():
+			edited_modifier = item.get_metadata(0)
+			
+			emit_signal("modifier_edited", "", null)
+			
+		edited_modifier = parent.get_metadata(0)
+		
+		var cell = item.get_cell_mode(1)
+		
+		var name = item.get_text(0)
+		var value
+		
+		if cell == item.CELL_MODE_STRING:
+			value = item.get_text(1)
+			
+		elif cell == item.CELL_MODE_CHECK:
+			value = item.is_checked(1)
+			
+		elif cell == item.CELL_MODE_RANGE:
+			value = item.get_range(1)
+			
+		elif cell == item.CELL_MODE_CUSTOM:
+			value = item.get_metadata(1)
+			
+		emit_signal("modifier_edited", name, value)
 		
 	func _item_selected():
 		var item = modifiers.get_selected()
@@ -649,21 +672,7 @@ class AddPrimitives:
 	# Utilites
 	var dir 
 	
-	# Get plugin folder path
-	static func get_data_dir():
-		var path
-		
-		# X11 and OSX
-		if OS.has_environment('HOME'):
-			path = OS.get_environment('HOME') + '/.godot'
-			 
-		# Windows
-		elif OS.has_environment('APPDATA'):
-			path = OS.get_environment('APPDATA') + '/Godot'
-			
-		path += '/plugins/Add Primitives'
-		
-		return path
+	
 		
 	func get_object():
 		return node
@@ -687,7 +696,7 @@ class AddPrimitives:
 				
 		var submenus = {}
 		
-		var path = get_data_dir()
+		var path = dir.get_data_dir()
 		
 		var scripts = dir.get_file_list(path + '/meshes')
 		
@@ -754,7 +763,7 @@ class AddPrimitives:
 			popup_menu.connect("item_pressed", self, "popup_signal", [popup_menu])
 			
 	func load_modules():
-		var path = get_data_dir() + '/modules'
+		var path = dir.get_data_dir() + '/modules'
 		
 		var mods = dir.get_file_list(path)
 		mods = dir.get_scripts_from_list(mods)
@@ -775,12 +784,12 @@ class AddPrimitives:
 		var command = menu.get_item_text(menu.get_item_index(id))
 		
 		if command == 'Edit Primitive':
+			if not mesh_instance:
+				return
+				
 			if last_module:
 				module_call(modules[last_module], "edit_primitive")
 				
-				return
-				
-			if not mesh_instance:
 				return
 				
 			mesh_popup.get_transform_dialog().update_from_instance(mesh_instance)
@@ -799,7 +808,7 @@ class AddPrimitives:
 			update_menu()
 			
 		elif modules.has(command):
-			mesh_instance = module_call(modules[command], "exec", node)
+			mesh_instance = module_call(modules[command], "create", node)
 			
 			last_module = command
 			
@@ -893,7 +902,7 @@ class AddPrimitives:
 		
 		mesh_popup.get_text_display().set_text("Generation time: " + str(exec_time) + " ms")
 		
-	func modify_mesh():
+	func modify_mesh(name = "", value = null):
 		var start = OS.get_ticks_msec()
 		
 		var modifier = mesh_popup.get_modifier_dialog()
@@ -905,32 +914,35 @@ class AddPrimitives:
 		if mesh_instance.get_mesh() != original_mesh:
 			mesh_instance.set_mesh(original_mesh)
 			
+		assert( mesh_instance.get_mesh() )
+		
+		if name and value != null:
+			var edited = modifier.get_edited_modifier()
+			
+			if edited:
+				edited.set_parameter(name, value)
+				
 		for item in modifier.get_items():
-			if item.is_checked(1):
-				count += 1
+			if not item.is_checked(1):
+				continue
 				
-				var script = modifiers[item.get_metadata(0)]
+			var obj = item.get_metadata(0)
+			
+			var mesh
+			var aabb = mesh_instance.get_aabb()
+			
+			if count:
+				meshes_to_modify.push_back(mesh_instance.get_mesh())
 				
-				var values = modifier.get_modifier_values(item)
+				mesh = obj.modifier(meshes_to_modify[count - 1], aabb)
 				
-				assert( not values.empty() or mesh_instance.get_mesh() )
+			else:
+				mesh = obj.modifier(original_mesh, aabb)
 				
-				var aabb = mesh_instance.get_aabb()
-				
-				if count == 1:
-					mesh_instance.set_mesh(script.modifier(values, aabb, original_mesh))
-					
-				elif count > 1:
-					meshes_to_modify.resize(count - 1)
-					meshes_to_modify[count - 2] = mesh_instance.get_mesh()
-					
-					var mesh = script.modifier(values, aabb, meshes_to_modify[count - 2])
-					
-					mesh_instance.set_mesh(mesh)
-					
-			if count == 0:
-				mesh_instance.set_mesh(original_mesh)
-				
+			mesh_instance.set_mesh(mesh)
+			
+			count += 1
+			
 		mesh_instance.get_mesh().set_name(mesh_instance.get_name().to_lower())
 		
 		exec_time = OS.get_ticks_msec() - start
@@ -1005,12 +1017,11 @@ class AddPrimitives:
 		add_child(separator)
 		
 		var spatial_menu = MenuButton.new()
-		popup_menu = spatial_menu.get_popup()
-		popup_menu.set_custom_minimum_size(Vector2(140, 0))
 		var icon = preload('icon_mesh_instance_add.png')
 		spatial_menu.set_button_icon(icon)
 		spatial_menu.set_tooltip("Add New Primitive")
-		
+		popup_menu = spatial_menu.get_popup()
+		popup_menu.set_custom_minimum_size(Vector2(140, 0))
 		add_child(spatial_menu)
 		
 		editor_plugin.add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, self)
@@ -1022,23 +1033,20 @@ class AddPrimitives:
 		mesh_popup = MeshPopup.new(base)
 		base.add_child(mesh_popup)
 		
-		mesh_popup.connect("cancel", self, "remove_mesh_instace")
-		mesh_popup.connect("display_changed", self, "set_display_color")
-		mesh_popup.connect("popup_hide", self, "_mesh_popup_hide")
-		
 		mesh_popup.get_parameter_dialog().connect("parameter_edited", self, "update_mesh")
 		mesh_popup.get_modifier_dialog().connect("modifier_edited", self, "modify_mesh")
 		mesh_popup.get_transform_dialog().connect("transform_changed", self, "transform_mesh")
 		
+		mesh_popup.connect("cancel", self, "remove_mesh_instace")
+		mesh_popup.connect("display_changed", self, "set_display_color")
+		mesh_popup.connect("popup_hide", self, "_mesh_popup_hide")
+		
 		# Load modifiers
-		var m_path = get_data_dir() + '/Modifiers.gd'
-		
+		var m_path = dir.get_data_dir() + '/Modifiers.gd'
 		var temp = load(m_path).new()
-		var t_mod = temp.get_modifiers()
 		
-		for m in t_mod:
-			modifiers[m] = t_mod[m].new()
-			
+		modifiers = temp.get_modifiers()
+		
 		get_tree().connect("node_removed", self, "_node_removed")
 		
 # End AddPrimitives
@@ -1070,11 +1078,11 @@ func _enter_tree():
 	
 	add_primitives.hide()
 	
+	print("ADD PRIMITIVES INIT")
+	
 func _exit_tree():
 	edit(null)
 	add_primitives.get_mesh_popup().queue_free()
 	add_primitives.queue_free()
 	
-func _init():
-	print("ADD PRIMITIVES INIT")
-	
+

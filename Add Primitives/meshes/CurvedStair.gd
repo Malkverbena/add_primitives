@@ -80,7 +80,7 @@ func create(smooth = false, invert = false):
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_range(tree, 'Angle', angle, 1, 1, 360)
+	add_tree_range(tree, 'Angle', rad2deg(angle), 1, 1, 360)
 	add_tree_range(tree, 'Stair Height', stair_height)
 	add_tree_range(tree, 'Steps', steps, 1, 2, 64)
 	add_tree_range(tree, 'Outer Radius', outer_radius)

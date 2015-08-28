@@ -1,15 +1,19 @@
-extends Node
+extends Reference
 
 class ModifierBase:
 	extends MeshDataTool
 	
+	# In case of modifier not have parameters
+	func set_parameter(name, value):
+		pass
+		
 	# Tree Item helper functions
 	func _create_item(item, tree):
 		item = tree.create_item(item)
 		
 		return item
 		
-	func add_tree_range(item, tree, text, value, step = 1, _min = 1, _max = 50):
+	func add_tree_range(item, tree, text, value, step = 0.01, min_ = -100, max_ = 100):
 		var tree_item = _create_item(item, tree)
 		
 		tree_item.set_text(0, text)
@@ -21,7 +25,7 @@ class ModifierBase:
 		tree_item.set_selectable(0, false)
 		
 		tree_item.set_cell_mode(1, 2)
-		tree_item.set_range_config(1, _min, _max, step)
+		tree_item.set_range_config(1, min_, max_, step)
 		tree_item.set_range(1, value)
 		tree_item.set_editable(1, true)
 		
@@ -62,10 +66,24 @@ class ModifierBase:
 class TaperModifier:
 	extends ModifierBase
 	
+	var value = -0.5
+	var lock_x_axis = false
+	var lock_z_axis = false
+	
 	static func get_name():
 		return "Taper"
 		
-	func taper(vector, val, c, axis):
+	func set_parameter(name, val):
+		if name == 'Value':
+			value = val
+			
+		elif name == 'Lock X Axis':
+			lock_x_axis = val
+			
+		elif name == 'Lock Z Axis':
+			lock_z_axis = val
+			
+	static func taper(vector, val, c, axis):
 		var vec = Vector3(1,1,1)
 		
 		for i in axis:
@@ -73,7 +91,7 @@ class TaperModifier:
 			
 		return vec
 		
-	func modifier(params, aabb, mesh):
+	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
 		var h = aabb.get_endpoint(7).y - aabb.get_endpoint(0).y
@@ -83,23 +101,19 @@ class TaperModifier:
 		
 		var axis = []
 		
-		#params[1] = AXIS_X
-		if not params[1]:
+		if not lock_x_axis:
 			axis.push_back(Vector3.AXIS_X)
 			
-		#params[2] = AXIS_Z
-		if not params[2]:
+		if not lock_z_axis:
 			axis.push_back(Vector3.AXIS_Z)
 			
 		for surf in range(mesh.get_surface_count()):
 			create_from_surface(mesh, surf)
 			
 			for i in range(get_vertex_count()):
-				var val = params[0]
-				
 				var v = get_vertex(i)
 				
-				v = m3.scaled(taper(v, val, c, axis)).xform(v)
+				v = m3.scaled(taper(v, value, c, axis)).xform(v)
 				
 				set_vertex(i, v)
 				
@@ -110,22 +124,30 @@ class TaperModifier:
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'Value', -0.5, 0.1, -100, 100)
-		add_tree_check(item, tree, 'Lock X Axis', false)
-		add_tree_check(item, tree, 'Lock Z Axis', false)
+		add_tree_range(item, tree, 'Value', value)
+		add_tree_check(item, tree, 'Lock X Axis', lock_x_axis)
+		add_tree_check(item, tree, 'Lock Z Axis', lock_z_axis)
 		
 # End TaperModifer
 
 class ShearModifier:
 	extends ModifierBase
 	
+	var shear_axis = Vector3.AXIS_X
+	var value = 1
+	
 	static func get_name():
 		return "Shear"
 		
-	func modifier(params, aabb, mesh):
+	func set_parameter(name, val):
+		if name == 'Shear Axis':
+			shear_axis = val
+			
+		elif name == 'Value':
+			value = val
+			
+	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
-		
-		var axis = params[0]
 		
 		var h
 		var c
@@ -133,18 +155,18 @@ class ShearModifier:
 		var s_axis
 		var b_axis
 		
-		if axis == Vector3.AXIS_X or axis == Vector3.AXIS_Y:
+		if shear_axis == Vector3.AXIS_X or shear_axis == Vector3.AXIS_Y:
 			h = aabb.get_endpoint(7).y - aabb.get_endpoint(0).y
 			
-			if axis == Vector3.AXIS_X:
+			if shear_axis == Vector3.AXIS_X:
 				s_axis = Vector3.AXIS_X
 				
-			elif axis == Vector3.AXIS_Z:
+			elif shear_axis == Vector3.AXIS_Y:
 				s_axis = Vector3.AXIS_Z
 				
 			b_axis = Vector3.AXIS_Y
 			
-		elif axis == Vector3.AXIS_Y:
+		elif shear_axis == Vector3.AXIS_Z:
 			h = aabb.get_endpoint(7).x - aabb.get_endpoint(0).x
 			
 			s_axis = Vector3.AXIS_Y
@@ -156,11 +178,9 @@ class ShearModifier:
 			create_from_surface(mesh, surf)
 			
 			for i in range(get_vertex_count()):
-				var val = params[1]
-				
 				var v = get_vertex(i)
 				
-				v[s_axis] += val * (v[b_axis]/c)
+				v[s_axis] += value * (v[b_axis]/c)
 				
 				set_vertex(i, v)
 				
@@ -171,21 +191,25 @@ class ShearModifier:
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_combo(item, tree, 'Shear Axis', 'x,y,z')
-		add_tree_range(item, tree, 'Shear', 1, 0.1, -50)
+		add_tree_combo(item, tree, 'Shear Axis', 'x,y,z', shear_axis)
+		add_tree_range(item, tree, 'Value', value)
 		
 # End ShearModifier
 
 class TwistModifier:
 	extends ModifierBase
 	
+	var angle = 30
+	
 	static func get_name():
 		return "Twist"
 		
-	func modifier(params, aabb, mesh):
+	func set_parameter(name, value):
+		if name == value:
+			angle = value
+			
+	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
-		
-		var val = params[0]
 		
 		var h = aabb.get_endpoint(7).y - aabb.get_endpoint(0).y
 		var c = h/2
@@ -196,7 +220,7 @@ class TwistModifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v = v.rotated(Vector3(0,1,0), deg2rad(val * (v.y/c)))
+				v = v.rotated(Vector3(0,1,0), deg2rad(angle * (v.y/c)))
 				
 				set_vertex(i, v)
 				
@@ -207,40 +231,60 @@ class TwistModifier:
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'Angle', 30, 1, -180, 180)
+		add_tree_range(item, tree, 'Angle', angle, 1, -180, 180)
 		
 # End TwistModifier
 
 class ArrayModifier:
 	extends ModifierBase
 	
+	var count = 2
+	var relative = true
+	var offset = Vector3(1,0,0)
+	
 	static func get_name():
 		return "Array"
 		
-	func modifier(params, aabb, mesh):
+	func set_parameter(name, value):
+		if name == 'Count':
+			count = value
+			
+		elif name == 'Relative':
+			relative = value
+			
+		elif name == 'Offset X':
+			offset.x = value
+			
+		elif name == 'Offset Y':
+			offset.y = value
+			
+		elif name == 'Offset Z':
+			offset.z = value
+			
+	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
-		var offset = Vector3(params[2], params[3], params[4])
+		var ofs = offset
 		
-		if params[1]:
+		if relative:
 			var vec = Vector3()
 			
 			vec.x = aabb.get_endpoint(0).x - aabb.get_endpoint(7).x
 			vec.y = aabb.get_endpoint(0).y - aabb.get_endpoint(7).y
 			vec.z = aabb.get_endpoint(0).z - aabb.get_endpoint(7).z
 			
-			offset *= vec.abs()
+			ofs *= vec.abs()
 			
 		for surf in range(mesh.get_surface_count()):
 			create_from_surface(mesh, surf)
 			
 			commit_to_surface(mesh_temp)
 			
-			for c in range(params[0] - 1):
+			for c in range(count - 1):
 				for i in range(get_vertex_count()):
 					var v = get_vertex(i)
 					
-					v += offset
+					v += ofs
 					
 					set_vertex(i, v)
 					
@@ -251,33 +295,49 @@ class ArrayModifier:
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'Count', 2, 1, 1, 100)
-		add_tree_check(item, tree, 'Relative', true)
-		add_tree_range(item, tree, 'Offset X', 1, 0.1, -1000, 1000)
-		add_tree_range(item, tree, 'Offset Y', 0, 0.1, -1000, 1000)
-		add_tree_range(item, tree, 'Offset Z', 0, 0.1, -1000, 1000)
+		add_tree_range(item, tree, 'Count', count, 1, 1, 100)
+		add_tree_check(item, tree, 'Relative', relative)
+		add_tree_range(item, tree, 'Offset X', offset.x)
+		add_tree_range(item, tree, 'Offset Y', offset.y)
+		add_tree_range(item, tree, 'Offset Z', offset.z)
 		
 # End ArrayModifier
 
 class OffsetModifier:
 	extends ModifierBase
 	
+	var relative = true
+	var offset = Vector3(0,0.5,0)
+	
 	static func get_name():
 		return "Offset"
 		
-	func modifier(params, aabb, mesh):
+	func set_parameter(name, value):
+		if name == 'Relative':
+			relative = value
+			
+		elif name == 'X':
+			offset.x = value
+			
+		elif name == 'Y':
+			offset.y = value
+			
+		elif name == 'Z':
+			offset.z = value
+			
+	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
-		var offset = Vector3(params[1], params[2], params[3])
+		var ofs = offset
 		
-		if params[0]:
+		if relative:
 			var vec = Vector3()
 			
 			vec.x = aabb.get_endpoint(0).x - aabb.get_endpoint(7).x
 			vec.y = aabb.get_endpoint(0).y - aabb.get_endpoint(7).y
 			vec.z = aabb.get_endpoint(0).z - aabb.get_endpoint(7).z
 			
-			offset *= vec.abs()
+			ofs *= vec.abs()
 			
 		for surf in range(mesh.get_surface_count()):
 			create_from_surface(mesh, surf)
@@ -285,7 +345,7 @@ class OffsetModifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v += offset
+				v += ofs
 				
 				set_vertex(i, v)
 				
@@ -296,23 +356,37 @@ class OffsetModifier:
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_check(item, tree, 'Relative', true)
-		add_tree_range(item, tree, 'X', 0, 0.1, -1000, 100)
-		add_tree_range(item, tree, 'Y', 0.5, 0.1, -1000, 100)
-		add_tree_range(item, tree, 'Z', 0, 0.1, -1000, 100)
+		add_tree_check(item, tree, 'Relative', relative)
+		add_tree_range(item, tree, 'X', offset.x)
+		add_tree_range(item, tree, 'Y', offset.y)
+		add_tree_range(item, tree, 'Z', offset.z)
 		
-# End OffsetArray
+# End OffsetModifier
 
 class RandomModifier:
 	extends ModifierBase
 	
+	var x = 0.1
+	var y = 0.1
+	var z = 0.1
+	
 	static func get_name():
 		return "Random"
 		
-	func modifier(params, aabb, mesh):
+	func set_parameter(name, value):
+		if name == 'X':
+			x = 0.1
+			
+		elif name == 'Y':
+			y = 0.1
+			
+		elif name == 'Z':
+			z = 0.1
+			
+	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
-		var rand = {}
+		var cache = {}
 		
 		for surf in range(mesh.get_surface_count()):
 			create_from_surface(mesh, surf)
@@ -320,27 +394,27 @@ class RandomModifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				if not rand.has(v):
-					rand[v] = Vector3(rand_range(-1,1) * params[0],\
-					                  rand_range(-1,1) * params[1],\
-					                  rand_range(-1,1) * params[2])
+				if not cache.has(v):
+					cache[v] = Vector3(rand_range(-1,1) * x,\
+					                   rand_range(-1,1) * y,\
+					                   rand_range(-1,1) * z)
 					
-				v += rand[v]
+				v += cache[v]
 				
 				set_vertex(i, v)
 				
 			commit_to_surface(mesh_temp)
 			
-		rand.clear()
+		cache.clear()
 		
 		clear()
 		
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'X', 0.1, 0.1, 0, 100)
-		add_tree_range(item, tree, 'Y', 0.1, 0.1, 0, 100)
-		add_tree_range(item, tree, 'Z', 0.1, 0.1, 0, 100)
+		add_tree_range(item, tree, 'X', x, 0.01, 0, 100)
+		add_tree_range(item, tree, 'Y', y, 0.01, 0, 100)
+		add_tree_range(item, tree, 'Z', z, 0.01, 0, 100)
 		
 # End RandomModifier
 
@@ -348,12 +422,12 @@ class RandomModifier:
 
 func get_modifiers():
 	var modifiers = {
-		"Taper":TaperModifier,
-		"Shear":ShearModifier,
-		"Twist":TwistModifier,
-		"Array":ArrayModifier, 
-		"Offset":OffsetModifier,
-		"Random":RandomModifier
+		"Taper"  :TaperModifier,
+		"Shear"  :ShearModifier,
+		"Twist"  :TwistModifier,
+		"Array"  :ArrayModifier, 
+		"Offset" :OffsetModifier,
+		"Random" :RandomModifier
 	}
 	
 	return modifiers
