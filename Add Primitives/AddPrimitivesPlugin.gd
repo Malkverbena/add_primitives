@@ -165,17 +165,17 @@ class TransformDialog:
 		
 		emit = false
 		
-		spin_boxes[0].set_val(tns[Vector3.X])
-		spin_boxes[1].set_val(tns[Vector3.Y])
-		spin_boxes[2].set_val(tns[Vector3.Z])
+		spin_boxes[0].set_val(tns[Vector3.AXIS_X])
+		spin_boxes[1].set_val(tns[Vector3.AXIS_Y])
+		spin_boxes[2].set_val(tns[Vector3.AXIS_Z])
 		
-		spin_boxes[3].set_val(rot[Vector3.X])
-		spin_boxes[4].set_val(rot[Vector3.Y])
-		spin_boxes[5].set_val(rot[Vector3.Z])
+		spin_boxes[3].set_val(rot[Vector3.AXIS_X])
+		spin_boxes[4].set_val(rot[Vector3.AXIS_Y])
+		spin_boxes[5].set_val(rot[Vector3.AXIS_Z])
 		
-		spin_boxes[6].set_val(scl[Vector3.X])
-		spin_boxes[7].set_val(scl[Vector3.Y])
-		spin_boxes[8].set_val(scl[Vector3.Z])
+		spin_boxes[6].set_val(scl[Vector3.AXIS_X])
+		spin_boxes[7].set_val(scl[Vector3.AXIS_Y])
+		spin_boxes[8].set_val(scl[Vector3.AXIS_Z])
 		
 		emit = true
 		
@@ -204,9 +204,9 @@ class TransformDialog:
 		var ty = add_spinbox(hb, 'y', 0, 0.01, -500, 500)
 		var tz = add_spinbox(hb, 'z', 0, 0.01, -500, 500)
 		
-		tx.connect("value_changed", self, "set_translation", [Vector3.X])
-		ty.connect("value_changed", self, "set_translation", [Vector3.Y])
-		tz.connect("value_changed", self, "set_translation", [Vector3.Z])
+		tx.connect("value_changed", self, "set_translation", [Vector3.AXIS_X])
+		ty.connect("value_changed", self, "set_translation", [Vector3.AXIS_Y])
+		tz.connect("value_changed", self, "set_translation", [Vector3.AXIS_Z])
 		
 		add_spacer(self)
 		hb = add_row()
@@ -219,9 +219,9 @@ class TransformDialog:
 		var ry = add_spinbox(hb, 'y', 0, 1, -360, 360) 
 		var rz = add_spinbox(hb, 'z', 0, 1, -360, 360) 
 		
-		rx.connect("value_changed", self, "set_rotation", [Vector3.X])
-		ry.connect("value_changed", self, "set_rotation", [Vector3.Y])
-		rz.connect("value_changed", self, "set_rotation", [Vector3.Z])
+		rx.connect("value_changed", self, "set_rotation", [Vector3.AXIS_X])
+		ry.connect("value_changed", self, "set_rotation", [Vector3.AXIS_Y])
+		rz.connect("value_changed", self, "set_rotation", [Vector3.AXIS_Z])
 		
 		add_spacer(self)
 		hb = add_row()
@@ -234,9 +234,9 @@ class TransformDialog:
 		var sy = add_spinbox(hb, 'y', 1, 0.01, -100, 100)
 		var sz = add_spinbox(hb, 'z', 1, 0.01, -100, 100)
 		
-		sx.connect("value_changed", self, "set_scale", [Vector3.X])
-		sy.connect("value_changed", self, "set_scale", [Vector3.Y])
-		sz.connect("value_changed", self, "set_scale", [Vector3.Z])
+		sx.connect("value_changed", self, "set_scale", [Vector3.AXIS_X])
+		sy.connect("value_changed", self, "set_scale", [Vector3.AXIS_Y])
+		sz.connect("value_changed", self, "set_scale", [Vector3.AXIS_Z])
 		
 # End TransformDialog
 
