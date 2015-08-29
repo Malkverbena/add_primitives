@@ -1,6 +1,6 @@
 extends Reference
 
-class ExtrudeDialog:
+class PolygonDialog:
 	extends ConfirmationDialog
 	
 	const Mode = {
@@ -16,33 +16,32 @@ class ExtrudeDialog:
 		CLOSE = 4
 	}
 	
+	var mode = Mode.DRAW
+	var edit = -1
 	var pressed = false
 	var snap = false
 	var show_grid = false
 	var grid_step = Vector2(10,10)
 	
+	var handle
+	var handle_offset
+	
 	#Default Values
 	var data = {
 		next = 1,
 		clockwise = false,
-		length = 0,
+		polygon_length = 0,
 		invert = false,
 		close = false,
 		current_axis = Vector3.AXIS_X,
 		axis = [Vector3.AXIS_Z, Vector3.AXIS_Y],
-		extrude = 1.0,
+		depth = 1.0,
 		radius = 1.0
 	}
 	
 	var canvas
-	var snap_dialog
-	
-	var mode
-	var edit
-	
-	var handle
-	var handle_offset
-	
+	var snap_popup
+	var text_display
 	var options
 	var tools
 	
@@ -70,6 +69,53 @@ class ExtrudeDialog:
 		else:
 			return false
 			
+	func set_mode(mode):
+		self.mode = mode 
+		
+		if mode == Mode.DRAW:
+			canvas.set_default_cursor_shape(CURSOR_CROSS)
+			
+		elif mode == Mode.EDIT:
+			canvas.set_default_cursor_shape(CURSOR_DRAG)
+			
+		else:
+			canvas.set_default_cursor_shape(CURSOR_ARROW)
+			
+	func set_axis(id):
+		if id == Vector3.AXIS_X:
+			data.axis = [Vector3.AXIS_Z, Vector3.AXIS_Y]
+			
+		elif id == Vector3.AXIS_Y:
+			data.axis = [Vector3.AXIS_Z, Vector3.AXIS_X]
+			
+		elif id == Vector3.AXIS_Z:
+			data.axis = [Vector3.AXIS_X, Vector3.AXIS_Y]
+			
+		data.current_axis = id
+		
+		emit_signal("poly_edited")
+		
+		canvas.update()
+		
+	func set_radius(val):
+		data.radius = val
+		
+		emit_signal("poly_edited")
+		
+	func set_depth(val):
+		data.depth = val
+		
+		emit_signal("poly_edited")
+		
+	func set_grid_step(val, axis):
+		if axis == Vector3.AXIS_X:
+			grid_step.x = val
+			
+		elif axis == Vector3.AXIS_Y:
+			grid_step.y = val
+			
+		redraw()
+		
 	func set_mesh_instance(mesh_instance):
 		self.mesh_instance = mesh_instance
 		
@@ -96,8 +142,8 @@ class ExtrudeDialog:
 	func uv_height():
 		var uv = Vector2(0,1)
 		
-		if data.extrude < data.radius:
-			uv.y = data.extrude/data.radius
+		if data.depth < data.radius:
+			uv.y = data.depth/data.radius
 			
 		return uv
 		
@@ -119,7 +165,7 @@ class ExtrudeDialog:
 		var s = canvas.get_size()
 		
 		var ofs = Vector3()
-		ofs[data.current_axis] = data.extrude/2
+		ofs[data.current_axis] = data.depth/2
 		
 		var index = Array(Geometry.triangulate_polygon(Vector2Array(poly)))
 		
@@ -142,7 +188,7 @@ class ExtrudeDialog:
 			surf.add_uv(poly[i]/s)
 			surf.add_vertex(to_vec3(poly[i]/s) + ofs)
 			
-		if data.extrude:
+		if data.depth:
 			if data.close:
 				poly.push_back(poly[0])
 				
@@ -202,57 +248,9 @@ class ExtrudeDialog:
 		
 		return mesh
 		
-	func set_mode(mode):
-		self.mode = mode 
-		edit = -1
-		
-		if mode == Mode.DRAW:
-			canvas.set_default_cursor_shape(CURSOR_CROSS)
-			
-		elif mode == Mode.EDIT:
-			canvas.set_default_cursor_shape(CURSOR_DRAG)
-			
-		else:
-			canvas.set_default_cursor_shape(CURSOR_ARROW)
-			
-	func set_axis(id):
-		if id == Vector3.AXIS_X:
-			data.axis = [Vector3.AXIS_Z, Vector3.AXIS_Y]
-			
-		elif id == Vector3.AXIS_Y:
-			data.axis = [Vector3.AXIS_Z, Vector3.AXIS_X]
-			
-		elif id == Vector3.AXIS_Z:
-			data.axis = [Vector3.AXIS_X, Vector3.AXIS_Y]
-			
-		data.current_axis = id
-		
-		emit_signal("poly_edited")
-		
-		canvas.update()
-		
-	func set_radius(val):
-		data.radius = val
-		
-		emit_signal("poly_edited")
-		
-	func set_extrude(val):
-		data.extrude = val
-		
-		emit_signal("poly_edited")
-		
-	func set_grid_step(val, axis):
-		if axis == Vector3.AXIS_X:
-			grid_step.x = val
-			
-		elif axis == Vector3.AXIS_Y:
-			grid_step.y = val
-			
-		redraw()
-		
-	func get_handle(point):
+	func get_handle(pos):
 		for i in range(poly.size() - 1, -1, -1):
-			if poly[i].distance_to(point) < handle.get_width()/2:
+			if poly[i].distance_to(pos) < handle.get_width()/2:
 				return i
 				
 		return -1
@@ -281,16 +279,26 @@ class ExtrudeDialog:
 				return range(poly.size() - 1, 0, -1)
 				
 	func show_dialog():
-		popup_centered(Vector2(300 + get_constant("margin", "Dialogs") * 2, 370))
+		var s = Vector2(300 + get_constant('margin', 'Dialogs') * 2, 370)
+		
+		s.y += text_display.get_size().y * 1.5
+		
+		popup_centered(s)
 		
 		redraw()
 		
 	func update_mesh():
+		var start = OS.get_ticks_msec()
+		
 		if mesh_instance:
 			var mesh = poly2mesh()
 			
 			mesh_instance.set_mesh(mesh)
 			
+		var exec_time = OS.get_ticks_msec() - start
+		
+		text_display.set_text("Generation time: " + str(exec_time) + " ms")
+		
 	func default():
 		data.next = 1
 		data.clockwise = false
@@ -299,15 +307,15 @@ class ExtrudeDialog:
 		
 		set_axis(Vector3.AXIS_X)
 		
-		data.extrude = 1.0
+		data.depth = 1.0
 		data.radius = 1.0
-		data.length = 0
+		data.polygon_length = 0
 		
 		snap = false
 		show_grid = false
 		
 		tools[0].select(data.current_axis)
-		tools[1].set_val(data.extrude)
+		tools[1].set_val(data.depth)
 		tools[2].set_val(data.radius)
 		
 		for i in range(options.get_item_count()):
@@ -321,31 +329,6 @@ class ExtrudeDialog:
 		canvas.update()
 		set_mode(Mode.DRAW)
 		
-	func draw_grid():
-		var s = canvas.get_rect().size
-		
-		for i in range(s.x/grid_step.x + 1):
-			canvas.draw_line(Vector2(i * grid_step.x, 0), Vector2(i * grid_step.x, s.y), GRID_COLOR, 1)
-			
-		for j in range(s.y/grid_step.y + 1):
-			canvas.draw_line(Vector2(0, j * grid_step.y), Vector2(s.x, j * grid_step.y), GRID_COLOR, 1)
-			
-	func redraw_poly():
-		data.length = 0
-		
-		for i in range(poly.size() - 1):
-				canvas.draw_line(poly[i], poly[i+1], LINE_COLOR, LINE_WIDTH)
-				
-				data.length += poly[i].distance_to(poly[i + 1])
-				
-		if poly.size() > 2 and data.close:
-			canvas.draw_line(poly[poly.size() - 1], poly[0], LINE_COLOR, LINE_WIDTH)
-			
-			data.length += poly[poly.size() - 1].distance_to(poly[0])
-			
-		for i in range(poly.size()):
-			canvas.draw_texture(handle, poly[i] - handle_offset)
-			
 	func clear_canvas():
 		poly.clear()
 		set_mode(Mode.DRAW)
@@ -381,7 +364,11 @@ class ExtrudeDialog:
 			redraw()
 			
 		elif id == Options.CONFIGURE_SNAP:
-			snap_dialog.popup_centered(Vector2(140, 75))
+			var ws = get_size()
+			var ps = snap_popup.get_size()
+			
+			snap_popup.set_pos(ws/2 - ps/2 + get_pos())
+			snap_popup.popup()
 			
 		elif id == Options.INVERT:
 			data.invert = not data.invert
@@ -394,7 +381,7 @@ class ExtrudeDialog:
 			options.set_item_checked(idx, data.close)
 			
 			redraw()
-				
+			
 	func _canvas_input_event(ev):
 		if ev.type == InputEvent.MOUSE_BUTTON:
 			if ev.button_index == BUTTON_LEFT:
@@ -402,22 +389,26 @@ class ExtrudeDialog:
 					pressed = true
 					
 					if ev.shift:
-						set_mode(Mode.EDIT)
-						
 						edit = get_handle(ev.pos)
 						
+						if edit != -1:
+							set_mode(Mode.EDIT)
+							
 					elif mode == Mode.DRAW:
-						poly.push_back(snap_point(canvas.get_local_mouse_pos()))
+						poly.push_back(snap_point(ev.pos))
+						
+						edit = poly.size() - 1
 						
 						canvas.update()
 						
 				elif not ev.pressed:
 					pressed = false
+					edit = -1
 					
 					set_mode(Mode.DRAW)
 					
 			elif ev.button_index == BUTTON_RIGHT:
-				if ev.pressed and mode != Mode.EDIT:
+				if ev.pressed and mode == Mode.DRAW:
 					pressed = false
 					
 					edit = get_handle(ev.pos)
@@ -428,33 +419,35 @@ class ExtrudeDialog:
 					canvas.update()
 					
 		elif ev.type == InputEvent.MOUSE_MOTION and pressed:
-			if mode == Mode.EDIT and ev.shift:
-				if edit != -1:
-					poly[edit] = vector_to_local(snap_point(canvas.get_local_mouse_pos()))
-					
-					canvas.update()
-					
-			elif mode == Mode.DRAW:
-				if poly.size() == 1:
-					poly.push_back(snap_point(canvas.get_local_mouse_pos()))
-					
-				poly[poly.size() - 1] = vector_to_local(snap_point(canvas.get_local_mouse_pos()))
+			if edit == -1:
+				return
+				
+			var edit_pos = snap_point(ev.pos)
+				
+			if mode == Mode.EDIT:
+				poly[edit] = vector_to_local(edit_pos)
 				
 				canvas.update()
 				
-		elif ev.type == InputEvent.KEY:
-			if ev.shift:
-				if ev.pressed:
-					set_mode(Mode.EDIT)
+			elif mode == Mode.DRAW:
+				if poly.size() == 1:
+					poly.push_back(edit_pos)
 					
-				else:
-					set_mode(Mode.DRAW)
+					edit = poly.size() -1
 					
+				poly[edit] = vector_to_local(edit_pos)
+				
+				canvas.update()
+				
 	func _canvas_draw():
+		var start = OS.get_ticks_msec()
+		
 		var s = canvas.get_size()
 		var r = Rect2(Vector2(), s)
 		
-		VS.canvas_item_set_clip(canvas.get_canvas_item(), true)
+		var ci = canvas.get_canvas_item()
+		
+		VS.canvas_item_set_clip(ci, true)
 		
 		canvas.draw_rect(r, Color(0.3, 0.3, 0.3))
 		
@@ -465,10 +458,28 @@ class ExtrudeDialog:
 			canvas.draw_colored_polygon(poly, Color(0.9,0.9,0.9))
 			
 		if show_grid:
-			draw_grid()
-			
-		redraw_poly()
+			for i in range(1, s.x/grid_step.x):
+				canvas.draw_line(Vector2(i * grid_step.x, 0), Vector2(i * grid_step.x, s.y), GRID_COLOR, 1)
+				
+			for j in range(1, s.y/grid_step.y + 1):
+				canvas.draw_line(Vector2(0, j * grid_step.y), Vector2(s.x, j * grid_step.y), GRID_COLOR, 1)
+				
+		# Draw Polygon handles and lines
+		data.polygon_length = 0
 		
+		for i in range(poly.size() - 1):
+				canvas.draw_line(poly[i], poly[i+1], LINE_COLOR, LINE_WIDTH)
+				
+				data.polygon_length += poly[i].distance_to(poly[i + 1])
+				
+		if poly.size() > 2 and data.close:
+			canvas.draw_line(poly[poly.size() - 1], poly[0], LINE_COLOR, LINE_WIDTH)
+			
+			data.polygon_length += poly[poly.size() - 1].distance_to(poly[0])
+			
+		for i in range(poly.size()):
+			canvas.draw_texture(handle, poly[i] - handle_offset)
+			
 		if mode >= 0:
 			emit_signal("poly_edited")
 			
@@ -477,25 +488,22 @@ class ExtrudeDialog:
 		canvas.draw_line(Vector2(0, s.y/2), Vector2(s.x, s.y/2), ac[data.axis[0]], 2)
 		canvas.draw_line(Vector2(s.x/2, 0), Vector2(s.x/2, s.y), ac[data.axis[1]], 2)
 		
+		print("End in: " + str(OS.get_ticks_msec() - start) + " ms")
+		
 	func _notification(what):
 		if what == NOTIFICATION_POPUP_HIDE:
-		
 			set_mode(-1)
 			canvas.update()
 			
-	func _enter_tree():
-		handle = get_parent().get_icon("Editor3DHandle", "EditorIcons")
-		handle_offset = Vector2(handle.get_width(), handle.get_height())/2
-		
 	func _exit_tree():
 		clear_canvas()
 		
 		data.clear()
 		
-		snap_dialog.queue_free()
+		snap_popup.queue_free()
 		queue_free()
 		
-	func _init():
+	func _init(base):
 		set_title("Draw New Polygon")
 		set_exclusive(true)
 		
@@ -509,6 +517,7 @@ class ExtrudeDialog:
 		hb.set_h_size_flags(SIZE_EXPAND_FILL)
 		
 		var m_button = MenuButton.new()
+		m_button.set_flat(false)
 		m_button.set_text("Edit")
 		
 		options = m_button.get_popup()
@@ -533,14 +542,14 @@ class ExtrudeDialog:
 		
 		ob.connect("item_selected", self, "set_axis")
 		
-		var e_spin = SpinBox.new()
-		e_spin.set_val(data.extrude)
-		e_spin.set_min(0)
-		e_spin.set_max(50)
-		e_spin.set_step(0.01)
-		hb.add_child(e_spin)
+		var d_spin = SpinBox.new()
+		d_spin.set_val(data.depth)
+		d_spin.set_min(0)
+		d_spin.set_max(50)
+		d_spin.set_step(0.01)
+		hb.add_child(d_spin)
 		
-		e_spin.connect("value_changed", self, "set_extrude")
+		d_spin.connect("value_changed", self, "set_depth")
 		
 		var r_spin = SpinBox.new()
 		r_spin.set_val(data.radius)
@@ -551,7 +560,7 @@ class ExtrudeDialog:
 		
 		r_spin.connect("value_changed", self, "set_radius")
 		
-		tools = [ob, e_spin, r_spin]
+		tools = [ob, d_spin, r_spin]
 		
 		var sp = Control.new()
 		hb.add_child(sp)
@@ -562,13 +571,12 @@ class ExtrudeDialog:
 		hb.add_child(clear)
 		clear.connect("pressed", self, "clear_canvas")
 		
-		var clip = Control.new()
-		main_vbox.add_child(clip)
-		
 		canvas = Control.new()
 		canvas.set_custom_minimum_size(Vector2(300,300))
-		clip.add_child(canvas)
-		canvas.set_area_as_parent_rect()
+		main_vbox.add_child(canvas)
+		
+		handle = base.get_icon("Editor3DHandle", "EditorIcons")
+		handle_offset = Vector2(handle.get_width(), handle.get_height())/2
 		
 		canvas.set_focus_mode(FOCUS_ALL)
 		
@@ -577,13 +585,21 @@ class ExtrudeDialog:
 		canvas.connect("input_event", self, "_canvas_input_event")
 		canvas.connect("draw", self, "_canvas_draw")
 		
+		text_display = Label.new()
+		text_display.set_text("Generation time: 0 ms")
+		text_display.set_align(text_display.ALIGN_CENTER)
+		text_display.set_valign(text_display.VALIGN_CENTER)
+		main_vbox.add_child(text_display)
+		text_display.set_v_size_flags(SIZE_EXPAND_FILL)
+		
 		get_cancel().connect("pressed", self, "_cancel")
 		
 		connect("poly_edited", self, "update_mesh")
 		
-		# Snap Dialog
-		snap_dialog = AcceptDialog.new()
-		snap_dialog.set_title("Set Snap Step")
+		# Snap Popup
+		snap_popup = PopupPanel.new()
+		snap_popup.set_size(Vector2(140, 40))
+		
 		var x = SpinBox.new()
 		x.set_val(grid_step.x)
 		x.set_min(0.01)
@@ -597,9 +613,8 @@ class ExtrudeDialog:
 		y.set_step(0.01)
 		
 		var hb = HBoxContainer.new()
-		snap_dialog.add_child(hb)
+		snap_popup.add_child(hb)
 		hb.set_area_as_parent_rect(get_constant("margin", "Dialogs"))
-		hb.set_margin(MARGIN_BOTTOM, get_constant("button_margin", "Dialogs") + 10)
 		
 		hb.add_child(x)
 		hb.add_child(y)
@@ -607,20 +622,14 @@ class ExtrudeDialog:
 		x.connect("value_changed", self, "set_grid_step", [Vector3.AXIS_X])
 		y.connect("value_changed", self, "set_grid_step", [Vector3.AXIS_Y])
 		
-		add_child(snap_dialog)
+		add_child(snap_popup)
 		
-# End ExtrudeDialog
+# End PolygonDialog
 
-var extrude_dialog
+var polygon_dialog
 
 static func get_name():
 	return "Polygon"
-	
-func edit_primitive():
-	if not extrude_dialog.get_mesh_instance():
-		return
-		
-	extrude_dialog.show_dialog()
 	
 func create(object):
 	var instance = MeshInstance.new()
@@ -630,21 +639,27 @@ func create(object):
 	object.add_child(instance)
 	instance.set_owner(root)
 	
-	extrude_dialog.set_mesh_instance(instance)
+	polygon_dialog.set_mesh_instance(instance)
 	
-	extrude_dialog.default()
-	extrude_dialog.show_dialog()
+	polygon_dialog.default()
+	polygon_dialog.show_dialog()
 	
 	return instance
 	
-func clear():
-	extrude_dialog.set_mesh_instance(null)
+func edit_primitive():
+	if not polygon_dialog.get_mesh_instance():
+		return
+		
+	polygon_dialog.show_dialog()
 	
-	extrude_dialog.clear_canvas()
+func clear():
+	polygon_dialog.set_mesh_instance(null)
+	
+	polygon_dialog.clear_canvas()
 	
 func _init(base):
 	var gui_base = base.get_node("/root/EditorNode").get_gui_base()
 	
-	extrude_dialog = ExtrudeDialog.new()
-	gui_base.add_child(extrude_dialog)
+	polygon_dialog = PolygonDialog.new(gui_base)
+	gui_base.add_child(polygon_dialog)
 	
