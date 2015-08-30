@@ -32,7 +32,7 @@ func set_parameter(name, value):
 	elif name == 'Extra Step Height':
 		extra_height = value
 		
-func create(smooth = false, invert = false):
+func create(smooth, invert):
 	var angle = (PI*2)/steps
 	
 	var or_ = Vector3(outer_radius, 1, outer_radius)
@@ -40,28 +40,29 @@ func create(smooth = false, invert = false):
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
+	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for sp in range(spirals):
-		var off = Vector3(0, height*sp, 0)
+		var ofs = Vector3(0, height*sp, 0)
 		
 		var s = height/steps
 		var h = Vector3(0,-(s + extra_height),0)
 		
 		for i in range(steps):
-			var v = Vector3(cos(angle*i), (i+1)*s + extra_height, sin(angle*i)) + off
-			var v2 = Vector3(cos(angle*(i+1)), (i+1)*s + extra_height, sin(angle*(i+1))) + off
+			var v = Vector3(cos(angle*i), (i+1)*s + extra_height, sin(angle*i)) + ofs
+			var v2 = Vector3(cos(angle*(i+1)), (i+1)*s + extra_height, sin(angle*(i+1))) + ofs
 			
-			add_quad([v*ir, v*or_, v2*or_, v2*ir], [], invert)
-			add_quad([v*or_ + h, v*or_, v*ir, v*ir + h], [], invert)
-			add_quad([v2*or_ + h, v2*or_, v*or_, v*or_ + h], [], invert)
-			add_quad([v*ir + h, v*ir, v2*ir, v2*ir + h], [], invert)
-			add_quad([v2*ir + h, v2*ir, v2*or_, v2*or_ + h], [], invert)
+			add_quad([v*ir, v*or_, v2*or_, v2*ir])
+			add_quad([v*or_ + h, v*or_, v*ir, v*ir + h])
+			add_quad([v2*or_ + h, v2*or_, v*or_, v*or_ + h])
+			add_quad([v*ir + h, v*ir, v2*ir, v2*ir + h])
+			add_quad([v2*ir + h, v2*ir, v2*or_, v2*or_ + h])
 			
 			v += h
 			v2 += h
 			
-			add_quad([v2*ir, v2*or_, v*or_, v*ir], [], invert)
+			add_quad([v2*ir, v2*or_, v*or_, v*ir])
 			
 	var mesh = commit()
 	

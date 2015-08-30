@@ -17,32 +17,33 @@ func set_parameter(name, value):
 	elif name == 'Segments':
 		segments = value
 		
-func create(smooth = false, invert = false):
+func create(smooth, invert):
 	var center_top = Vector3(0, height/2, 0)
 	var min_pos = Vector3(0, -height/2, 0)
 	
 	var circle = build_circle_verts(min_pos, segments, radius)
-	var circle_uv = build_circle_verts(Vector3(0.25,0,0.25), segments, 0.25)
+	var circle_uv = build_circle_verts(Vector3(0.5,0,0.5), segments, radius)
 	
-	var uv_coords
+	var uv
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
+	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for idx in range(segments):
-		uv_coords = [Vector2(0.25, 0.25), Vector2(circle_uv[idx].x, circle_uv[idx].z),
-		             Vector2(circle_uv[idx + 1].x, circle_uv[idx + 1].z)]
+		uv = [Vector2(0.5, 0.5), Vector2(circle_uv[idx].x, circle_uv[idx].z),
+		      Vector2(circle_uv[idx + 1].x, circle_uv[idx + 1].z)]
 		
-		add_tri([center_top, circle[idx], circle[idx + 1]], uv_coords, invert)
+		add_tri([center_top, circle[idx], circle[idx + 1]], uv)
 		
 	add_smooth_group(false)
 	
 	for idx in range(segments):
-		uv_coords = [Vector2(0.5 + circle_uv[idx + 1].x, circle_uv[idx + 1].z),
-		             Vector2(0.5 + circle_uv[idx].x, circle_uv[idx].z), Vector2(0.75, 0.25)]
+		uv = [Vector2(circle_uv[idx + 1].x, circle_uv[idx + 1].z),
+		      Vector2(circle_uv[idx].x, circle_uv[idx].z), Vector2(0.5, 0.5)]
 		
-		add_tri([circle[idx + 1], circle[idx], min_pos], uv_coords, invert)
+		add_tri([circle[idx + 1], circle[idx], min_pos], uv)
 		
 	var mesh = commit()
 	

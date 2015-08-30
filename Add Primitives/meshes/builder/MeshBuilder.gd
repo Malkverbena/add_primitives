@@ -22,11 +22,16 @@
 
 extends SurfaceTool
 
+var invert = false
+
 static func get_name():
 	return ""
 	
 static func get_container():
 	return ""
+	
+func set_invert(val):
+	invert = val
 	
 func commit():
 	var mesh = Mesh.new()
@@ -51,10 +56,10 @@ func commit():
 	
 	return mesh
 	
-func add_tri(vertex = [], uv = [], reverse = false):
+func add_tri(vertex = [], uv = []):
 	assert( vertex.size() == 3 )
 	
-	if reverse:
+	if invert:
 		vertex.invert()
 		uv.invert()
 		
@@ -71,10 +76,10 @@ func add_tri(vertex = [], uv = [], reverse = false):
 		add_vertex(vertex[1])
 		add_vertex(vertex[2])
 		
-func add_quad(vertex = [], uv = [], reverse = false):
+func add_quad(vertex = [], uv = []):
 	assert( vertex.size() == 4 )
 	
-	if reverse:
+	if invert:
 		vertex.invert()
 		uv.invert()
 		
@@ -100,6 +105,28 @@ func add_quad(vertex = [], uv = [], reverse = false):
 		add_vertex(vertex[3])
 		add_vertex(vertex[0])
 		
+func build_plane(start, end, offset = Vector3(0,0,0)):
+	var verts = []
+	verts.resize(4)
+	
+	verts[0] = offset + end
+	verts[1] = offset + end + start
+	verts[2] = offset + start
+	verts[3] = offset
+	
+	var uv = []
+	uv.resize(4)
+	
+	var w = verts[3].distance_to(verts[2])
+	var h = verts[3].distance_to(verts[0])
+	
+	uv[0] = Vector2(0, h)
+	uv[1] = Vector2(w, h)
+	uv[2] = Vector2(w, 0)
+	uv[3] = Vector2(0, 0)
+	
+	add_quad(verts, uv)
+	
 static func build_plane_verts(start, end, offset = Vector3(0,0,0)):
 	var verts = []
 	
@@ -112,59 +139,47 @@ static func build_plane_verts(start, end, offset = Vector3(0,0,0)):
 	
 static func build_circle_verts(pos, segments, radius = 1):
 	var circle_verts = []
+	circle_verts.resize(segments + 1)
 	
-	var radians_circle = PI * 2
+	var angle = PI * 2 / segments
 	
 	for i in range(segments):
-		var angle = radians_circle * i/segments
+		var a = angle * i
 		
-		var vector = Vector3()
-		
-		vector.x = cos(angle) * radius
-		vector.z = sin(angle) * radius 
+		var vector = Vector3(cos(a), 0, sin(a)) * radius
 		
 		vector += pos
 		
-		circle_verts.push_back(vector)
+		circle_verts[i] = vector
 		
-	circle_verts.push_back(circle_verts[0])
+	circle_verts[segments] = circle_verts[0]
 	
 	return circle_verts
 	
 static func build_circle_verts_rot(pos, segments, radius = 1, rotation = [], axis = []):
 	var circle_verts = []
+	circle_verts.resize(segments + 1)
 	
-	var radians_circle = PI * 2
+	var angle = PI * 2 / segments
 	
 	for i in range(segments):
-		var angle = radians_circle * i/segments
+		var a = angle * i
 		
-		var vector = Vector3()
-		
-		vector.x = cos(angle) * radius
-		vector.z = sin(angle) * radius
+		var vector = Vector3(cos(a), 0, sin(a)) * radius
 		
 		for i in range(rotation.size()):
 			vector = vector.rotated(axis[i], rotation[i])
 			
 		vector += pos
 		
-		circle_verts.push_back(vector)
+		circle_verts[i] = vector
 		
-	circle_verts.push_back(circle_verts[0])
+	circle_verts[segments] = circle_verts[0]
 	
 	return circle_verts
 	
 static func plane_uv(start, end, last = true):
-	var u = 1
-	var v = 1
-	
-	if start < end:
-		u = start/end
-	elif end < start:
-		v = end/start
-		
-	var uv = [Vector2(u, v), Vector2(0, v), Vector2(0, 0), Vector2(u, 0)]
+	var uv = [Vector2(start, end), Vector2(0, end), Vector2(0, 0), Vector2(start, 0)]
 	
 	if not last:
 		uv.remove(3)

@@ -13,21 +13,22 @@ func set_parameter(name, value):
 	elif name == 'Segments':
 		segments = value
 		
-func create(smooth = false, invert = false):
+func create(smooth, invert):
 	var c = Vector3(0,0,0)
 	
 	var circle = build_circle_verts(c, segments, radius)
-	var circle_uv = build_circle_verts(Vector3(0.5,0,0.5), segments, 0.5)
+	var circle_uv = build_circle_verts(Vector3(0.5,0,0.5), segments, radius)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
+	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for i in range(segments):
 		var uv = [Vector2(0.5,0.5), Vector2(circle_uv[i].x, circle_uv[i].z), 
 		          Vector2(circle_uv[i+1].x, circle_uv[i+1].z)]
 		
-		add_tri([c, circle[i], circle[i+1]], uv, invert)
+		add_tri([c, circle[i], circle[i+1]], uv)
 		
 	var mesh = commit()
 	

@@ -205,7 +205,7 @@ class TwistModifier:
 		return "Twist"
 		
 	func set_parameter(name, value):
-		if name == value:
+		if name == 'Angle':
 			angle = value
 			
 	func modifier(mesh, aabb):
@@ -375,13 +375,13 @@ class RandomModifier:
 		
 	func set_parameter(name, value):
 		if name == 'X':
-			x = 0.1
+			x = value
 			
 		elif name == 'Y':
-			y = 0.1
+			y = value
 			
 		elif name == 'Z':
-			z = 0.1
+			z = value
 			
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()

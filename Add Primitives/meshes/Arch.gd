@@ -42,7 +42,7 @@ func create(smooth = false, invert = false):
 		var v = Vector3(cos(angle*(i+1)), sin(angle*(i+1)), length/2) * r
 		var v2 = Vector3(cos(angle*i), sin(angle*i), length/2) * r
 		
-		uv = [Vector2(i/segments, 0), Vector2(i/segments, 1),\
+		uv = [Vector2(i/segments, 0), Vector2(i/segments, 1),
 		      Vector2((i+1)/segments, 1), Vector2((i+1)/segments, 0)]
 		
 		add_quad([v2, v2 + next_pos, v + next_pos, v], uv, invert)

@@ -25,7 +25,7 @@ static func get_middle_point(p1, p2, verts, radius):
 	
 	return i
 	
-func create(smooth = false, invert = false):
+func create(smooth, invert):
 	var t = (1.0 + sqrt(5))/2
 	
 	var v = [Vector3(-1,  t,  0).normalized() * radius,
@@ -62,11 +62,12 @@ func create(smooth = false, invert = false):
 	           7, 6, 8,
 	           1, 8, 9]
 	
+	var last = false
+	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
+	set_invert(invert)
 	add_smooth_group(smooth)
-	
-	var last = false
 	
 	for i in range(subdivisions):
 		last = i == subdivisions - 1
@@ -79,10 +80,10 @@ func create(smooth = false, invert = false):
 			var c = get_middle_point(tri[idx+2], tri[idx], v, radius)
 			
 			if last:
-				add_tri([v[tri[idx]], v[a], v[c]], [], invert)
-				add_tri([v[tri[idx+1]], v[b], v[a]], [], invert)
-				add_tri([v[tri[idx+2]], v[c], v[b]], [], invert)
-				add_tri([v[a], v[b], v[c]], [], invert)
+				add_tri([v[tri[idx]], v[a], v[c]])
+				add_tri([v[tri[idx+1]], v[b], v[a]])
+				add_tri([v[tri[idx+2]], v[c], v[b]])
+				add_tri([v[a], v[b], v[c]])
 				
 				continue
 				
@@ -96,10 +97,10 @@ func create(smooth = false, invert = false):
 			
 		tri = tri2
 		
-	# subdivisions is 0
+	# Subdivisions is 0
 	if not last:
 		for i in range(0, tri.size(), 3):
-			add_tri([v[tri[i]], v[tri[i+1]], v[tri[i+2]]], [], invert)
+			add_tri([v[tri[i]], v[tri[i+1]], v[tri[i+2]]])
 			
 	var mesh = commit()
 	

@@ -21,16 +21,17 @@ func set_parameter(name, value):
 	elif name == 'Segments':
 		segments = value
 		
-func create(smooth = false, invert = false):
+func create(smooth, invert):
 	var radians = PI*2
 	var bend_radius = major_radius/radians
 	
 	var angle = radians/steps
 	
-	var s = build_circle_verts(Vector3(0,0,0), steps, major_radius)
+	var s = build_circle_verts(Vector3(), steps, major_radius)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
+	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	var c
@@ -44,12 +45,12 @@ func create(smooth = false, invert = false):
 			temp_circle = c2
 			
 		for idx in range(segments):
-			add_quad([c[idx], c2[idx], c2[idx + 1], c[idx + 1]], [], invert)
+			add_quad([c[idx], c2[idx], c2[idx + 1], c[idx + 1]])
 			
-	c2 = build_circle_verts_rot(s[0], segments, minor_radius, [PI/2, angle * 0], [Vector3(1,0,0), Vector3(0,1,0)])
+	c2 = build_circle_verts_rot(s[0], segments, minor_radius, [PI/2], [Vector3(1,0,0)])
 	
 	for idx in range(segments):
-		add_quad([temp_circle[idx], c2[idx], c2[idx + 1], temp_circle[idx + 1]], [], invert)
+		add_quad([temp_circle[idx], c2[idx], c2[idx + 1], temp_circle[idx + 1]])
 		
 	var mesh = commit()
 	

@@ -32,43 +32,44 @@ func set_parameter(name, value):
 	elif name == 'Height':
 		height = value
 		
-func create(smooth = false, invert = false):
-	var fd = Vector3(width,0,0)    #Foward Direction
+func create(smooth, invert):
+	var fd = Vector3(width,0,0)     #Foward Direction
 	var rd = Vector3(0,0,length)    #Right Direction
 	var ud = Vector3(0,height,0)    #Up Dir
 	
-	var offset = Vector3(-width/2,-height/2,-length/2)
+	var ofs = Vector3(-width/2,-height/2,-length/2)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
+	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	if derivate == Derivate.C_SHAPE:
-		add_quad(build_plane_verts(rd, ud, offset), plane_uv(length, height), invert)
-		add_quad(build_plane_verts(-rd, -fd, -offset), plane_uv(length, width), invert)
-		add_quad(build_plane_verts(-ud, -rd, -offset), plane_uv(height, length), invert)
+		build_plane(rd, ud, ofs)
+		build_plane(-rd, -fd, -ofs)
+		build_plane(-ud, -rd, -ofs)
 		
 	elif derivate == Derivate.L_SHAPE:
-		add_quad(build_plane_verts(ud, rd, offset), plane_uv(height, length), invert)
-		add_quad(build_plane_verts(rd, fd, offset), plane_uv(length, width), invert)
+		build_plane(ud, rd, ofs)
+		build_plane(rd, fd, ofs)
 		
 	elif derivate == Derivate.CORNER:
-		add_quad(build_plane_verts(-rd, -fd, -offset), plane_uv(length, width), invert)
-		add_quad(build_plane_verts(-ud, -rd, -offset), plane_uv(height, length), invert)
-		add_quad(build_plane_verts(-fd, -ud, -offset), plane_uv(width, height), invert)
+		build_plane(-rd, -fd, -ofs)
+		build_plane(-ud, -rd, -ofs)
+		build_plane(-fd, -ud, -ofs)
 		
 	elif derivate == Derivate.REMOVE_UPPER_FACE:
-		add_quad(build_plane_verts(fd, rd, offset), plane_uv(width, length), invert)
-		add_quad(build_plane_verts(rd, ud, offset), plane_uv(length, height), invert)
-		add_quad(build_plane_verts(ud, fd, offset), plane_uv(height, width), invert)
-		add_quad(build_plane_verts(-ud, -rd, -offset), plane_uv(height, length), invert)
-		add_quad(build_plane_verts(-fd, -ud, -offset), plane_uv(width, height), invert)
+		build_plane(fd, rd, ofs)
+		build_plane(rd, ud, ofs)
+		build_plane(ud, fd, ofs)
+		build_plane(-ud, -rd, -ofs)
+		build_plane(-fd, -ud, -ofs)
 		
 	elif derivate == Derivate.REMOVE_CAPS:
-		add_quad(build_plane_verts(rd, ud, offset), plane_uv(length, height), invert)
-		add_quad(build_plane_verts(ud, fd, offset), plane_uv(height, width), invert)
-		add_quad(build_plane_verts(-ud, -rd, -offset), plane_uv(height, length), invert)
-		add_quad(build_plane_verts(-fd, -ud, -offset), plane_uv(width, height), invert)
+		build_plane(rd, ud, ofs)
+		build_plane(ud, fd, ofs)
+		build_plane(-ud, -rd, -ofs)
+		build_plane(-fd, -ud, -ofs)
 		
 	var mesh = commit()
 	

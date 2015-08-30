@@ -21,17 +21,21 @@ func set_parameter(name, value):
 	elif name == 'End H.':
 		end_heigth = value
 		
-func create(smooth = false, invert = false):
+func create(smooth, invert):
 	var verts = [Vector3(-width/2, end_heigth, -length/2),
 	             Vector3(width/2, end_heigth, -length/2),
 	             Vector3(width/2, start_heigth, length/2),
 	             Vector3(-width/2, start_heigth, length/2)]
 	             
+	var w = verts[0].distance_to(verts[1])
+	var l = verts[0].distance_to(verts[3])
+	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
+	set_invert(invert)
 	add_smooth_group(smooth)
 	
-	add_quad(verts, plane_uv(verts[0].distance_to(verts[1]), verts[0].distance_to(verts[3])), invert)
+	add_quad(verts, plane_uv(w, l))
 	
 	var mesh = commit()
 	

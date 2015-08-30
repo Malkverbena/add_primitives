@@ -245,7 +245,9 @@ class ModifierDialog:
 	
 	const Tool = {
 		ERASE = 0,
-		RELOAD = 1
+		MOVE_UP = 1,
+		MOVE_DOWN = 2,
+		RELOAD = 3
 	}
 	
 	var edited_modifier = null
@@ -253,6 +255,8 @@ class ModifierDialog:
 	var modifiers
 	var menu
 	var remove
+	var move_up
+	var move_down
 	var reload
 	
 	var items = []
@@ -265,14 +269,30 @@ class ModifierDialog:
 		return items
 		
 	func get_edited_modifier():
-		return edited_modifier
+		if not edited_modifier:
+			return null
+			
+		return instance_from_id(edited_modifier)
+		
+	func tree_items():
+		var iterable = []
+		
+		var root = modifiers.get_root()
+		
+		var item = root.get_children()
+		
+		while item:
+			iterable.push_back(item)
+			
+			item = item.get_next()
+			
+		return iterable
 		
 	func create_modifier(script):
 		var root = modifiers.get_root()
 		
 		var item = modifiers.create_item(root)
 		item.set_cell_mode(0, item.CELL_MODE_STRING)
-		item.set_editable(0, true)
 		item.set_text(0, script.get_name())
 		
 		item.set_cell_mode(1, item.CELL_MODE_CHECK)
@@ -286,32 +306,12 @@ class ModifierDialog:
 		
 		var obj = script.new()
 		
-		item.set_metadata(0, obj)
+		item.set_metadata(0, obj.get_instance_ID())
 		
 		if obj.has_method('modifier_parameters'):
 			obj.modifier_parameters(item, modifiers)
 			
-		items.push_back(item)
-		
-	func modifier_tools(what):
-		var item = modifiers.get_selected()
-		
-		if what == Tool.ERASE:
-			items.erase(item)
-			
-			if item == edited_modifier:
-				edited_modifier = null
-				
-			item.get_parent().remove_child(item)
-			
-			if items.empty() and not reload.is_disabled():
-				reload.set_disabled(true)
-				
-			remove.set_disabled(true)
-			
-		modifiers.update()
-		
-		emit_signal("modifier_edited", "", null)
+		items.push_back(obj)
 		
 	func update():
 		modifiers.clear()
@@ -341,6 +341,76 @@ class ModifierDialog:
 		
 		modifiers_scripts.clear()
 		
+	func generate_cache():
+		var cache = []
+		
+		var root = modifiers.get_root()
+		
+		var item = root.get_children()
+		
+		while item:
+			var data = {
+				name = item.get_text(0),
+				metadata = item.get_metadata(0),
+				is_checked = item.is_checked(1),
+				is_collapsed = item.is_collapsed(),
+				is_selected = item.is_selected(0)
+			}
+			
+			cache.append(data)
+			
+			item = item.get_next()
+			
+		return cache
+		
+	func _modifier_tools(what):
+		var item = modifiers.get_selected()
+		
+		if what == Tool.ERASE:
+			var id = item.get_metadata(0)
+			
+			if id == edited_modifier:
+				edited_modifier = null
+				
+			items.erase(instance_from_id(id))
+			
+			item.get_parent().remove_child(item)
+			
+			if items.empty() and not reload.is_disabled():
+				reload.set_disabled(true)
+				
+			remove.set_disabled(true)
+			
+		if what == Tool.MOVE_UP or what == Tool.MOVE_DOWN:
+			var obj = instance_from_id(item.get_metadata(0))
+			
+			var first = items.find(obj)
+			var second
+			
+			if what == Tool.MOVE_UP:
+				second = first - 1
+				
+			elif what == Tool.MOVE_DOWN:
+				second = first + 1
+				
+			var temp = items[second]
+			items[second] = items[first]
+			items[first] = temp
+			
+			var cache = generate_cache()
+			
+			temp = cache[second]
+			cache[second] = cache[first]
+			cache[first] = temp
+			
+			_rebuild_tree(cache)
+			
+			_item_selected()
+			
+		modifiers.update()
+		
+		emit_signal("modifier_edited", "", null)
+		
 	func _add_modifier(id):
 		var mod = menu.get_item_text(menu.get_item_index(id))
 		
@@ -351,6 +421,39 @@ class ModifierDialog:
 			
 		emit_signal("modifier_edited", "", null)
 		
+	func _rebuild_tree(cache):
+		modifiers.clear()
+		
+		modifiers.set_hide_root(true)
+		modifiers.set_columns(2)
+		modifiers.set_column_min_width(0, 2)
+		
+		var root = modifiers.create_item()
+		
+		for i in range(items.size()):
+			var item = modifiers.create_item(root)
+			item.set_collapsed(cache[i].is_collapsed)
+			
+			item.set_cell_mode(0, item.CELL_MODE_STRING)
+			item.set_text(0, cache[i].name)
+			
+			if cache[i].is_selected:
+				item.select(0)
+				
+			item.set_cell_mode(1, item.CELL_MODE_CHECK)
+			item.set_checked(1, cache[i].is_checked)
+			item.set_text(1, 'On')
+			item.set_editable(1, true)
+			item.set_selectable(1, false)
+			
+			item.set_custom_bg_color(0, get_color('prop_category', 'Editor'))
+			item.set_custom_bg_color(1, get_color('prop_category', 'Editor'))
+			
+			item.set_metadata(0, cache[i].metadata)
+			
+			if items[i].has_method('modifier_parameters'):
+				items[i].modifier_parameters(item, modifiers)
+				
 	func _item_edited():
 		var item = modifiers.get_edited()
 		
@@ -387,9 +490,13 @@ class ModifierDialog:
 		
 		if item.get_parent() == modifiers.get_root():
 			remove.set_disabled(false)
+			move_up.set_disabled(item.get_prev() == null)
+			move_down.set_disabled(item.get_next() == null)
 			
 		else:
 			remove.set_disabled(true)
+			move_up.set_disabled(true)
+			move_down.set_disabled(true)
 			
 	func _init(base):
 		set_name("Modifiers")
@@ -421,14 +528,26 @@ class ModifierDialog:
 		hbox_tools.add_child(s)
 		s.set_h_size_flags(SIZE_EXPAND_FILL)
 		
+		move_up = ToolButton.new()
+		move_up.set_button_icon(base.get_icon('MoveUp', 'EditorIcons'))
+		move_up.set_disabled(true)
+		hbox_tools.add_child(move_up)
+		
+		move_down = ToolButton.new()
+		move_down.set_button_icon(base.get_icon('MoveDown', 'EditorIcons'))
+		move_down.set_disabled(true)
+		hbox_tools.add_child(move_down)
+		
 		reload = ToolButton.new()
 		reload.set_button_icon(base.get_icon('Reload', 'EditorIcons'))
 		reload.set_tooltip("Reload Modifiers")
 		reload.set_disabled(true)
 		hbox_tools.add_child(reload)
 		
-		remove.connect("pressed", self, "modifier_tools", [Tool.ERASE])
-		reload.connect("pressed", self, "modifier_tools", [Tool.RELOAD])
+		remove.connect("pressed", self, "_modifier_tools", [Tool.ERASE])
+		move_up.connect("pressed", self, "_modifier_tools", [Tool.MOVE_UP])
+		move_down.connect("pressed", self, "_modifier_tools", [Tool.MOVE_DOWN])
+		reload.connect("pressed", self, "_modifier_tools", [Tool.RELOAD])
 		
 		modifiers.connect("item_edited", self, "_item_edited")
 		modifiers.connect("cell_selected", self, "_item_selected")
@@ -672,8 +791,6 @@ class AddPrimitives:
 	# Utilites
 	var dir 
 	
-	
-		
 	func get_object():
 		return node
 		
@@ -922,11 +1039,11 @@ class AddPrimitives:
 			if edited:
 				edited.set_parameter(name, value)
 				
-		for item in modifier.get_items():
+		for item in modifier.tree_items():
 			if not item.is_checked(1):
 				continue
 				
-			var obj = item.get_metadata(0)
+			var obj = instance_from_id(item.get_metadata(0))
 			
 			var mesh
 			var aabb = mesh_instance.get_aabb()
@@ -967,6 +1084,7 @@ class AddPrimitives:
 			
 	func create_diplay_material(instance):
 		var fixed_material = FixedMaterial.new()
+		fixed_material.set_name('_display_material')
 		fixed_material.set_parameter(fixed_material.PARAM_DIFFUSE, Color(0,1,0))
 		
 		instance.set_material_override(fixed_material)
@@ -985,7 +1103,9 @@ class AddPrimitives:
 		
 	func _mesh_popup_hide():
 		if mesh_instance:
-			if mesh_instance.get_material_override():
+			var mat = mesh_instance.get_material_override()
+			
+			if mat and mat.get_name() == '_display_material':
 				mesh_instance.set_material_override(null)
 				
 		original_mesh = null

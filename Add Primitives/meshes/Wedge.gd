@@ -28,31 +28,32 @@ func set_parameter(name, value):
 	elif name == 'Fill End':
 		fill_end = value
 		
-func create(smooth = false, invert = false):
+func create(smooth, invert):
 	var fd = Vector3(0, 0, length)
 	var rd = Vector3(width, 0, 0)
 	var ud = Vector3(0, height, 0)
 	
-	var off = -Vector3(width/2, height/2, length/2)
+	var ofs = -Vector3(width/2, height/2, length/2)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
+	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	if fill_bottom:
-		add_quad(build_plane_verts(rd, fd, off), plane_uv(width, length), invert)
+		build_plane(rd, fd, ofs)
 		
 	if fill_end:
-		add_quad(build_plane_verts(ud, rd, off), plane_uv(height, width), invert)
+		build_plane(ud, rd, ofs)
 		
-	var d = off.distance_to(off + Vector3(0, -height, length))
+	var d = ofs.distance_to(ofs + Vector3(0, -height, length))
 	
-	off.y += height
+	ofs.y += height
 	
-	add_quad([off, off + rd, off + Vector3(width, -height, length), off + Vector3(0, -height, length)], plane_uv(width, d), invert)
+	add_quad([ofs, ofs + rd, ofs + Vector3(width, -height, length), ofs + Vector3(0, -height, length)], plane_uv(width, d))
 	
-	add_tri([off + Vector3(0, -height, length), off - ud, off], plane_uv(length, height, false), invert)
-	add_tri([off + rd, off + rd - ud, off + Vector3(width, -height, length)], plane_uv(height, length, false), invert)
+	add_tri([ofs + Vector3(0, -height, length), ofs - ud, ofs], plane_uv(length, height, false))
+	add_tri([ofs + rd, ofs + rd - ud, ofs + Vector3(width, -height, length)], plane_uv(height, length, false))
 	
 	var mesh = commit()
 	

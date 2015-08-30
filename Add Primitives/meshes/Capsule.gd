@@ -21,7 +21,7 @@ func set_parameter(name, value):
 	elif name == 'Height Segments':
 		height_segments = value
 		
-func create(smooth = false, invert = false):
+func create(smooth, invert):
 	var angle = PI/height_segments
 	
 	var cc = Vector3(0,radius + height,0)
@@ -33,14 +33,15 @@ func create(smooth = false, invert = false):
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
+	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for idx in range(segments):
 		p = Vector3(0,-cos(angle) * radius - height, 0)
-		add_tri([(circle[idx + 1] * r) + p, (circle[idx] * r) + p, -cc], [], invert)
+		add_tri([(circle[idx + 1] * r) + p, (circle[idx] * r) + p, -cc], [])#, invert)
 		
 		p = Vector3(0,-cos(angle * (height_segments - 1)) * radius + height,0)
-		add_tri([cc, (circle[idx] * r) + p, (circle[idx + 1] * r + p)], [], invert)
+		add_tri([cc, (circle[idx] * r) + p, (circle[idx + 1] * r + p)], [])#, invert)
 		
 	for i in range((height_segments - 2)/2):
 		r = Vector3(sin(angle * (i + 1)), 0, sin(angle * (i + 1)))
@@ -52,7 +53,7 @@ func create(smooth = false, invert = false):
 			p = Vector3(0,-cos(angle) * radius - height,0)
 		
 		for idx in range(segments):
-			add_quad([circle[idx+1] * r + p, circle[idx+1] * nr + np, circle[idx] * nr + np, circle[idx] * r + p], [], invert)
+			add_quad([circle[idx+1] * r + p, circle[idx+1] * nr + np, circle[idx] * nr + np, circle[idx] * r + p], [])#, invert)
 		p = np
 		
 	for i in range(((height_segments - 2)/2), height_segments - 1):
@@ -66,7 +67,7 @@ func create(smooth = false, invert = false):
 		var np = Vector3(0, -cos(angle * (i + 1)) * radius + height, 0)
 		
 		for idx in range(segments):
-			add_quad([circle[idx+1] * r + p, circle[idx+1] * nr + np, circle[idx] * nr + np, circle[idx] * r + p], [], invert)
+			add_quad([circle[idx+1] * r + p, circle[idx+1] * nr + np, circle[idx] * nr + np, circle[idx] * r + p], [])#, invert)
 			
 		p = np
 	

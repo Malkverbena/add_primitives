@@ -32,24 +32,26 @@ func set_parameter(name, value):
 	elif name == 'Fill Bottom':
 		fill_bottom = value
 		
-func create(smooth = false, invert = false):
-	begin(VS.PRIMITIVE_TRIANGLES)
-	
-	add_smooth_group(smooth)
-	
+func create(smooth, invert):
 	var sh = height/steps
 	var sl = length/steps
 	
+	begin(VS.PRIMITIVE_TRIANGLES)
+	
+	set_invert(invert)
+	add_smooth_group(smooth)
+	
 	for i in range(steps):
-		add_quad(build_plane_verts(Vector3(0, 0, sl), Vector3(width, 0, 0), Vector3(0, (i+1) * sh, i * sl)), [], invert)
-		add_quad(build_plane_verts(Vector3(0, sh, 0), Vector3(width, 0, 0), Vector3(0, i * sh, i * sl)), [], invert)
-		add_quad(build_plane_verts(Vector3(0, 0, sl), Vector3(0, (i+1)*sh, 0), Vector3(0, 0, i * sl)), [], invert)
-		add_quad(build_plane_verts(Vector3(0, (i+1)*sh, 0), Vector3(0, 0, sl), Vector3(width, 0, i * sl)), [], invert)
+		add_quad(build_plane_verts(Vector3(0, 0, sl), Vector3(width, 0, 0), Vector3(0, (i+1) * sh, i * sl)))
+		add_quad(build_plane_verts(Vector3(0, sh, 0), Vector3(width, 0, 0), Vector3(0, i * sh, i * sl)))
+		add_quad(build_plane_verts(Vector3(0, 0, sl), Vector3(0, (i+1)*sh, 0), Vector3(0, 0, i * sl)))
+		add_quad(build_plane_verts(Vector3(0, (i+1)*sh, 0), Vector3(0, 0, sl), Vector3(width, 0, i * sl)))
 		
 	if fill_end:
-		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, steps * sh, 0), Vector3(0, 0, steps * sl)), [], invert)
+		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, steps * sh, 0), Vector3(0, 0, steps * sl)))
+		
 	if fill_bottom:
-		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, 0, steps * sl)), [], invert)
+		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, 0, steps * sl)))
 		
 	var mesh = commit()
 	
