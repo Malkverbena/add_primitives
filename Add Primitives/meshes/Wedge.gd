@@ -9,9 +9,6 @@ var fill_end = true
 static func get_name():
 	return "Wedge"
 	
-static func get_container():
-	return "Extra Objects"
-	
 func set_parameter(name, value):
 	if name == 'Width':
 		width = value

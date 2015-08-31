@@ -7,6 +7,9 @@ var segments = 16
 static func get_name():
 	return "Disc"
 	
+static func get_container():
+	return "Extra Objects"
+	
 func set_parameter(name, value):
 	if name == 'Outer Radius':
 		outer_radius = value

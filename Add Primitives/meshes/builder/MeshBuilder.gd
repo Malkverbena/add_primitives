@@ -178,6 +178,25 @@ static func build_circle_verts_rot(pos, segments, radius = 1, rotation = [], axi
 	
 	return circle_verts
 	
+static func build_ellipse_verts(pos, segments, radius = Vector2(1,1)):
+	var ellipse_verts = []
+	ellipse_verts.resize(segments + 1)
+	
+	var angle = PI * 2 / segments
+	
+	for i in range(segments):
+		var a = angle * i
+		
+		var vector = Vector3(sin(a) * radius.x, 0, cos(a) * radius.y)
+		
+		vector += pos
+		
+		ellipse_verts[i] = vector
+		
+	ellipse_verts[segments] = ellipse_verts[0]
+	
+	return ellipse_verts
+	
 static func plane_uv(start, end, last = true):
 	var uv = [Vector2(start, end), Vector2(0, end), Vector2(0, 0), Vector2(start, 0)]
 	
