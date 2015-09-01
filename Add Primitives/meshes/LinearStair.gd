@@ -36,29 +36,46 @@ func create(smooth, invert):
 	var sh = height/steps
 	var sl = length/steps
 	
+	var d = [Vector3(width, 0, 0),
+	         Vector3(0, 0, sl),
+	         Vector3(0, sh, 0)]
+	
+	var pz = Vector2()
+	var py = Vector2()
+	
+	var w = Vector2(0, width)
+	var l = Vector2(sl, 0)
+	var h = Vector2(sh, 0)
+	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
 	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for i in range(steps):
-		add_quad(build_plane_verts(Vector3(0, 0, sl), Vector3(width, 0, 0), Vector3(0, (i+1) * sh, i * sl)))
-		add_quad(build_plane_verts(Vector3(0, sh, 0), Vector3(width, 0, 0), Vector3(0, i * sh, i * sl)))
-		add_quad(build_plane_verts(Vector3(0, 0, sl), Vector3(0, (i+1)*sh, 0), Vector3(0, 0, i * sl)))
-		add_quad(build_plane_verts(Vector3(0, (i+1)*sh, 0), Vector3(0, 0, sl), Vector3(width, 0, i * sl)))
+		add_quad(build_plane_verts(d[1], d[0], Vector3(0, (i+1) * sh, i * sl)), [py+w, py+w+l, py+l, py])
+		add_quad(build_plane_verts(d[2], d[0], Vector3(0, i * sh, i * sl)), [pz+w, pz+h+w, pz+h, pz])
+		
+		var ch = Vector2(0, sh * (i+1))
+		
+		add_quad(build_plane_verts(d[1], Vector3(0, ch.y, 0), Vector3(0, 0, i * sl)), [py+ch, py+ch+l, py+l, py])
+		add_quad(build_plane_verts(Vector3(0, ch.y, 0), d[1], Vector3(width, 0, i * sl)), [py+l, py+l+ch, py+ch, py])
+		
+		py.x += sl
+		pz.x += sh
 		
 	if fill_end:
-		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, steps * sh, 0), Vector3(0, 0, steps * sl)))
+		build_plane(d[0], Vector3(0, steps * sh, 0), Vector3(0, 0, steps * sl))
 		
 	if fill_bottom:
-		add_quad(build_plane_verts(Vector3(width, 0, 0), Vector3(0, 0, steps * sl)))
+		build_plane(d[0], Vector3(0, 0, steps * sl))
 		
 	var mesh = commit()
 	
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_range(tree, 'Steps', steps, 1, 1, 64)
+	add_tree_range(tree, 'Steps', steps, 1, 2, 64)
 	add_tree_range(tree, 'Width', width)
 	add_tree_range(tree, 'Height', height)
 	add_tree_range(tree, 'Length', length)

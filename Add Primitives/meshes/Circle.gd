@@ -2,6 +2,7 @@ extends "builder/MeshBuilder.gd"
 
 var radius = 1
 var segments = 16
+var slice = 0
 
 static func get_name():
 	return "Circle"
@@ -13,11 +14,16 @@ func set_parameter(name, value):
 	elif name == 'Segments':
 		segments = value
 		
+	elif name == 'Slice':
+		slice = deg2rad(value)
+		
 func create(smooth, invert):
 	var c = Vector3(0,0,0)
 	
-	var circle = build_circle_verts(c, segments, radius)
-	var circle_uv = build_circle_verts(Vector3(0.5,0,0.5), segments, radius)
+	var sa = PI * 2 - slice
+	
+	var circle = build_circle_verts(c, segments, radius, sa)
+	var circle_uv = build_circle_verts(Vector3(0.5,0,0.5), segments, radius, sa)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
@@ -37,5 +43,6 @@ func create(smooth, invert):
 func mesh_parameters(tree):
 	add_tree_range(tree, 'Radius', radius)
 	add_tree_range(tree, 'Segments', segments, 1, 3, 64)
+	add_tree_range(tree, 'Slice', rad2deg(slice), 1, 0, 359)
 	
 

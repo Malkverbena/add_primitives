@@ -38,10 +38,14 @@ func set_parameter(name, value):
 		
 func create(smooth, invert):
 	var h = stair_height/steps
-	var or_ = Vector3(outer_radius, 1, outer_radius)
-	var ir = Vector3(inner_radius, 1, inner_radius)
 	
-	var angle_inc = angle/steps
+	var oc = angle * outer_radius
+	var ic = angle * inner_radius
+	
+	var c = build_circle_verts(Vector3(), steps, inner_radius, angle)
+	var c2 = build_circle_verts(Vector3(), steps, outer_radius, angle)
+	
+	var w = abs(outer_radius - inner_radius)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
@@ -49,32 +53,59 @@ func create(smooth, invert):
 	add_smooth_group(smooth)
 	
 	for i in range(steps):
-		var v = Vector3(cos(angle_inc*i), (i+1)*h, sin(angle_inc*i))
-		var v2 = Vector3(cos(angle_inc*(i+1)), (i+1)*h, sin(angle_inc*(i+1)))
+		var sh = Vector3(0, (i+1) * h, 0)
 		
-		var base = Vector3(0, -h, 0)
+		var uv = [Vector2(c[i].x, c[i].z),
+		          Vector2(c2[i].x, c2[i].z),
+		          Vector2(c2[i+1].x, c2[i+1].z),
+		          Vector2(c[i+1].x, c[i+1].z)]
 		
-		add_quad([v*ir, v*or_, v2*or_, v2*ir])
-		add_quad([v*or_ + base, v*or_, v*ir, v*ir + base])
+		add_quad([c[i]+sh, c2[i]+sh, c2[i+1]+sh, c[i+1]+sh], uv)
+		
+		if fill_bottom:
+			if not invert:
+				uv.invert()
+				
+			add_quad([c[i+1], c2[i+1], c2[i], c[i]], uv)
+			
+		var base = Vector3(0, h, 0)
+		
+		uv[0] = Vector2(0, h * i)
+		uv[1] = Vector2(0, sh.y)
+		uv[2] = Vector2(w, sh.y)
+		uv[3] = Vector2(w, h * i)
+		
+		add_quad([c2[i] + sh - base, c2[i] + sh, c[i] + sh, c[i] + sh - base], uv)
 		
 		base.y *= i + 1
 		
-		add_quad([v2*or_ + base, v2*or_, v*or_, v*or_ + base])
-		add_quad([v*ir + base, v*ir, v2*ir, v2*ir + base])
+		var u1 = float(i) / steps
+		var u2 = float(i+1) / steps
+		var v = sh.y
 		
-		if fill_bottom:
-			v.y = 0
-			v2.y = 0
-			
-			add_quad([v2*ir, v2*or_, v*or_, v*ir])
-			
+		uv[0] = Vector2(u1 * oc, v)
+		uv[1] = Vector2(u1 * oc, 0)
+		uv[2] = Vector2(u2 * oc, 0)
+		uv[3] = Vector2(u2 * oc, v)
+		
+		add_quad([c2[i] + base, c2[i], c2[i+1], c2[i+1] + base], uv)
+		
+		uv[0] = Vector2(u2 * ic, v)
+		uv[1] = Vector2(u2 * ic, 0)
+		uv[2] = Vector2(u1 * ic, 0)
+		uv[3] = Vector2(u1 * ic, v)
+		
+		add_quad([c[i+1] + base, c[i+1], c[i], c[i] + base], uv)
+		
 	if fill_end:
-		var i = steps
+		var sh = Vector3(0, h * steps, 0)
 		
-		var v = Vector3(cos(angle_inc*i), i*h, sin(angle_inc*i))
-		var v2 = Vector3(cos(angle_inc*(i+1)), i*h, sin(angle_inc*(i+1)))
+		var uv = [Vector2(0, 0),
+		          Vector2(0, sh.y),
+		          Vector2(w, sh.y),
+		          Vector2(w, 0)]
 		
-		add_quad([v*ir + Vector3(0,-h*i,0), v*ir, v*or_, v*or_ + Vector3(0,-h*i,0)])
+		add_quad([c[steps], c[steps] + sh, c2[steps] + sh, c2[steps]], uv)
 		
 	var mesh = commit()
 	

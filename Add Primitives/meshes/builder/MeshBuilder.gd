@@ -137,23 +137,25 @@ static func build_plane_verts(start, end, offset = Vector3(0,0,0)):
 	
 	return verts
 	
-static func build_circle_verts(pos, segments, radius = 1):
+static func build_circle_verts(pos, segments, radius = 1, angle = PI * 2):
 	var circle_verts = []
 	circle_verts.resize(segments + 1)
 	
-	var angle = PI * 2 / segments
+	var s_angle = angle/segments
 	
 	for i in range(segments):
-		var a = angle * i
+		var a = s_angle * i
 		
-		var vector = Vector3(cos(a), 0, sin(a)) * radius
-		
-		vector += pos
+		var vector = Vector3(cos(a), 0, sin(a)) * radius + pos
 		
 		circle_verts[i] = vector
 		
-	circle_verts[segments] = circle_verts[0]
-	
+	if rad2deg(angle) != 360:
+		circle_verts[segments] = Vector3(cos(angle), 0, sin(angle)) * radius + pos
+		
+	else:
+		circle_verts[segments] = circle_verts[0]
+		
 	return circle_verts
 	
 static func build_circle_verts_rot(pos, segments, radius = 1, rotation = [], axis = []):
@@ -178,14 +180,14 @@ static func build_circle_verts_rot(pos, segments, radius = 1, rotation = [], axi
 	
 	return circle_verts
 	
-static func build_ellipse_verts(pos, segments, radius = Vector2(1,1)):
+static func build_ellipse_verts(pos, segments, radius = Vector2(1,1), angle = PI * 2):
 	var ellipse_verts = []
 	ellipse_verts.resize(segments + 1)
 	
-	var angle = PI * 2 / segments
+	var s_angle = angle / segments
 	
 	for i in range(segments):
-		var a = angle * i
+		var a = s_angle * i
 		
 		var vector = Vector3(sin(a) * radius.x, 0, cos(a) * radius.y)
 		
@@ -193,8 +195,12 @@ static func build_ellipse_verts(pos, segments, radius = Vector2(1,1)):
 		
 		ellipse_verts[i] = vector
 		
-	ellipse_verts[segments] = ellipse_verts[0]
-	
+	if rad2deg(angle) != 360:
+		ellipse_verts[segments] = Vector3(sin(angle) * radius.x, 0, cos(angle) * radius.y) + pos
+		
+	else:
+		ellipse_verts[segments] = ellipse_verts[0]
+		
 	return ellipse_verts
 	
 static func plane_uv(start, end, last = true):

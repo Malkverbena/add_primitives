@@ -3,6 +3,8 @@ extends "builder/MeshBuilder.gd"
 var radius = 1.0
 var height = 2.0
 var segments = 16
+var slice = 0
+var fill_ends = true
 
 static func get_name():
 	return "Cone"
@@ -17,12 +19,20 @@ func set_parameter(name, value):
 	elif name == 'Segments':
 		segments = value
 		
+	elif name == 'Slice':
+		slice = deg2rad(value)
+		
+	elif name == 'Fill Ends':
+		fill_ends = value
+		
 func create(smooth, invert):
 	var center_top = Vector3(0, height/2, 0)
 	var min_pos = Vector3(0, -height/2, 0)
 	
-	var circle = build_circle_verts(min_pos, segments, radius)
-	var circle_uv = build_circle_verts(Vector3(0.5,0,0.5), segments, radius)
+	var sa = PI * 2 - slice
+	
+	var circle = build_circle_verts(min_pos, segments, radius, sa)
+	var circle_uv = build_circle_verts(Vector3(0.5,0,0.5), segments, radius, sa)
 	
 	var uv
 	
@@ -39,6 +49,12 @@ func create(smooth, invert):
 		
 	add_smooth_group(false)
 	
+	if fill_ends and slice:
+		uv = [Vector2(), Vector2(0, height), Vector2(radius, height)]
+		
+		add_tri([center_top, min_pos, circle[0]], uv)
+		add_tri([center_top, circle[segments], min_pos], [uv[0], uv[2], uv[1]])
+		
 	for idx in range(segments):
 		uv = [Vector2(circle_uv[idx + 1].x, circle_uv[idx + 1].z),
 		      Vector2(circle_uv[idx].x, circle_uv[idx].z), Vector2(0.5, 0.5)]
@@ -53,5 +69,7 @@ func mesh_parameters(tree):
 	add_tree_range(tree, 'Radius', radius)
 	add_tree_range(tree, 'Height', height)
 	add_tree_range(tree, 'Segments', segments, 1, 3, 64)
-	
+	add_tree_range(tree, 'Slice', rad2deg(slice), 1, 0, 359)
+	add_tree_empty(tree)
+	add_tree_check(tree, 'Fill Ends', fill_ends)
 

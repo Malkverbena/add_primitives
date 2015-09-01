@@ -3,6 +3,7 @@ extends 'builder/MeshBuilder.gd'
 var width = 1.0
 var length = 1.0
 var segments = 16
+var slice = 0
 
 static func get_name():
 	return "Ellipse"
@@ -20,12 +21,17 @@ func set_parameter(name, value):
 	elif name == 'Segments':
 		segments = value
 		
+	elif name == 'Slice':
+		slice = deg2rad(value)
+		
 func create(smooth, invert):
 	var c = Vector3(0,0,0)
 	var r = Vector2(width, length)
 	
-	var ellipse = build_ellipse_verts(c, segments, r)
-	var ellipse_uv = build_ellipse_verts(Vector3(0.5,0,0.5), segments, r)
+	var sa = PI * 2 - slice
+	
+	var ellipse = build_ellipse_verts(c, segments, r, sa)
+	var ellipse_uv = build_ellipse_verts(Vector3(0.5,0,0.5), segments, r, sa)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
@@ -46,5 +52,6 @@ func mesh_parameters(tree):
 	add_tree_range(tree, 'Width', width)
 	add_tree_range(tree, 'Length', length)
 	add_tree_range(tree, 'Segments', segments, 1, 3, 64)
+	add_tree_range(tree, 'Slice', rad2deg(slice), 1, 0, 359)
 	
 
