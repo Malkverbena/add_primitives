@@ -418,6 +418,77 @@ class RandomModifier:
 		
 # End RandomModifier
 
+class UVTransformModifier:
+	extends ModifierBase
+	
+	var translation = Vector2()
+	var rotation = 0
+	var scale = Vector2(1,1)
+	
+	static func get_name():
+		return "UV Transform"
+		
+	func set_parameter(name, value):
+		if name == 'Translation X':
+			translation.x = value
+			
+		elif name == 'Translation Y':
+			translation.y = value
+			
+		elif name == 'Rotation':
+			rotation = deg2rad(value)
+			
+		elif name == 'Scale X':
+			scale.x = value
+			
+		elif name == 'Scale Y':
+			scale.y = value
+			
+	func modifier(mesh, aabb):
+		var mesh_temp = Mesh.new()
+		
+		var m32 = Matrix32()
+		
+		if translation != Vector2():
+			m32 = m32.translated(translation)
+			
+		if rotation:
+			m32 = m32.rotated(rotation)
+			
+		if scale != Vector2():
+			m32 = m32.scaled(scale)
+			
+		for surf in range(mesh.get_surface_count()):
+			if not mesh.surface_get_format(surf) & mesh.ARRAY_FORMAT_TEX_UV:
+				continue
+				
+			create_from_surface(mesh, surf)
+			
+			for i in range(get_vertex_count()):
+				var uv = get_vertex_uv(i)
+				
+				uv = m32.xform(uv)
+				
+				set_vertex_uv(i, uv)
+				
+			commit_to_surface(mesh_temp)
+			
+		clear()
+		
+		if not mesh_temp.get_surface_count():
+			return mesh
+			
+		return mesh_temp
+		
+	func modifier_parameters(item, tree):
+		add_tree_range(item, tree, 'Translation X', translation.x, 0.01, 0, 100)
+		add_tree_range(item, tree, 'Translation Y', translation.y, 0.01, 0, 100)
+		add_tree_range(item, tree, 'Rotation', rad2deg(rotation), 1, 0, 360)
+		add_tree_range(item, tree, 'Scale X', scale.x, 0.01, 0.01, 100)
+		add_tree_range(item, tree, 'Scale Y', scale.y, 0.01, 0.01, 100)
+		
+# End UVTransformModifier 
+
 ################################################################################
 
 func get_modifiers():
@@ -427,7 +498,8 @@ func get_modifiers():
 		"Twist"  :TwistModifier,
 		"Array"  :ArrayModifier, 
 		"Offset" :OffsetModifier,
-		"Random" :RandomModifier
+		"Random" :RandomModifier,
+		"UV Transform" :UVTransformModifier 
 	}
 	
 	return modifiers
