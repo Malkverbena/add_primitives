@@ -2,22 +2,24 @@
 
 ###Features
 1. Primitives:
-  * Plane
-  * Circle
-  * Cube
-  * Cylinder
-  * Sphere
-  * Cone
+  * Box
   * Capsule
+  * Circle
+  * Cone
+  * Cylinder
+  * GeoSphere
+  * Plane
+  * Sphere
   * Torus
   * Tube
-  * Stair(Linear, Curved, Spiral)
-  * Pyramid
-  * Arch
   * Wedge
-  * Cube Derivate
+  * Stair(Linear, Curved, Spiral)
   * C Box
+  * Disc
+  * Ellipse
+  * Ellipsoid
   * L Box
+  * Pyramid
 
 2. Popup Window:
   * Parameters tab
@@ -31,6 +33,7 @@
   * Array
   * Offset
   * Random
+  * UV Transform
 
 ###Install
 
