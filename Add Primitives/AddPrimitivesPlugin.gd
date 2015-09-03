@@ -33,13 +33,13 @@ class DirectoryUtilities:
 		
 		# X11 and OSX
 		if OS.has_environment('HOME'):
-			path = OS.get_environment('HOME') + '/.godot'
+			path = OS.get_environment('HOME').plus_file('.godot')
 			 
 		# Windows
 		elif OS.has_environment('APPDATA'):
-			path = OS.get_environment('APPDATA') + '/Godot'
+			path = OS.get_environment('APPDATA').plus_file('/Godot')
 			
-		path += '/plugins/Add Primitives'
+		path = path.plus_file('plugins/Add Primitives')
 		
 		return path
 	
@@ -691,12 +691,11 @@ class MeshPopup:
 	func hide_color_button():
 		color_hb.hide()
 		
-	func clear(dialogs = false):
-		if dialogs:
-			parameter_dialog.clear()
-			modifier_dialog.clear()
-			transform_dialog.clear()
-			
+	func clear():
+		parameter_dialog.clear()
+		modifier_dialog.clear()
+		transform_dialog.clear()
+		
 	func _color_changed(color):
 		emit_signal("display_changed", color)
 		
@@ -779,10 +778,10 @@ class AddPrimitives:
 	var node
 	var mesh_instance
 	
+	var builder
 	var original_mesh
-	var meshes_to_modify = []
 	
-	var current_script
+	var meshes_to_modify = []
 	
 	var mesh_scripts = {}
 	var modifiers = {}
@@ -815,13 +814,13 @@ class AddPrimitives:
 		
 		var path = dir.get_data_dir()
 		
-		var scripts = dir.get_file_list(path + '/meshes')
+		var scripts = dir.get_file_list(path.plus_file('meshes'))
 		
 		scripts = dir.get_scripts_from_list(scripts)
 		scripts.sort()
 		
 		for f_name in scripts:
-			var p = path + '/meshes/' + f_name
+			var p = path.plus_file('meshes'.plus_file(f_name))
 			
 			var temp_script = load(p)
 			
@@ -880,13 +879,13 @@ class AddPrimitives:
 			popup_menu.connect("item_pressed", self, "popup_signal", [popup_menu])
 			
 	func load_modules():
-		var path = dir.get_data_dir() + '/modules'
+		var path = dir.get_data_dir().plus_file('modules')
 		
 		var mods = dir.get_file_list(path)
 		mods = dir.get_scripts_from_list(mods)
 		
 		for m in mods:
-			var temp = load(path + '/' + m)
+			var temp = load(path.plus_file(m))
 			
 			if temp.can_instance():
 				temp = temp.new(self)
@@ -937,19 +936,19 @@ class AddPrimitives:
 				
 			last_module = ""
 			
-			current_script = load(mesh_scripts[command]).new()
+			builder = load(mesh_scripts[command]).new()
 			
-			if current_script.has_method('create'):
+			if builder.has_method('create'):
 				add_mesh_instance()
 				mesh_instance.set_name(command)
 				
-				if current_script.has_method('mesh_parameters'):
+				if builder.has_method('mesh_parameters'):
 					mesh_popup(command)
 					
 					update_mesh()
 					
 				else:
-					var mesh = current_script.create()
+					var mesh = builder.create()
 					
 					mesh_instance.set_mesh(mesh)
 					mesh.set_name(mesh_instance.get_name().to_lower())
@@ -972,7 +971,7 @@ class AddPrimitives:
 		mesh_popup.set_title('New ' + key)
 		
 		mesh_popup.update()
-		mesh_popup.get_parameter_dialog().create_parameters(current_script)
+		mesh_popup.get_parameter_dialog().create_parameters(builder)
 		
 		mesh_popup.get_modifier_dialog().update_menu(modifiers)
 		mesh_popup.get_modifier_dialog().update()
@@ -1004,9 +1003,9 @@ class AddPrimitives:
 		var reverse = mesh_popup.get_parameter_dialog().get_reverse()
 		
 		if name and value != null:
-			current_script.set_parameter(name, value)
+			builder.set_parameter(name, value)
 			
-		original_mesh = current_script.create(smooth, reverse)
+		original_mesh = builder.create(smooth, reverse)
 		
 		assert( original_mesh != null )
 		
@@ -1121,7 +1120,7 @@ class AddPrimitives:
 	func _exit_tree():
 		popup_menu.clear()
 		
-		mesh_popup.clear(true)
+		mesh_popup.clear()
 		
 		original_mesh = null
 		meshes_to_modify.clear()
@@ -1162,7 +1161,8 @@ class AddPrimitives:
 		mesh_popup.connect("popup_hide", self, "_mesh_popup_hide")
 		
 		# Load modifiers
-		var m_path = dir.get_data_dir() + '/Modifiers.gd'
+		var m_path = dir.get_data_dir().plus_file('Modifiers.gd')
+		
 		var temp = load(m_path).new()
 		
 		modifiers = temp.get_modifiers()

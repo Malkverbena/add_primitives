@@ -83,7 +83,7 @@ func create(smooth, invert):
 		
 		for i in range(height_segments/2):
 			var y = -cos(angle * (i+1)) * radius - height
-			var x = sin(angle * (i+1))
+			var x = sin(angle * (i+1)) * radius
 			
 			var pos2 = Vector3(x, y, 0)
 			

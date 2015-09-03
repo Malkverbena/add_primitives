@@ -5,15 +5,19 @@ class PolygonDialog:
 	
 	const Mode = {
 		DRAW = 0,
-		EDIT = 1
+		EDIT = 1,
+		KNIFE = 2
 	}
 	
 	const Options = {
 		USE_SNAP = 0,
 		SHOW_GRID = 1,
 		CONFIGURE_SNAP = 2,
-		INVERT = 3,
-		CLOSE = 4
+		GENERATE_TOP = 3,
+		GENERATE_SIDES = 4,
+		GENERATE_BOTTOM = 5,
+		INVERT = 6,
+		CLOSE = 7
 	}
 	
 	var mode = Mode.DRAW
@@ -23,24 +27,34 @@ class PolygonDialog:
 	var show_grid = false
 	var grid_step = Vector2(10,10)
 	
-	var handle
-	var handle_offset
+	#Knife Tool
+	var knife_start = Vector2()
+	var knife_end = Vector2()
 	
 	#Default Values
 	var data = {
 		next = 1,
 		clockwise = false,
 		polygon_length = 0,
+		gen_top = true,
+		gen_sides = true,
+		gen_bottom = true,
 		invert = false,
-		close = false,
+		close = true,
 		current_axis = Vector3.AXIS_X,
 		axis = [Vector3.AXIS_Z, Vector3.AXIS_Y],
 		depth = 1.0,
 		radius = 1.0
 	}
 	
+	var handle
+	var handle_offset
+	
 	var canvas
 	var snap_popup
+	var toolbar_top
+	var toolbar_bottom
+	var mode_display
 	var text_display
 	var options
 	var tools
@@ -69,27 +83,70 @@ class PolygonDialog:
 		else:
 			return false
 			
+	static func knife_polygon(poly, start, end, close = false):
+		var intersections = {}
+		
+		var size = poly.size() - 1
+		
+		if close:
+			var inter = Geometry.segment_intersects_segment_2d(poly[size], poly[0], start, end)
+			
+			if inter != null:
+				poly.push_back(inter)
+				
+		for i in range(size):
+			var inter = Geometry.segment_intersects_segment_2d(poly[i], poly[i+1], start, end)
+			
+			if inter == null:
+				continue
+				
+			intersections[i+1] = inter
+			
+		var ofs = 0
+		var keys = intersections.keys()
+		
+		keys.sort()
+		
+		for i in keys:
+			poly.insert(i + ofs, intersections[i])
+			
+			ofs += 1
+			
 	func set_mode(mode):
 		self.mode = mode 
 		
 		if mode == Mode.DRAW:
 			canvas.set_default_cursor_shape(CURSOR_CROSS)
 			
+			mode_display.set_text("Mode: Draw")
+			
 		elif mode == Mode.EDIT:
 			canvas.set_default_cursor_shape(CURSOR_DRAG)
+			
+			mode_display.set_text("Mode: Edit")
+			
+		elif mode == Mode.KNIFE:
+			canvas.set_default_cursor_shape(CURSOR_ARROW)
+			
+			mode_display.set_text("Mode: Knife")
 			
 		else:
 			canvas.set_default_cursor_shape(CURSOR_ARROW)
 			
+			mode_display.set_text("Mode:")
+			
 	func set_axis(id):
 		if id == Vector3.AXIS_X:
-			data.axis = [Vector3.AXIS_Z, Vector3.AXIS_Y]
+			data.axis[0] = Vector3.AXIS_Z
+			data.axis[1] = Vector3.AXIS_Y
 			
 		elif id == Vector3.AXIS_Y:
-			data.axis = [Vector3.AXIS_Z, Vector3.AXIS_X]
+			data.axis[0] = Vector3.AXIS_Z
+			data.axis[1] = Vector3.AXIS_X
 			
 		elif id == Vector3.AXIS_Z:
-			data.axis = [Vector3.AXIS_X, Vector3.AXIS_Y]
+			data.axis[0] = Vector3.AXIS_X
+			data.axis[1] = Vector3.AXIS_Y
 			
 		data.current_axis = id
 		
@@ -139,14 +196,6 @@ class PolygonDialog:
 			
 		return vector
 		
-	func uv_height():
-		var uv = Vector2(0,1)
-		
-		if data.depth < data.radius:
-			uv.y = data.depth/data.radius
-			
-		return uv
-		
 	func snap_point(pos):
 		if snap:
 			return pos.snapped(grid_step)
@@ -176,66 +225,71 @@ class PolygonDialog:
 		
 		surf.begin(VS.PRIMITIVE_TRIANGLES)
 		
+		surf.add_smooth_group(false)
+		
 		if data.current_axis == Vector3.AXIS_X and not data.invert:
 			index.invert()
 			
 		elif data.invert and not data.current_axis == Vector3.AXIS_X:
 			index.invert()
 			
-		surf.add_smooth_group(false)
-			
-		for i in index:
-			surf.add_uv(poly[i]/s)
-			surf.add_vertex(to_vec3(poly[i]/s) + ofs)
-			
-		if data.depth:
-			if data.close:
-				poly.push_back(poly[0])
-				
-			var h = uv_height()
-			var b = 0
-			
-			data.clockwise = is_clockwise(poly)
-			
-			if data.invert:
-				data.clockwise = not data.clockwise
-				
-			for i in get_index_array():
-				var v1 = to_vec3(poly[i]/s)
-				var v2 = to_vec3(poly[i + data.next]/s)
-				
-				var u1 = Vector2(0,0)
-				
-				if i > 0:
-					var d = poly[i + data.next].distance_to(poly[i])
-					u1 = Vector2(b + d, 0)/s
-					b += d
-					
-				var u2 = Vector2(b + poly[i].distance_to(poly[i + data.next]), 0)/s
-				
-				surf.add_uv(u1+h)
-				surf.add_vertex(v1 + ofs)
-				surf.add_uv(u2+h)
-				surf.add_vertex(v2 + ofs)
-				surf.add_uv(u2)
-				surf.add_vertex(v2 - ofs)
-				
-				surf.add_uv(u2)
-				surf.add_vertex(v2 - ofs)
-				surf.add_uv(u1)
-				surf.add_vertex(v1 - ofs)
-				surf.add_uv(u1+h)
-				surf.add_vertex(v1 + ofs)
-				
-			if data.close:
-				poly.remove(poly.size() - 1)
-				
-			for i in range(index.size() -1, -1, -1):
-				i = index[i]
-				
+		if data.gen_top:
+			for i in index:
 				surf.add_uv(poly[i]/s)
-				surf.add_vertex(to_vec3(poly[i]/s) - ofs)
+				surf.add_vertex(to_vec3(poly[i]/s) + ofs)
 				
+		if data.depth:
+			if data.gen_sides:
+				if data.close:
+					poly.push_back(poly[0])
+					
+				data.clockwise = is_clockwise(poly)
+				
+				if data.invert:
+					data.clockwise = not data.clockwise
+					
+				var cfg = get_range_config()
+				
+				var h = Vector2(0, data.depth/data.radius)
+				
+				var u1 = Vector2(0, 0)
+				
+				var b = 0
+				
+				for i in range(cfg.min_, cfg.max_, cfg.step):
+					var v1 = to_vec3(poly[i]/s)
+					var v2 = to_vec3(poly[i + data.next]/s)
+					
+					b += poly[i].distance_to(poly[i + data.next])
+					
+					var u2 = Vector2(b, 0)/s
+					
+					surf.add_uv(u1+h)
+					surf.add_vertex(v1 + ofs)
+					surf.add_uv(u2+h)
+					surf.add_vertex(v2 + ofs)
+					surf.add_uv(u2)
+					surf.add_vertex(v2 - ofs)
+					
+					surf.add_uv(u2)
+					surf.add_vertex(v2 - ofs)
+					surf.add_uv(u1)
+					surf.add_vertex(v1 - ofs)
+					surf.add_uv(u1+h)
+					surf.add_vertex(v1 + ofs)
+					
+					u1 = u2
+					
+				if data.close:
+					poly.remove(poly.size() - 1)
+					
+			if data.gen_bottom:
+				for i in range(index.size() -1, -1, -1):
+					i = index[i]
+					
+					surf.add_uv(poly[i]/s)
+					surf.add_vertex(to_vec3(poly[i]/s) - ofs)
+					
 		index.clear()
 		
 		surf.generate_normals()
@@ -255,32 +309,38 @@ class PolygonDialog:
 				
 		return -1
 		
-	func get_index_array():
-		if data.current_axis == Vector3.AXIS_Y or data.current_axis == Vector3.AXIS_Z:
-			if data.clockwise:
-				data.next = -1
-				
-				return range(poly.size() - 1, 0, -1)
-				
-			else:
-				data.next = 1
-				
-				return range(poly.size() - 1)
-				
-		else:
-			if data.clockwise:
-				data.next = 1
-				
-				return range(poly.size() -1)
-				
-			else:
-				data.next = -1
-				
-				return range(poly.size() - 1, 0, -1)
-				
-	func show_dialog():
-		var s = Vector2(300 + get_constant('margin', 'Dialogs') * 2, 370)
+	func get_range_config():
+		var size = poly.size() - 1
 		
+		var config = {
+			min_ = 0,
+			max_ = size,
+			step = 1
+		}
+		
+		data.next = 1
+		
+		var inv = false
+		
+		if data.clockwise and data.current_axis != Vector3.AXIS_X:
+			inv = true
+			
+		elif data.current_axis == Vector3.AXIS_X and not data.clockwise:
+			inv = true
+			
+		if inv:
+			data.next = -1
+			
+			config.min_ = size
+			config.max_ = 0
+			config.step = -1
+			
+		return config
+		
+	func show_dialog():
+		var s = Vector2(324, 395)
+		
+		s.y += toolbar_top.get_size().y + toolbar_bottom.get_size().y
 		s.y += text_display.get_size().y * 1.5
 		
 		popup_centered(s)
@@ -302,8 +362,11 @@ class PolygonDialog:
 	func default():
 		data.next = 1
 		data.clockwise = false
+		data.gen_top = true
+		data.gen_sides = true
+		data.gen_bottom = true
 		data.invert = false
-		data.close = false
+		data.close = true
 		
 		set_axis(Vector3.AXIS_X)
 		
@@ -316,12 +379,19 @@ class PolygonDialog:
 		
 		tools[0].select(data.current_axis)
 		tools[1].set_val(data.depth)
-		tools[2].set_val(data.radius)
+		tools[2].set_val(data.radius) 
 		
 		for i in range(options.get_item_count()):
 			if options.is_item_checkable(i):
 				options.set_item_checked(i, false)
 				
+		for i in range(Options.GENERATE_TOP, Options.GENERATE_BOTTOM + 1):
+			var idx = options.get_item_index(i)
+			
+			options.set_item_checked(idx, true)
+			
+		options.set_item_checked(options.get_item_index(Options.CLOSE), true)
+		
 		clear_canvas()
 		
 	func redraw():
@@ -370,6 +440,24 @@ class PolygonDialog:
 			snap_popup.set_pos(ws/2 - ps/2 + get_pos())
 			snap_popup.popup()
 			
+		elif id == Options.GENERATE_TOP:
+			data.gen_top = not data.gen_top
+			options.set_item_checked(idx, data.gen_top)
+			
+			redraw()
+			
+		elif id == Options.GENERATE_SIDES:
+			data.gen_sides = not data.gen_sides
+			options.set_item_checked(idx, data.gen_sides)
+			
+			redraw()
+			
+		elif id == Options.GENERATE_BOTTOM:
+			data.gen_bottom = not data.gen_bottom
+			options.set_item_checked(idx, data.gen_bottom)
+			
+			redraw()
+			
 		elif id == Options.INVERT:
 			data.invert = not data.invert
 			options.set_item_checked(idx, data.invert)
@@ -394,6 +482,13 @@ class PolygonDialog:
 						if edit != -1:
 							set_mode(Mode.EDIT)
 							
+					elif ev.control:
+						var pos = snap_point(ev.pos)
+						
+						knife_start = pos
+						
+						set_mode(Mode.KNIFE)
+						
 					elif mode == Mode.DRAW:
 						poly.push_back(snap_point(ev.pos))
 						
@@ -405,6 +500,11 @@ class PolygonDialog:
 					pressed = false
 					edit = -1
 					
+					if mode == Mode.KNIFE:
+						knife_polygon(poly, knife_start, knife_end, data.close)
+						
+						canvas.update()
+						
 					set_mode(Mode.DRAW)
 					
 			elif ev.button_index == BUTTON_RIGHT:
@@ -419,7 +519,7 @@ class PolygonDialog:
 					canvas.update()
 					
 		elif ev.type == InputEvent.MOUSE_MOTION and pressed:
-			if edit == -1:
+			if edit == -1 and mode != Mode.KNIFE:
 				return
 				
 			var edit_pos = snap_point(ev.pos)
@@ -439,15 +539,18 @@ class PolygonDialog:
 				
 				canvas.update()
 				
+			elif mode == Mode.KNIFE:
+				knife_end = vector_to_local(edit_pos)
+				
+				canvas.update()
+				
 	func _canvas_draw():
 		var start = OS.get_ticks_msec()
 		
 		var s = canvas.get_size()
 		var r = Rect2(Vector2(), s)
 		
-		var ci = canvas.get_canvas_item()
-		
-		VS.canvas_item_set_clip(ci, true)
+		VS.canvas_item_set_clip(canvas.get_canvas_item(), true)
 		
 		canvas.draw_rect(r, Color(0.3, 0.3, 0.3))
 		
@@ -461,7 +564,7 @@ class PolygonDialog:
 			for i in range(1, s.x/grid_step.x):
 				canvas.draw_line(Vector2(i * grid_step.x, 0), Vector2(i * grid_step.x, s.y), GRID_COLOR, 1)
 				
-			for j in range(1, s.y/grid_step.y + 1):
+			for j in range(1, s.y/grid_step.y):
 				canvas.draw_line(Vector2(0, j * grid_step.y), Vector2(s.x, j * grid_step.y), GRID_COLOR, 1)
 				
 		# Draw Polygon handles and lines
@@ -477,6 +580,9 @@ class PolygonDialog:
 			
 			data.polygon_length += poly[poly.size() - 1].distance_to(poly[0])
 			
+		if mode == Mode.KNIFE:
+			canvas.draw_line(knife_start, knife_end, Color(0,0,1, 0.6), 3)
+			
 		for i in range(poly.size()):
 			canvas.draw_texture(handle, poly[i] - handle_offset)
 			
@@ -488,13 +594,6 @@ class PolygonDialog:
 		canvas.draw_line(Vector2(0, s.y/2), Vector2(s.x, s.y/2), ac[data.axis[0]], 2)
 		canvas.draw_line(Vector2(s.x/2, 0), Vector2(s.x/2, s.y), ac[data.axis[1]], 2)
 		
-		print("End in: " + str(OS.get_ticks_msec() - start) + " ms")
-		
-	func _notification(what):
-		if what == NOTIFICATION_POPUP_HIDE:
-			set_mode(-1)
-			canvas.update()
-			
 	func _exit_tree():
 		clear_canvas()
 		
@@ -504,7 +603,7 @@ class PolygonDialog:
 		queue_free()
 		
 	func _init(base):
-		set_title("Draw New Polygon")
+		set_title("New Polygon")
 		set_exclusive(true)
 		
 		var main_vbox = VBoxContainer.new()
@@ -514,24 +613,6 @@ class PolygonDialog:
 		
 		var hb = HBoxContainer.new()
 		main_vbox.add_child(hb)
-		hb.set_h_size_flags(SIZE_EXPAND_FILL)
-		
-		var m_button = MenuButton.new()
-		m_button.set_flat(false)
-		m_button.set_text("Edit")
-		
-		options = m_button.get_popup()
-		
-		options.add_check_item("Use Snap", Options.USE_SNAP)
-		options.add_check_item("Show Grid", Options.SHOW_GRID)
-		options.add_item("Configure Snap", Options.CONFIGURE_SNAP)
-		options.add_separator()
-		options.add_check_item("Invert", Options.INVERT)
-		options.add_check_item("Close Polygon", Options.CLOSE)
-		
-		hb.add_child(m_button)
-		
-		options.connect("item_pressed", self, "_options")
 		
 		var ob = OptionButton.new()
 		ob.add_item('X')
@@ -542,6 +623,10 @@ class PolygonDialog:
 		
 		ob.connect("item_selected", self, "set_axis")
 		
+		var l = Label.new()
+		l.set_text("Depth:")
+		hb.add_child(l)
+		
 		var d_spin = SpinBox.new()
 		d_spin.set_val(data.depth)
 		d_spin.set_min(0)
@@ -550,6 +635,10 @@ class PolygonDialog:
 		hb.add_child(d_spin)
 		
 		d_spin.connect("value_changed", self, "set_depth")
+		
+		l = Label.new()
+		l.set_text("Radius:")
+		hb.add_child(l)
 		
 		var r_spin = SpinBox.new()
 		r_spin.set_val(data.radius)
@@ -562,20 +651,72 @@ class PolygonDialog:
 		
 		tools = [ob, d_spin, r_spin]
 		
-		var sp = Control.new()
-		hb.add_child(sp)
-		sp.set_h_size_flags(SIZE_EXPAND_FILL)
+		var panel = PanelContainer.new()
+		main_vbox.add_child(panel)
+		panel.set_v_size_flags(SIZE_EXPAND_FILL)
+		
+		var vb = VBoxContainer.new()
+		panel.add_child(vb)
+		
+		toolbar_top = HBoxContainer.new()
+		vb.add_child(toolbar_top)
+		toolbar_top.set_h_size_flags(SIZE_EXPAND_FILL)
+		
+		var m_button = MenuButton.new()
+		m_button.set_flat(true)
+		m_button.set_text("Edit")
+		
+		options = m_button.get_popup()
+		
+		options.add_check_item("Use Snap", Options.USE_SNAP)
+		options.add_check_item("Show Grid", Options.SHOW_GRID)
+		options.add_item("Configure Snap", Options.CONFIGURE_SNAP)
+		options.add_separator()
+		options.add_check_item("Generate Top", Options.GENERATE_TOP)
+		options.add_check_item("Generate Sides", Options.GENERATE_SIDES)
+		options.add_check_item("Generate Bottom", Options.GENERATE_BOTTOM)
+		options.add_separator()
+		options.add_check_item("Invert", Options.INVERT)
+		options.add_check_item("Close Polygon", Options.CLOSE)
+		
+		toolbar_top.add_child(m_button)
+		
+		options.connect("item_pressed", self, "_options")
+		
+		#Spacer
+		var s = Control.new()
+		toolbar_top.add_child(s)
+		s.set_h_size_flags(SIZE_EXPAND_FILL)
 		
 		var clear = Button.new()
+		clear.set_flat(true)
 		clear.set_text("Clear")
-		hb.add_child(clear)
+		clear.set_button_icon(base.get_icon("RemoveHl", "EditorIcons"))
+		toolbar_top.add_child(clear)
 		clear.connect("pressed", self, "clear_canvas")
 		
 		canvas = Control.new()
-		canvas.set_custom_minimum_size(Vector2(300,300))
-		main_vbox.add_child(canvas)
+		vb.add_child(canvas)
+		canvas.set_v_size_flags(SIZE_EXPAND_FILL)
 		
-		handle = base.get_icon("Editor3DHandle", "EditorIcons")
+		toolbar_bottom = HBoxContainer.new()
+		vb.add_child(toolbar_bottom)
+		toolbar_bottom.set_h_size_flags(SIZE_EXPAND_FILL)
+		
+		mode_display = Label.new()
+		toolbar_bottom.add_child(mode_display)
+		
+		#Spacer
+		s = Control.new()
+		toolbar_bottom.add_child(s)
+		s.set_h_size_flags(SIZE_EXPAND_FILL)
+		
+		var help = TextureButton.new()
+		help.set_normal_texture(base.get_icon("Help", "EditorIcons"))
+		help.set_tooltip("Actions:\n  - Left-Click => Add Vertex\n  - Shift + Right-Click + Drag => Edit Vertex\n  - Right-Click => Delete Vertex\n  - Control + Left-Click + Drag => Knife Tool")
+		toolbar_bottom.add_child(help)
+		
+		handle = base.get_icon("EditorHandle", "EditorIcons")
 		handle_offset = Vector2(handle.get_width(), handle.get_height())/2
 		
 		canvas.set_focus_mode(FOCUS_ALL)
@@ -590,7 +731,6 @@ class PolygonDialog:
 		text_display.set_align(text_display.ALIGN_CENTER)
 		text_display.set_valign(text_display.VALIGN_CENTER)
 		main_vbox.add_child(text_display)
-		text_display.set_v_size_flags(SIZE_EXPAND_FILL)
 		
 		get_cancel().connect("pressed", self, "_cancel")
 		
