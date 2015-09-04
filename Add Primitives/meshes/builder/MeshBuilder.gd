@@ -158,20 +158,19 @@ static func build_circle_verts(pos, segments, radius = 1, angle = PI * 2):
 		
 	return circle_verts
 	
-static func build_circle_verts_rot(pos, segments, radius = 1, rotation = [], axis = []):
+static func build_circle_verts_rot(pos, segments, radius = 1, matrix = Matrix3()):
 	var circle_verts = []
 	circle_verts.resize(segments + 1)
 	
-	var angle = PI * 2 / segments
+	var s_angle = PI * 2 / segments
 	
 	for i in range(segments):
-		var a = angle * i
+		var a = s_angle * i
 		
 		var vector = Vector3(cos(a), 0, sin(a)) * radius
 		
-		for i in range(rotation.size()):
-			vector = vector.rotated(axis[i], rotation[i])
-			
+		vector = matrix.xform(vector)
+		
 		vector += pos
 		
 		circle_verts[i] = vector

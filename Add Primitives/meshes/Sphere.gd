@@ -3,53 +3,54 @@ extends 'builder/MeshBuilder.gd'
 var radius = 1.0
 var segments = 16
 var height_segments = 8
-var height_slice = 1.0
-var fill_cap = true
+#var height_slice = 1.0
+var hemisphere = 0.0
+var generate_cap = true
 
 static func get_name():
 	return "Sphere"
 	
 func set_parameter(name, value):
-	if name == 'Radius':
+	if name == 'radius':
 		radius = value
 		
-	elif name == 'Segments':
+	elif name == 'segments':
 		segments = value
 		
-	elif name == 'Height Segments':
+	elif name == 'height_segments':
 		height_segments = value
 		
-	elif name == 'Height Slice':
-		height_slice = value
+	#elif name == 'height_slice':
+	#	height_slice = value
+	#	
+	elif name == 'hemisphere':
+		hemisphere = value
 		
-	elif name == 'Fill Cap':
-		fill_cap = value
+	elif name == 'generate_cap':
+		generate_cap = value
 		
 func create(smooth, invert):
 	var circle = build_circle_verts(Vector3(), segments, radius)
 	
 	var h = height_segments - 1
 	
-	var angle = PI * height_slice / h
+	var h_val = 1.0 - hemisphere
 	
-	var pos = Vector3(0, -cos(angle * h) * radius, 0)
-	var rd = Vector3(sin(angle * h), 0, sin(angle * h))
+	var angle = PI * h_val / h
+	
+	var pos = Vector3(0, cos(angle) * radius, 0)
+	var rd = Vector3(sin(angle), 0, sin(angle))
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
 	set_invert(invert)
 	
-	if height_slice == 1.0:
-		pos.y = cos(angle)
-		rd = Vector3(sin(angle), 0, sin(angle))
+	if hemisphere > 0.0:
+		pos.y = -cos(angle * h) * radius
+		rd.x = sin(angle * h)
+		rd.z = rd.x
 		
-		add_smooth_group(smooth)
-		
-		for idx in range(segments):
-			add_tri([Vector3(0, radius, 0), circle[idx] * rd + pos, circle[idx + 1] * rd + pos])
-			
-	else:
-		if fill_cap:
+		if generate_cap:
 			add_smooth_group(false)
 			
 			for idx in range(segments):
@@ -57,11 +58,19 @@ func create(smooth, invert):
 				
 		add_smooth_group(smooth)
 		
-	h -= 1
-	
-	for i in range(height_segments - 1, 1, -1):
-		var next_pos = Vector3(0, -cos(angle * (i-1)) * radius, 0)
-		var next_radius = Vector3(sin(angle * (i-1)), 0, sin(angle * (i-1)))
+	else:
+		add_smooth_group(smooth)
+		
+		for idx in range(segments):
+			add_tri([Vector3(0, radius, 0), circle[idx] * rd + pos, circle[idx + 1] * rd + pos])
+			
+		h -= 1
+		
+	for i in range(h, 1, -1):
+		var n = i - 1
+		
+		var next_pos = Vector3(0, -cos(angle * n) * radius, 0)
+		var next_radius = Vector3(sin(angle * n), 0, sin(angle * n))
 		
 		for idx in range(segments):
 			add_quad([circle[idx] * rd + pos,
@@ -85,7 +94,7 @@ func mesh_parameters(tree):
 	add_tree_range(tree, 'Radius', radius)
 	add_tree_range(tree, 'Segments', segments, 1, 3, 64)
 	add_tree_range(tree, 'Height Segments', height_segments, 1, 3, 64)
-	add_tree_range(tree, 'Height Slice', height_slice, 0.01, 0.01, 1)
+	add_tree_range(tree, 'Hemisphere', hemisphere, 0.01, 0, 1)
 	add_tree_empty(tree)
-	add_tree_check(tree, 'Fill Cap', fill_cap)
+	add_tree_check(tree, 'Generate Cap', generate_cap)
 

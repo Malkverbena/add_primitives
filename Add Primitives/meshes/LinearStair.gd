@@ -4,8 +4,8 @@ var steps = 10
 var width = 1.0
 var height = 2.0
 var length = 2.0
-var fill_end = true
-var fill_bottom = true
+var generate_end = true
+var generate_bottom = true
 
 static func get_name():
 	return "Linear Stair"
@@ -14,23 +14,23 @@ static func get_container():
 	return "Add Stair"
 	
 func set_parameter(name, value):
-	if name == 'Steps':
+	if name == 'steps':
 		steps = value
 		
-	elif name == 'Width':
+	elif name == 'width':
 		width = value
 		
-	elif name == 'Height':
+	elif name == 'height':
 		height = value
 		
-	elif name == 'Length':
+	elif name == 'length':
 		length = value
 		
-	elif name == 'Fill End':
-		fill_end = value
+	elif name == 'generate_end':
+		generate_end = value
 		
-	elif name == 'Fill Bottom':
-		fill_bottom = value
+	elif name == 'generate_bottom':
+		generate_bottom = value
 		
 func create(smooth, invert):
 	var sh = height/steps
@@ -64,10 +64,10 @@ func create(smooth, invert):
 		py.x += sl
 		pz.x += sh
 		
-	if fill_end:
+	if generate_end:
 		build_plane(d[0], Vector3(0, steps * sh, 0), Vector3(0, 0, steps * sl))
 		
-	if fill_bottom:
+	if generate_bottom:
 		build_plane(d[0], Vector3(0, 0, steps * sl))
 		
 	var mesh = commit()
@@ -80,6 +80,6 @@ func mesh_parameters(tree):
 	add_tree_range(tree, 'Height', height)
 	add_tree_range(tree, 'Length', length)
 	add_tree_empty(tree)
-	add_tree_check(tree, 'Fill End', fill_end)
-	add_tree_check(tree, 'Fill Bottom', fill_bottom)
+	add_tree_check(tree, 'Generate End', generate_end)
+	add_tree_check(tree, 'Generate Bottom', generate_bottom)
 

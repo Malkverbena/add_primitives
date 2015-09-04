@@ -2,35 +2,35 @@ extends "builder/MeshBuilder.gd"
 
 var radius = 1.0
 var height = 2.0
-var caps = true
-var segments = 16
+var sides = 16
 var height_segments = 1
+var generate_caps = true
 
 static func get_name():
 	return "Cylinder"
 	
 func set_parameter(name, value):
-	if name == 'Radius':
+	if name == 'radius':
 		radius = value
 		
-	elif name == 'Height':
+	elif name == 'height':
 		height = value
 		
-	elif name == 'Caps':
-		caps = value
+	elif name == 'sides':
+		sides = value
 		
-	elif name == 'Segments':
-		segments = value
-		
-	elif name == 'Height Segments':
+	elif name == 'height_segments':
 		height_segments = value
+		
+	elif name == 'generate_caps':
+		generate_caps = value
 		
 func create(smooth, invert):
 	var circumference = PI * 2 * radius 
 	var h = height
 	
-	var circle = build_circle_verts(Vector3(0, h/2, 0), segments, radius)
-	var circle_uv = build_circle_verts(Vector3(0.5, 0, 0.5), segments, radius)
+	var circle = build_circle_verts(Vector3(0, h/2, 0), sides, radius)
+	var circle_uv = build_circle_verts(Vector3(0.5, 0, 0.5), sides, radius)
 	
 	if invert:
 		circle.invert()
@@ -42,12 +42,12 @@ func create(smooth, invert):
 	
 	add_smooth_group(false)
 	
-	if caps:
+	if generate_caps:
 		var top = Vector3(0, h/2, 0)
 		
 		var c = Vector2(0.5, 0.5)
 		
-		for idx in range(segments):
+		for idx in range(sides):
 			add_uv(c)
 			add_vertex(top)
 			add_uv(Vector2(circle_uv[idx].x, circle_uv[idx].z))
@@ -74,11 +74,11 @@ func create(smooth, invert):
 			
 		i = float(i)
 		
-		for idx in range(segments):
+		for idx in range(sides):
 			idx = float(idx)
 			
-			var u1 = idx/segments * circumference
-			var u2 = (idx+1)/segments * circumference
+			var u1 = idx/sides * circumference
+			var u2 = (idx+1)/sides * circumference
 			
 			var v1 = i/height_segments * height
 			var v2 = (i+1)/height_segments * height
@@ -107,8 +107,9 @@ func create(smooth, invert):
 func mesh_parameters(tree):
 	add_tree_range(tree, 'Radius', radius)
 	add_tree_range(tree, 'Height', height)
-	add_tree_check(tree, 'Caps', caps)
-	add_tree_range(tree, 'Segments', segments, 1, 3, 64)
+	add_tree_range(tree, 'Sides', sides, 1, 3, 64)
 	add_tree_range(tree, 'Height Segments', height_segments, 1, 1, 64)
+	add_tree_empty(tree)
+	add_tree_check(tree, 'Generate Caps', generate_caps)
 	
 

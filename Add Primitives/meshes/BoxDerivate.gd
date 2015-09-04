@@ -20,16 +20,16 @@ static func get_container():
 	return "Extra Objects"
 	
 func set_parameter(name, value):
-	if name == 'Derivate':
+	if name == 'derivate':
 		derivate = value
 		
-	elif name == 'Width':
+	elif name == 'width':
 		width = value
 		
-	elif name == 'Length':
+	elif name == 'length':
 		length = value
 		
-	elif name == 'Height':
+	elif name == 'height':
 		height = value
 		
 func create(smooth, invert):

@@ -11,13 +11,13 @@ static func get_container():
 	return "Extra Objects"
 	
 func set_parameter(name, value):
-	if name == 'Width':
+	if name == 'width':
 		width = value
 		
-	elif name == 'Length':
+	elif name == 'length':
 		length = value
 		
-	elif name == 'Height':
+	elif name == 'height':
 		height = value
 		
 func create(smooth, invert):
@@ -39,9 +39,6 @@ func create(smooth, invert):
 	
 	build_plane(Vector3(width,0,0), Vector3(0,0,length), -ofs)
 	
-	if invert:
-		plane.invert()
-		
 	add_tri([ch, plane[1], plane[0]], uv)
 	add_tri([ch, plane[3], plane[2]], uv)
 	

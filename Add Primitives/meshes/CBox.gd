@@ -13,19 +13,19 @@ static func get_container():
 	return "Extra Objects"
 	
 func set_parameter(name, value):
-	if name == 'Center Length':
+	if name == 'center_length':
 		center_length = value
 		
-	elif name == 'Center Width':
+	elif name == 'center_width':
 		center_width = value
 		
-	elif name == 'Side Length':
+	elif name == 'side_length':
 		side_length = value
 		
-	elif name == 'Side Width':
+	elif name == 'side_width':
 		side_width = value
 		
-	elif name == 'Height':
+	elif name == 'height':
 		height = value
 		
 func create(smooth, invert):

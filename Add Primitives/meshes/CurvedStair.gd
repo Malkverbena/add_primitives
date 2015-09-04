@@ -5,8 +5,8 @@ var stair_height = 2.0
 var steps = 8
 var outer_radius = 2.0
 var inner_radius = 1.0
-var fill_bottom = true
-var fill_end = true
+var generate_bottom = true
+var generate_end = true
 
 static func get_name():
 	return "Curved Stair"
@@ -15,26 +15,26 @@ static func get_container():
 	return "Add Stair"
 	
 func set_parameter(name, value):
-	if name == 'Angle':
+	if name == 'angle':
 		angle = deg2rad(value)
 		
-	elif name == 'Stair Height':
+	elif name == 'stair_height':
 		stair_height = value
 		
-	elif name == 'Steps':
+	elif name == 'steps':
 		steps = value
 		
-	elif name == 'Outer Radius':
+	elif name == 'outer_radius':
 		outer_radius = value
 		
-	elif name == 'Inner Radius':
+	elif name == 'inner_radius':
 		inner_radius = value
 		
-	elif name == 'Fill Bottom':
-		fill_bottom = value
+	elif name == 'generate_bottom':
+		generate_bottom = value
 		
-	elif name == 'Fill End':
-		fill_end = value
+	elif name == 'generate_end':
+		generate_end = value
 		
 func create(smooth, invert):
 	var h = stair_height/steps
@@ -62,7 +62,7 @@ func create(smooth, invert):
 		
 		add_quad([c[i]+sh, c2[i]+sh, c2[i+1]+sh, c[i+1]+sh], uv)
 		
-		if fill_bottom:
+		if generate_bottom:
 			if not invert:
 				uv.invert()
 				
@@ -97,7 +97,7 @@ func create(smooth, invert):
 		
 		add_quad([c[i+1] + base, c[i+1], c[i], c[i] + base], uv)
 		
-	if fill_end:
+	if generate_end:
 		var sh = Vector3(0, h * steps, 0)
 		
 		var uv = [Vector2(0, 0),
@@ -118,7 +118,7 @@ func mesh_parameters(tree):
 	add_tree_range(tree, 'Outer Radius', outer_radius)
 	add_tree_range(tree, 'Inner Radius', inner_radius)
 	add_tree_empty(tree)
-	add_tree_check(tree, 'Fill Bottom', fill_bottom)
-	add_tree_check(tree, 'Fill End', fill_end)
+	add_tree_check(tree, 'Generate Bottom', generate_bottom)
+	add_tree_check(tree, 'Generate End', generate_end)
 	
 

@@ -8,13 +8,13 @@ static func get_name():
 	return "Circle"
 	
 func set_parameter(name, value):
-	if name == 'Radius':
+	if name == 'radius':
 		radius = value
 		
-	elif name == 'Segments':
+	elif name == 'segments':
 		segments = value
 		
-	elif name == 'Slice':
+	elif name == 'slice':
 		slice = deg2rad(value)
 		
 func create(smooth, invert):

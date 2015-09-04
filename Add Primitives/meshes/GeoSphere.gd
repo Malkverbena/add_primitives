@@ -13,13 +13,13 @@ static func get_name():
 	return "GeoSphere"
 	
 func set_parameter(name, value):
-	if name == 'Solid':
+	if name == 'solid':
 		solid = value
 		
-	elif name == 'Radius':
+	elif name == 'radius':
 		radius = value
 		
-	elif name == 'Subdivisions':
+	elif name == 'subdivisions':
 		subdivisions = value
 		
 static func get_middle_point(p1, p2, verts, radius):
@@ -151,7 +151,7 @@ func create(smooth, invert):
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_combo(tree, 'Solid', 'Octahedron,Icosahedron', solid)
+	add_tree_combo(tree, 'Solid', 'Tetrahedron, Octahedron,Icosahedron', solid)
 	add_tree_range(tree, 'Radius', radius)
 	add_tree_range(tree, 'Subdivisions', subdivisions, 1, 0, 4)
 	

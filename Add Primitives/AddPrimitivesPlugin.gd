@@ -469,6 +469,10 @@ class ModifierDialog:
 		var cell = item.get_cell_mode(1)
 		
 		var name = item.get_text(0)
+		
+		name = name.replace(' ', '_')
+		name = name.to_lower()
+		
 		var value
 		
 		if cell == item.CELL_MODE_STRING:
@@ -596,6 +600,10 @@ class ParameterDialog:
 		var cell = item.get_cell_mode(1)
 		
 		var name = item.get_text(0)
+		
+		name = name.replace(' ', '_')
+		name = name.to_lower()
+		
 		var value
 		
 		if cell == item.CELL_MODE_CHECK:

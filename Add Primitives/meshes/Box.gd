@@ -8,19 +8,19 @@ static func get_name():
 	return "Box"
 	
 func set_parameter(name, value):
-	if name == 'Width':
+	if name == 'width':
 		width = value
 		
-	elif name == 'Length':
+	elif name == 'length':
 		length = value
 		
-	elif name == 'Height':
+	elif name == 'height':
 		height = value
 		
 func create(smooth, invert):
-	var fd = Vector3(width,0,0)     #Foward Direction
-	var rd = Vector3(0,0,length)    #Right Direction
-	var ud = Vector3(0,height,0)    #Up Dir
+	var fd = Vector3(width,0,0)
+	var rd = Vector3(0,0,length)
+	var ud = Vector3(0,height,0)
 	
 	var ofs = Vector3(-width/2,-height/2,-length/2)
 	

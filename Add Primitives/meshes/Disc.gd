@@ -12,16 +12,16 @@ static func get_container():
 	return "Extra Objects"
 	
 func set_parameter(name, value):
-	if name == 'Outer Radius':
+	if name == 'outer_radius':
 		outer_radius = value
 		
-	elif name == 'Inner Radius':
+	elif name == 'inner_radius':
 		inner_radius = value
 		
-	elif name == 'Segments':
+	elif name == 'segments':
 		segments = value
 		
-	elif name == 'Slice':
+	elif name == 'slice':
 		slice = deg2rad(value)
 		
 func create(smooth, invert):

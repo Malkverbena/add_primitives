@@ -74,13 +74,13 @@ class TaperModifier:
 		return "Taper"
 		
 	func set_parameter(name, val):
-		if name == 'Value':
+		if name == 'value':
 			value = val
 			
-		elif name == 'Lock X Axis':
+		elif name == 'lock_x_axis':
 			lock_x_axis = val
 			
-		elif name == 'Lock Z Axis':
+		elif name == 'lock_z_axis':
 			lock_z_axis = val
 			
 	static func taper(vector, val, c, axis):
@@ -140,10 +140,10 @@ class ShearModifier:
 		return "Shear"
 		
 	func set_parameter(name, val):
-		if name == 'Shear Axis':
+		if name == 'shear_axis':
 			shear_axis = val
 			
-		elif name == 'Value':
+		elif name == 'value':
 			value = val
 			
 	func modifier(mesh, aabb):
@@ -205,7 +205,7 @@ class TwistModifier:
 		return "Twist"
 		
 	func set_parameter(name, value):
-		if name == 'Angle':
+		if name == 'angle':
 			angle = value
 			
 	func modifier(mesh, aabb):
@@ -246,21 +246,24 @@ class ArrayModifier:
 		return "Array"
 		
 	func set_parameter(name, value):
-		if name == 'Count':
+		if name == 'count':
 			count = value
 			
-		elif name == 'Relative':
+		elif name == 'relative':
 			relative = value
 			
-		elif name == 'Offset X':
-			offset.x = value
+		elif name.begins_with('offset'):
+			var axis = name.split('_')[1]
 			
-		elif name == 'Offset Y':
-			offset.y = value
-			
-		elif name == 'Offset Z':
-			offset.z = value
-			
+			if axis == 'x':
+				offset.x = value
+				
+			elif axis == 'y':
+				offset.y = value
+				
+			elif axis == 'z':
+				offset.z = value
+				
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
@@ -313,16 +316,16 @@ class OffsetModifier:
 		return "Offset"
 		
 	func set_parameter(name, value):
-		if name == 'Relative':
+		if name == 'relative':
 			relative = value
 			
-		elif name == 'X':
+		elif name == 'x':
 			offset.x = value
 			
-		elif name == 'Y':
+		elif name == 'y':
 			offset.y = value
 			
-		elif name == 'Z':
+		elif name == 'z':
 			offset.z = value
 			
 	func modifier(mesh, aabb):
@@ -366,22 +369,20 @@ class OffsetModifier:
 class RandomModifier:
 	extends ModifierBase
 	
-	var x = 0.1
-	var y = 0.1
-	var z = 0.1
+	var random = Vector3(0.5, 0.5, 0.5)
 	
 	static func get_name():
 		return "Random"
 		
 	func set_parameter(name, value):
-		if name == 'X':
-			x = value
+		if name == 'x':
+			random.x = value
 			
-		elif name == 'Y':
-			y = value
+		elif name == 'y':
+			random.y = value
 			
-		elif name == 'Z':
-			z = value
+		elif name == 'z':
+			random.z = value
 			
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
@@ -395,9 +396,9 @@ class RandomModifier:
 				var v = get_vertex(i)
 				
 				if not cache.has(v):
-					cache[v] = Vector3(rand_range(-1,1) * x,\
-					                   rand_range(-1,1) * y,\
-					                   rand_range(-1,1) * z)
+					cache[v] = Vector3(rand_range(-1,1) * random.x,\
+					                   rand_range(-1,1) * random.y,\
+					                   rand_range(-1,1) * random.z)
 					
 				v += cache[v]
 				
@@ -412,9 +413,9 @@ class RandomModifier:
 		return mesh_temp
 		
 	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'X', x, 0.01, 0, 100)
-		add_tree_range(item, tree, 'Y', y, 0.01, 0, 100)
-		add_tree_range(item, tree, 'Z', z, 0.01, 0, 100)
+		add_tree_range(item, tree, 'X', random.x, 0.01, 0, 100)
+		add_tree_range(item, tree, 'Y', random.y, 0.01, 0, 100)
+		add_tree_range(item, tree, 'Z', random.z, 0.01, 0, 100)
 		
 # End RandomModifier
 
@@ -429,21 +430,27 @@ class UVTransformModifier:
 		return "UV Transform"
 		
 	func set_parameter(name, value):
-		if name == 'Translation X':
-			translation.x = value
+		if name.begins_with('translation'):
+			var axis = name.split('_')[1]
 			
-		elif name == 'Translation Y':
-			translation.y = value
-			
-		elif name == 'Rotation':
+			if axis == 'x':
+				translation.x = value
+				
+			elif axis == 'y':
+				translation.y = value
+				
+		elif name == 'rotation':
 			rotation = deg2rad(value)
 			
-		elif name == 'Scale X':
-			scale.x = value
+		elif name.begins_with('scale'):
+			var axis = name.split('_')[1]
 			
-		elif name == 'Scale Y':
-			scale.y = value
-			
+			if axis == 'x':
+				scale.x = value
+				
+			elif axis == 'y':
+				scale.y = value
+				
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
@@ -489,6 +496,8 @@ class UVTransformModifier:
 		
 # End UVTransformModifier 
 
+################################################################################
+################################################################################
 ################################################################################
 
 func get_modifiers():
