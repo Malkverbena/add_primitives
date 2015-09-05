@@ -37,22 +37,13 @@ class DirectoryUtilities:
 			 
 		# Windows
 		elif OS.has_environment('APPDATA'):
-			path = OS.get_environment('APPDATA').plus_file('/Godot')
+			path = OS.get_environment('APPDATA').plus_file('Godot')
 			
 		path = path.plus_file('plugins/Add Primitives')
 		
 		return path
-	
-	func get_scripts_from_list(list_files):
-		var scripts = []
 		
-		for file in list_files:
-			if file.extension() == 'gd':
-				scripts.push_back(file)
-			
-		return scripts
-		
-	func get_file_list(path):
+	func get_file_list(path, extension = ''):
 		var list = []
 		
 		if dir_exists(path):
@@ -63,8 +54,13 @@ class DirectoryUtilities:
 			var next = get_next()
 			
 			while next:
-				list.push_back(next)
-				
+				if not current_is_dir():
+					if not extension:
+						list.push_back(next)
+						
+					elif next.extension() == extension:
+						list.push_back(next)
+						
 				next = get_next()
 				
 			list_dir_end()
@@ -313,18 +309,7 @@ class ModifierDialog:
 			
 		items.push_back(obj)
 		
-	func update():
-		modifiers.clear()
-		
-		items.clear()
-		
-		modifiers.set_hide_root(true)
-		modifiers.set_columns(2)
-		modifiers.set_column_min_width(0, 2)
-		
-		modifiers.create_item()
-		
-	func update_menu(scripts):
+	func create_modifiers(scripts):
 		menu.clear()
 		
 		modifiers_scripts = scripts
@@ -335,11 +320,14 @@ class ModifierDialog:
 		for m in keys:
 			menu.add_item(m)
 			
-	func clear():
 		items.clear()
 		modifiers.clear()
 		
-		modifiers_scripts.clear()
+		modifiers.set_hide_root(true)
+		modifiers.set_columns(2)
+		modifiers.set_column_min_width(0, 2)
+		
+		modifiers.create_item()
 		
 	func generate_cache():
 		var cache = []
@@ -362,6 +350,18 @@ class ModifierDialog:
 			item = item.get_next()
 			
 		return cache
+		
+		func clear():
+		items.clear()
+		modifiers.clear()
+		
+		modifiers_scripts.clear()
+		
+	func clear():
+		items.clear()
+		modifiers.clear()
+		
+		modifiers_scripts.clear()
 		
 	func _modifier_tools(what):
 		var item = modifiers.get_selected()
@@ -563,15 +563,15 @@ class ParameterDialog:
 	
 	var parameters
 	var smooth_button
-	var reverse_button
+	var invert_button
 	
 	signal parameter_edited(name, value)
 	
 	func get_smooth():
 		return smooth_button.is_pressed()
 		
-	func get_reverse():
-		return reverse_button.is_pressed()
+	func get_invert():
+		return invert_button.is_pressed()
 		
 	func create_parameters(script):
 		parameters.clear()
@@ -586,7 +586,7 @@ class ParameterDialog:
 		script.mesh_parameters(parameters)
 		
 		smooth_button.set_pressed(false)
-		reverse_button.set_pressed(false)
+		invert_button.set_pressed(false)
 		
 	func clear():
 		parameters.clear()
@@ -631,12 +631,12 @@ class ParameterDialog:
 		smooth_button.set_text('Smooth')
 		add_child(smooth_button)
 		
-		reverse_button = CheckBox.new()
-		reverse_button.set_text('Invert Normals')
-		add_child(reverse_button)
+		invert_button = CheckBox.new()
+		invert_button.set_text('Invert Normals')
+		add_child(invert_button)
 		
 		smooth_button.connect("pressed", self, "_check_box_pressed")
-		reverse_button.connect("pressed", self, "_check_box_pressed")
+		invert_button.connect("pressed", self, "_check_box_pressed")
 		parameters.connect("item_edited", self, "_item_edited")
 		
 # End ParameterDialog
@@ -681,7 +681,7 @@ class MeshPopup:
 			options.select(id)
 			index = id
 			
-	func update():
+	func show_dialog():
 		color.set_color(Color(0,1,0))
 		
 		set_current_dialog(0)
@@ -787,9 +787,9 @@ class AddPrimitives:
 	var mesh_instance
 	
 	var builder
-	var original_mesh
+	var base_mesh
 	
-	var meshes_to_modify = []
+	var mesh_buffer = []
 	
 	var mesh_scripts = {}
 	var modifiers = {}
@@ -798,6 +798,15 @@ class AddPrimitives:
 	# Utilites
 	var dir 
 	
+	static func create_diplay_material(instance):
+		var fixed_material = FixedMaterial.new()
+		fixed_material.set_name('_display_material')
+		fixed_material.set_parameter(fixed_material.PARAM_DIFFUSE, Color(0,1,0))
+		
+		instance.set_material_override(fixed_material)
+		
+		return fixed_material
+		
 	func get_object():
 		return node
 		
@@ -822,9 +831,7 @@ class AddPrimitives:
 		
 		var path = dir.get_data_dir()
 		
-		var scripts = dir.get_file_list(path.plus_file('meshes'))
-		
-		scripts = dir.get_scripts_from_list(scripts)
+		var scripts = dir.get_file_list(path.plus_file('meshes'), 'gd')
 		scripts.sort()
 		
 		for f_name in scripts:
@@ -889,8 +896,7 @@ class AddPrimitives:
 	func load_modules():
 		var path = dir.get_data_dir().plus_file('modules')
 		
-		var mods = dir.get_file_list(path)
-		mods = dir.get_scripts_from_list(mods)
+		var mods = dir.get_file_list(path, 'gd')
 		
 		for m in mods:
 			var temp = load(path.plus_file(m))
@@ -918,7 +924,7 @@ class AddPrimitives:
 				
 			mesh_popup.get_transform_dialog().update_from_instance(mesh_instance)
 			
-			mesh_popup.update()
+			mesh_popup.show_dialog()
 			
 			if mesh_instance.get_material_override():
 				mesh_popup.hide_color_button()
@@ -963,7 +969,7 @@ class AddPrimitives:
 					
 	func module_call(object, method, arg=null):
 		if not object:
-			return
+			return null
 			
 		if object.has_method(method):
 			var vr
@@ -975,16 +981,17 @@ class AddPrimitives:
 				
 			return vr
 			
+		return null
+		
 	func mesh_popup(key):
 		mesh_popup.set_title('New ' + key)
 		
-		mesh_popup.update()
 		mesh_popup.get_parameter_dialog().create_parameters(builder)
-		
-		mesh_popup.get_modifier_dialog().update_menu(modifiers)
-		mesh_popup.get_modifier_dialog().update()
+		mesh_popup.get_modifier_dialog().create_modifiers(modifiers)
 		
 		create_diplay_material(mesh_instance)
+		
+		mesh_popup.show_dialog()
 		
 	func add_mesh_instance():
 		mesh_instance = MeshInstance.new()
@@ -1000,30 +1007,27 @@ class AddPrimitives:
 		
 	func remove_mesh_instace():
 		if mesh_instance.is_inside_tree():
-			_set_edit_disabled(true)
-			
 			mesh_instance.queue_free()
 			
 	func update_mesh(name = "", value = null):
 		var start = OS.get_ticks_msec()
 		
 		var smooth = mesh_popup.get_parameter_dialog().get_smooth()
-		var reverse = mesh_popup.get_parameter_dialog().get_reverse()
+		var invert = mesh_popup.get_parameter_dialog().get_invert()
 		
 		if name and value != null:
 			builder.set_parameter(name, value)
 			
-		original_mesh = builder.create(smooth, reverse)
+		base_mesh = builder.create(smooth, invert)
 		
-		assert( original_mesh != null )
+		assert( base_mesh != null )
 		
-		original_mesh.set_name(mesh_instance.get_name().to_lower())
-		mesh_instance.set_mesh(original_mesh)
+		base_mesh.set_name(mesh_instance.get_name().to_lower())
+		mesh_instance.set_mesh(base_mesh)
 		
 		modify_mesh()
 		
 		exec_time = OS.get_ticks_msec() - start
-		
 		mesh_popup.get_text_display().set_text("Generation time: " + str(exec_time) + " ms")
 		
 	func modify_mesh(name = "", value = null):
@@ -1031,12 +1035,12 @@ class AddPrimitives:
 		
 		var modifier = mesh_popup.get_modifier_dialog()
 		
-		meshes_to_modify.clear()
+		mesh_buffer.clear()
 		
 		var count = 0
 		
-		if mesh_instance.get_mesh() != original_mesh:
-			mesh_instance.set_mesh(original_mesh)
+		if mesh_instance.get_mesh() != base_mesh:
+			mesh_instance.set_mesh(base_mesh)
 			
 		assert( mesh_instance.get_mesh() )
 		
@@ -1056,12 +1060,12 @@ class AddPrimitives:
 			var aabb = mesh_instance.get_aabb()
 			
 			if count:
-				meshes_to_modify.push_back(mesh_instance.get_mesh())
+				mesh_buffer.push_back(mesh_instance.get_mesh())
 				
-				mesh = obj.modifier(meshes_to_modify[count - 1], aabb)
+				mesh = obj.modifier(mesh_buffer[count - 1], aabb)
 				
 			else:
-				mesh = obj.modifier(original_mesh, aabb)
+				mesh = obj.modifier(base_mesh, aabb)
 				
 			mesh_instance.set_mesh(mesh)
 			
@@ -1070,7 +1074,6 @@ class AddPrimitives:
 		mesh_instance.get_mesh().set_name(mesh_instance.get_name().to_lower())
 		
 		exec_time = OS.get_ticks_msec() - start
-		
 		mesh_popup.get_text_display().set_text("Generation time: " + str(exec_time) + " ms")
 		
 	func transform_mesh(what):
@@ -1089,15 +1092,6 @@ class AddPrimitives:
 			
 			mesh_instance.set_scale(val)
 			
-	func create_diplay_material(instance):
-		var fixed_material = FixedMaterial.new()
-		fixed_material.set_name('_display_material')
-		fixed_material.set_parameter(fixed_material.PARAM_DIFFUSE, Color(0,1,0))
-		
-		instance.set_material_override(fixed_material)
-		
-		return fixed_material
-		
 	func set_display_color(color):
 		if mesh_popup.is_visible() and mesh_instance.is_type("MeshInstance"):
 			var mat = mesh_instance.get_material_override()
@@ -1115,8 +1109,8 @@ class AddPrimitives:
 			if mat and mat.get_name() == '_display_material':
 				mesh_instance.set_material_override(null)
 				
-		original_mesh = null
-		meshes_to_modify.clear()
+		base_mesh = null
+		mesh_buffer.clear()
 		
 	func _node_removed(node):
 		if node == mesh_instance:
@@ -1130,8 +1124,8 @@ class AddPrimitives:
 		
 		mesh_popup.clear()
 		
-		original_mesh = null
-		meshes_to_modify.clear()
+		base_mesh = null
+		mesh_buffer.clear()
 		
 		mesh_scripts.clear()
 		modifiers.clear()
@@ -1153,6 +1147,12 @@ class AddPrimitives:
 		
 		editor_plugin.add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, self)
 		
+		# Load modifiers
+		var m_path = dir.get_data_dir().plus_file('Modifiers.gd')
+		var temp = load(m_path).new()
+		
+		modifiers = temp.get_modifiers()
+		
 		load_modules()
 		
 		update_menu()
@@ -1168,18 +1168,9 @@ class AddPrimitives:
 		mesh_popup.connect("display_changed", self, "set_display_color")
 		mesh_popup.connect("popup_hide", self, "_mesh_popup_hide")
 		
-		# Load modifiers
-		var m_path = dir.get_data_dir().plus_file('Modifiers.gd')
-		
-		var temp = load(m_path).new()
-		
-		modifiers = temp.get_modifiers()
-		
 		get_tree().connect("node_removed", self, "_node_removed")
 		
 # End AddPrimitives
-
-var gui_base
 
 var add_primitives
 
@@ -1200,7 +1191,7 @@ func make_visible(visible):
 		add_primitives.edit(null)
 		
 func _enter_tree():
-	gui_base = get_node("/root/EditorNode").get_gui_base()
+	var gui_base = get_node("/root/EditorNode").get_gui_base()
 	
 	add_primitives = AddPrimitives.new(self, gui_base)
 	

@@ -151,7 +151,7 @@ func create(smooth, invert):
 	return mesh
 	
 func mesh_parameters(tree):
-	add_tree_combo(tree, 'Solid', 'Tetrahedron, Octahedron,Icosahedron', solid)
+	add_tree_combo(tree, 'Solid', 'Octahedron,Icosahedron', solid)
 	add_tree_range(tree, 'Radius', radius)
 	add_tree_range(tree, 'Subdivisions', subdivisions, 1, 0, 4)
 	

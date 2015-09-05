@@ -41,13 +41,11 @@ func create(smooth, invert):
 	
 	var ellipse = build_ellipse_verts(Vector3(), segments, Vector2(width, length))
 	
-	var h = height_segments - 1
-	
 	var h_val = 1.0 - hemisphere
 	
-	var angle = PI * h_val / h
+	var angle = PI * h_val / height_segments
 	
-	var pos = Vector3(0, cos(angle) * height, 0)
+	var pos = Vector3(0, -cos(angle) * height, 0)
 	var rd = Vector3(sin(angle), 0, sin(angle))
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
@@ -55,14 +53,16 @@ func create(smooth, invert):
 	set_invert(invert)
 	
 	if hemisphere > 0.0:
-		pos.y = -cos(angle * h) * height
-		rd = Vector3(sin(angle * h), 0, sin(angle * h))
+		pos.y = cos(angle * height_segments) * height
+		#rd = Vector3(sin(angle * h), 0, sin(angle * h))
+		rd.x = sin(angle * height_segments)
+		rd.z = rd.x
 		
 		if generate_cap:
 			add_smooth_group(false)
 			
 			for idx in range(segments):
-				add_tri([pos, ellipse[idx + 1] * rd + pos, ellipse[idx] * rd + pos])
+				add_tri([pos, ellipse[idx] * rd + pos, ellipse[idx+1] * rd + pos])
 				
 			add_smooth_group(smooth)
 			
@@ -70,27 +70,25 @@ func create(smooth, invert):
 		add_smooth_group(smooth)
 		
 		for idx in range(segments):
-			add_tri([Vector3(0, height, 0), ellipse[idx + 1] * rd + pos, ellipse[idx] * rd + pos])
+			add_tri([Vector3(0, -height, 0), ellipse[idx] * rd + pos, ellipse[idx+1] * rd + pos])
 			
-		h -= 1
-		
-	for i in range(h, 1, -1):
-		var next_pos = Vector3(0, -cos(angle * (i-1)) * height, 0)
+	for i in range(height_segments, 1, -1):
+		var next_pos = Vector3(0, cos(angle * (i-1)) * height, 0)
 		var next_radius = Vector3(sin(angle * (i-1)), 0, sin(angle * (i-1)))
 		
 		for idx in range(segments):
-			add_quad([ellipse[idx + 1] * rd + pos,
-			          ellipse[idx + 1] * next_radius + next_pos,
+			add_quad([ellipse[idx] * rd + pos,
 			          ellipse[idx] * next_radius + next_pos,
-			          ellipse[idx] * rd + pos])
+			          ellipse[idx+1] * next_radius + next_pos,
+			          ellipse[idx+1] * rd + pos])
 			
 		pos = next_pos
 		rd = next_radius
 		
-	pos = Vector3(0, -cos(angle) * height, 0)
+	pos = Vector3(0, cos(angle) * height, 0)
 	
 	for idx in range(segments):
-		add_tri([ellipse[idx] * rd + pos, ellipse[idx + 1] * rd + pos, Vector3(0, -height, 0)])
+		add_tri([ellipse[idx+1] * rd + pos, ellipse[idx] * rd + pos, Vector3(0, height, 0)])
 		
 	var mesh = commit()
 	
@@ -102,7 +100,7 @@ func mesh_parameters(tree):
 	add_tree_range(tree, 'Height', height)
 	add_tree_range(tree, 'Segments', segments, 1, 3, 64)
 	add_tree_range(tree, 'Height Segments', height_segments, 1, 3, 64)
-	add_tree_range(tree, 'Hemisphere', hemisphere, 0.01, 0, 1)
+	add_tree_range(tree, 'Hemisphere', hemisphere, 0.01, 0, 0.99)
 	add_tree_empty(tree)
 	add_tree_check(tree, 'Generate Cap', generate_cap)
 	
