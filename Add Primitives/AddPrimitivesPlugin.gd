@@ -351,12 +351,6 @@ class ModifierDialog:
 			
 		return cache
 		
-		func clear():
-		items.clear()
-		modifiers.clear()
-		
-		modifiers_scripts.clear()
-		
 	func clear():
 		items.clear()
 		modifiers.clear()
