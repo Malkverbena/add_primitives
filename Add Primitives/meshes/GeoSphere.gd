@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 const Solid = {
 	OCTAHEDRON = 0,
@@ -12,16 +12,6 @@ var subdivisions = 2
 static func get_name():
 	return "GeoSphere"
 	
-func set_parameter(name, value):
-	if name == 'solid':
-		solid = value
-		
-	elif name == 'radius':
-		radius = value
-		
-	elif name == 'subdivisions':
-		subdivisions = value
-		
 static func get_middle_point(p1, p2, verts, radius):
 	var v1 = verts[p1]
 	var v2 = verts[p2]
@@ -150,9 +140,9 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_combo(tree, 'Solid', 'Octahedron,Icosahedron', solid)
-	add_tree_range(tree, 'Radius', radius)
-	add_tree_range(tree, 'Subdivisions', subdivisions, 1, 0, 4)
+func mesh_parameters(editor):
+	editor.add_tree_combo('Solid', solid, 'Octahedron,Icosahedron')
+	editor.add_tree_range('Radius', radius)
+	editor.add_tree_range('Subdivisions', subdivisions, 1, 0, 4)
 	
 

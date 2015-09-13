@@ -1,65 +1,36 @@
+#==============================================================================#
+# Copyright (c) 2015 Franklin Sobrinho.                                        #
+#                                                                              #
+# Permission is hereby granted, free of charge, to any person obtaining        #
+# a copy of this software and associated documentation files (the "Software"), #
+# to deal in the Software without restriction, including without               #
+# limitation the rights to use, copy, modify, merge, publish,                  #
+# distribute, sublicense, and/or sell copies of the Software, and to           #
+# permit persons to whom the Software is furnished to do so, subject to        #
+# the following conditions:                                                    #
+#                                                                              #
+# The above copyright notice and this permission notice shall be               #
+# included in all copies or substantial portions of the Software.              #
+#                                                                              #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,              #
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF           #
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.       #
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY         #
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,         #
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE            #
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                       #
+#==============================================================================#
+
 extends Reference
 
 class ModifierBase:
 	extends MeshDataTool
 	
-	# In case of modifier not have parameters
-	func set_parameter(name, value):
+	static func get_name():
 		pass
 		
-	# Tree Item helper functions
-	func _create_item(item, tree):
-		item = tree.create_item(item)
-		
-		return item
-		
-	func add_tree_range(item, tree, text, value, step = 0.01, min_ = -100, max_ = 100):
-		var tree_item = _create_item(item, tree)
-		
-		tree_item.set_text(0, text)
-		
-		if typeof(step) == TYPE_INT:
-			tree_item.set_icon(0, tree.get_icon('Integer', 'EditorIcons'))
-		else:
-			tree_item.set_icon(0, tree.get_icon('Real', 'EditorIcons'))
-		tree_item.set_selectable(0, false)
-		
-		tree_item.set_cell_mode(1, 2)
-		tree_item.set_range_config(1, min_, max_, step)
-		tree_item.set_range(1, value)
-		tree_item.set_editable(1, true)
-		
-	func add_tree_combo(item, tree, text, items, selected = 0):
-		var tree_item = _create_item(item, tree)
-		
-		tree_item.set_text(0, text)
-		tree_item.set_icon(0, tree.get_icon('Enum', 'EditorIcons'))
-		tree_item.set_selectable(0, false)
-		tree_item.set_cell_mode(1, 2)
-		tree_item.set_text(1, items)
-		tree_item.set_range(1, selected)
-		tree_item.set_editable(1, true)
-		
-	func add_tree_check(item, tree, text, checked = false):
-		var tree_item = _create_item(item, tree)
-		
-		tree_item.set_text(0, text)
-		tree_item.set_icon(0, tree.get_icon('Bool', 'EditorIcons'))
-		tree_item.set_selectable(0, false)
-		tree_item.set_cell_mode(1, 1)
-		tree_item.set_checked(1, checked)
-		tree_item.set_text(1, 'On')
-		tree_item.set_editable(1, true)
-		
-	func add_tree_entry(item, tree, text, string = ''):
-		var tree_item = _create_item(item, tree)
-		
-		tree_item.set_text(0, text)
-		tree_item.set_icon(0, tree.get_icon('String', 'EditorIcons'))
-		tree_item.set_selectable(0, false)
-		tree_item.set_cell_mode(1, 0)
-		tree_item.set_text(1, string)
-		tree_item.set_editable(1, true)
+	func modifier_parameters(editor):
+		pass
 		
 # End Modifier
 
@@ -73,16 +44,6 @@ class TaperModifier:
 	static func get_name():
 		return "Taper"
 		
-	func set_parameter(name, val):
-		if name == 'value':
-			value = val
-			
-		elif name == 'lock_x_axis':
-			lock_x_axis = val
-			
-		elif name == 'lock_z_axis':
-			lock_z_axis = val
-			
 	static func taper(vector, val, c, axis):
 		var vec = Vector3(1,1,1)
 		
@@ -123,10 +84,10 @@ class TaperModifier:
 		
 		return mesh_temp
 		
-	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'Value', value)
-		add_tree_check(item, tree, 'Lock X Axis', lock_x_axis)
-		add_tree_check(item, tree, 'Lock Z Axis', lock_z_axis)
+	func modifier_parameters(editor):
+		editor.add_tree_range('Value', value)
+		editor.add_tree_check('Lock X Axis', lock_x_axis)
+		editor.add_tree_check('Lock Z Axis', lock_z_axis)
 		
 # End TaperModifer
 
@@ -139,13 +100,6 @@ class ShearModifier:
 	static func get_name():
 		return "Shear"
 		
-	func set_parameter(name, val):
-		if name == 'shear_axis':
-			shear_axis = val
-			
-		elif name == 'value':
-			value = val
-			
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
@@ -190,9 +144,9 @@ class ShearModifier:
 		
 		return mesh_temp
 		
-	func modifier_parameters(item, tree):
-		add_tree_combo(item, tree, 'Shear Axis', 'x,y,z', shear_axis)
-		add_tree_range(item, tree, 'Value', value)
+	func modifier_parameters(editor):
+		editor.add_tree_combo(shear_axis, 'Shear Axis', 'x,y,z')
+		editor.add_tree_range('Value', value)
 		
 # End ShearModifier
 
@@ -204,10 +158,6 @@ class TwistModifier:
 	static func get_name():
 		return "Twist"
 		
-	func set_parameter(name, value):
-		if name == 'angle':
-			angle = value
-			
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
@@ -230,8 +180,8 @@ class TwistModifier:
 		
 		return mesh_temp
 		
-	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'Angle', angle, 1, -180, 180)
+	func modifier_parameters(editor):
+		editor.add_tree_range('Angle', angle, 1, -180, 180)
 		
 # End TwistModifier
 
@@ -245,14 +195,8 @@ class ArrayModifier:
 	static func get_name():
 		return "Array"
 		
-	func set_parameter(name, value):
-		if name == 'count':
-			count = value
-			
-		elif name == 'relative':
-			relative = value
-			
-		elif name.begins_with('offset'):
+	func _set(name, value):
+		if name.begins_with('offset'):
 			var axis = name.split('_')[1]
 			
 			if axis == 'x':
@@ -297,12 +241,12 @@ class ArrayModifier:
 		
 		return mesh_temp
 		
-	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'Count', count, 1, 1, 100)
-		add_tree_check(item, tree, 'Relative', relative)
-		add_tree_range(item, tree, 'Offset X', offset.x)
-		add_tree_range(item, tree, 'Offset Y', offset.y)
-		add_tree_range(item, tree, 'Offset Z', offset.z)
+	func modifier_parameters(editor):
+		editor.add_tree_range('Count', count, 1, 1, 100)
+		editor.add_tree_check('Relative', relative)
+		editor.add_tree_range('Offset X', offset.x)
+		editor.add_tree_range('Offset Y', offset.y)
+		editor.add_tree_range('Offset Z', offset.z)
 		
 # End ArrayModifier
 
@@ -315,19 +259,24 @@ class OffsetModifier:
 	static func get_name():
 		return "Offset"
 		
-	func set_parameter(name, value):
-		if name == 'relative':
-			relative = value
-			
-		elif name == 'x':
+	func _set(name, value):
+		if name == 'x':
 			offset.x = value
+			
+			return true
 			
 		elif name == 'y':
 			offset.y = value
 			
+			return true
+			
 		elif name == 'z':
 			offset.z = value
 			
+			return true
+			
+		return false
+		
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
@@ -358,11 +307,11 @@ class OffsetModifier:
 		
 		return mesh_temp
 		
-	func modifier_parameters(item, tree):
-		add_tree_check(item, tree, 'Relative', relative)
-		add_tree_range(item, tree, 'X', offset.x)
-		add_tree_range(item, tree, 'Y', offset.y)
-		add_tree_range(item, tree, 'Z', offset.z)
+	func modifier_parameters(editor):
+		editor.add_tree_check('Relative', relative)
+		editor.add_tree_range('X', offset.x)
+		editor.add_tree_range('Y', offset.y)
+		editor.add_tree_range('Z', offset.z)
 		
 # End OffsetModifier
 
@@ -374,16 +323,24 @@ class RandomModifier:
 	static func get_name():
 		return "Random"
 		
-	func set_parameter(name, value):
+	func _set(name, value):
 		if name == 'x':
 			random.x = value
+			
+			return true
 			
 		elif name == 'y':
 			random.y = value
 			
+			return true
+			
 		elif name == 'z':
 			random.z = value
 			
+			return true
+			
+		return false
+		
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
@@ -412,10 +369,10 @@ class RandomModifier:
 		
 		return mesh_temp
 		
-	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'X', random.x, 0.01, 0, 100)
-		add_tree_range(item, tree, 'Y', random.y, 0.01, 0, 100)
-		add_tree_range(item, tree, 'Z', random.z, 0.01, 0, 100)
+	func modifier_parameters(editor):
+		editor.add_tree_range('X', random.x, 0.01, 0, 100)
+		editor.add_tree_range('Y', random.y, 0.01, 0, 100)
+		editor.add_tree_range('Z', random.z, 0.01, 0, 100)
 		
 # End RandomModifier
 
@@ -429,28 +386,35 @@ class UVTransformModifier:
 	static func get_name():
 		return "UV Transform"
 		
-	func set_parameter(name, value):
+	func _set(name, value):
 		if name.begins_with('translation'):
 			var axis = name.split('_')[1]
 			
 			if axis == 'x':
 				translation.x = value
 				
+				return true
+				
 			elif axis == 'y':
 				translation.y = value
 				
-		elif name == 'rotation':
-			rotation = deg2rad(value)
-			
+				return true
+				
 		elif name.begins_with('scale'):
 			var axis = name.split('_')[1]
 			
 			if axis == 'x':
 				scale.x = value
 				
+				return true
+				
 			elif axis == 'y':
 				scale.y = value
 				
+				return true
+				
+		return false
+		
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
@@ -460,7 +424,7 @@ class UVTransformModifier:
 			m32 = m32.translated(translation)
 			
 		if rotation:
-			m32 = m32.rotated(rotation)
+			m32 = m32.rotated(deg2rad(rotation))
 			
 		if scale != Vector2():
 			m32 = m32.scaled(scale)
@@ -487,12 +451,12 @@ class UVTransformModifier:
 			
 		return mesh_temp
 		
-	func modifier_parameters(item, tree):
-		add_tree_range(item, tree, 'Translation X', translation.x, 0.01, 0, 100)
-		add_tree_range(item, tree, 'Translation Y', translation.y, 0.01, 0, 100)
-		add_tree_range(item, tree, 'Rotation', rad2deg(rotation), 1, 0, 360)
-		add_tree_range(item, tree, 'Scale X', scale.x, 0.01, 0.01, 100)
-		add_tree_range(item, tree, 'Scale Y', scale.y, 0.01, 0.01, 100)
+	func modifier_parameters(editor):
+		editor.add_tree_range('Translation X', translation.x, 0.01, 0, 100)
+		editor.add_tree_range('Translation Y', translation.y, 0.01, 0, 100)
+		editor.add_tree_range('Rotation', rotation, 1, 0, 360)
+		editor.add_tree_range('Scale X', scale.x, 0.01, 0.01, 100)
+		editor.add_tree_range('Scale Y', scale.y, 0.01, 0.01, 100)
 		
 # End UVTransformModifier 
 

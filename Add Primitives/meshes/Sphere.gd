@@ -1,4 +1,4 @@
-extends 'builder/MeshBuilder.gd'
+extends "../MeshBuilder.gd"
 
 var radius = 1.0
 var segments = 16
@@ -9,22 +9,6 @@ var generate_cap = true
 static func get_name():
 	return "Sphere"
 	
-func set_parameter(name, value):
-	if name == 'radius':
-		radius = value
-		
-	elif name == 'segments':
-		segments = value
-		
-	elif name == 'height_segments':
-		height_segments = value
-		
-	elif name == 'hemisphere':
-		hemisphere = value
-		
-	elif name == 'generate_cap':
-		generate_cap = value
-		
 func create(smooth, invert):
 	var circle = build_circle_verts(Vector3(), segments, radius)
 	
@@ -82,11 +66,11 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Radius', radius)
-	add_tree_range(tree, 'Segments', segments, 1, 3, 64)
-	add_tree_range(tree, 'Height Segments', height_segments, 1, 3, 64)
-	add_tree_range(tree, 'Hemisphere', hemisphere, 0.01, 0, 0.99)
-	add_tree_empty(tree)
-	add_tree_check(tree, 'Generate Cap', generate_cap)
+func mesh_parameters(editor):
+	editor.add_tree_range('Radius', radius)
+	editor.add_tree_range('Segments', segments, 1, 3, 64)
+	editor.add_tree_range('Height Segments', height_segments, 1, 3, 64)
+	editor.add_tree_range('Hemisphere', hemisphere, 0.01, 0, 0.99)
+	editor.add_tree_empty()
+	editor.add_tree_check('Generate Cap', generate_cap)
 

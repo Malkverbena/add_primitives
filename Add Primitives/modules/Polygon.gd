@@ -1,3 +1,26 @@
+#==============================================================================#
+# Copyright (c) 2015 Franklin Sobrinho.                                        #
+#                                                                              #
+# Permission is hereby granted, free of charge, to any person obtaining        #
+# a copy of this software and associated documentation files (the "Software"), #
+# to deal in the Software without restriction, including without               #
+# limitation the rights to use, copy, modify, merge, publish,                  #
+# distribute, sublicense, and/or sell copies of the Software, and to           #
+# permit persons to whom the Software is furnished to do so, subject to        #
+# the following conditions:                                                    #
+#                                                                              #
+# The above copyright notice and this permission notice shall be               #
+# included in all copies or substantial portions of the Software.              #
+#                                                                              #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,              #
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF           #
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.       #
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY         #
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,         #
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE            #
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                       #
+#==============================================================================#
+
 extends Reference
 
 class PolygonDialog:
@@ -738,7 +761,16 @@ class PolygonDialog:
 		
 		# Snap Popup
 		snap_popup = PopupPanel.new()
-		snap_popup.set_size(Vector2(140, 40))
+		snap_popup.set_size(Vector2(180, 40))
+		
+		var hb = HBoxContainer.new()
+		snap_popup.add_child(hb)
+		hb.set_area_as_parent_rect(get_constant("margin", "Dialogs"))
+		
+		l = Label.new()
+		l.set_text("x")
+		l.set_align(l.ALIGN_CENTER)
+		l.set_valign(l.VALIGN_CENTER)
 		
 		var x = SpinBox.new()
 		x.set_val(grid_step.x)
@@ -746,17 +778,21 @@ class PolygonDialog:
 		x.set_max(100)
 		x.set_step(0.01)
 		
+		hb.add_child(l)
+		hb.add_child(x)
+		
+		l = Label.new()
+		l.set_text("y")
+		l.set_align(l.ALIGN_CENTER)
+		l.set_valign(l.VALIGN_CENTER)
+		
 		var y = SpinBox.new()
 		y.set_val(grid_step.y)
 		y.set_min(0.01)
 		y.set_max(100)
 		y.set_step(0.01)
 		
-		var hb = HBoxContainer.new()
-		snap_popup.add_child(hb)
-		hb.set_area_as_parent_rect(get_constant("margin", "Dialogs"))
-		
-		hb.add_child(x)
+		hb.add_child(l)
 		hb.add_child(y)
 		
 		x.connect("value_changed", self, "set_grid_step", [Vector3.AXIS_X])

@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 var spirals = 1
 var height = 2.0
@@ -13,25 +13,6 @@ static func get_name():
 static func get_container():
 	return "Add Stair"
 	
-func set_parameter(name, value):
-	if name == 'spirals':
-		spirals = value
-		
-	elif name == 'spiral_height':
-		height = value
-		
-	elif name == 'steps_per_spiral':
-		steps_per_spiral = value
-		
-	elif name == 'outer_radius':
-		outer_radius = value
-		
-	elif name == 'inner_radius':
-		inner_radius = value
-		
-	elif name == 'extra_step_height':
-		extra_step_height = value
-		
 func create(smooth, invert):
 	var angle = (PI*2)/steps_per_spiral
 	
@@ -85,12 +66,12 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Spirals', spirals, 1, 1, 64)
-	add_tree_range(tree, 'Spiral Height', height)
-	add_tree_range(tree, 'Steps per Spiral', steps_per_spiral, 1, 3, 64)
-	add_tree_range(tree, 'Outer Radius', outer_radius)
-	add_tree_range(tree, 'Inner Radius', inner_radius)
-	add_tree_range(tree, 'Extra Step Height', extra_step_height, 0.01, -100, 100)
+func mesh_parameters(editor):
+	editor.add_tree_range('Spirals', spirals, 1, 1, 64)
+	editor.add_tree_range('Spiral Height', height)
+	editor.add_tree_range('Steps per Spiral', steps_per_spiral, 1, 3, 64)
+	editor.add_tree_range('Outer Radius', outer_radius)
+	editor.add_tree_range('Inner Radius', inner_radius)
+	editor.add_tree_range('Extra Step Height', extra_step_height, 0.01, -100, 100)
 	
 

@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 var radius = 1.0
 var height = 2.0
@@ -9,22 +9,6 @@ var generate_caps = true
 static func get_name():
 	return "Cylinder"
 	
-func set_parameter(name, value):
-	if name == 'radius':
-		radius = value
-		
-	elif name == 'height':
-		height = value
-		
-	elif name == 'sides':
-		sides = value
-		
-	elif name == 'height_segments':
-		height_segments = value
-		
-	elif name == 'generate_caps':
-		generate_caps = value
-		
 func create(smooth, invert):
 	var circumference = PI * 2 * radius 
 	var h = height
@@ -104,12 +88,12 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Radius', radius)
-	add_tree_range(tree, 'Height', height)
-	add_tree_range(tree, 'Sides', sides, 1, 3, 64)
-	add_tree_range(tree, 'Height Segments', height_segments, 1, 1, 64)
-	add_tree_empty(tree)
-	add_tree_check(tree, 'Generate Caps', generate_caps)
+func mesh_parameters(editor):
+	editor.add_tree_range('Radius', radius)
+	editor.add_tree_range('Height', height)
+	editor.add_tree_range('Sides', sides, 1, 3, 64)
+	editor.add_tree_range('Height Segments', height_segments, 1, 1, 64)
+	editor.add_tree_empty()
+	editor.add_tree_check('Generate Caps', generate_caps)
 	
 

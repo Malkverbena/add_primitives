@@ -1,4 +1,4 @@
-extends 'builder/MeshBuilder.gd'
+extends "../MeshBuilder.gd"
 
 var width = 1.0
 var length = 1.0
@@ -14,28 +14,6 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func set_parameter(name, value):
-	if name == 'width':
-		width = value
-		
-	elif name == 'length':
-		length = value
-		
-	elif name == 'height':
-		height = value
-		
-	elif name == 'segments':
-		segments = value
-		
-	elif name == 'height_segments':
-		height_segments = value
-		
-	elif name == 'hemisphere':
-		hemisphere = value
-		
-	elif name == 'generate_cap':
-		generate_cap = value
-		
 func create(smooth, invert):
 	var cc = Vector3(0,-height,0)
 	
@@ -94,14 +72,14 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Width', width)
-	add_tree_range(tree, 'Length', length)
-	add_tree_range(tree, 'Height', height)
-	add_tree_range(tree, 'Segments', segments, 1, 3, 64)
-	add_tree_range(tree, 'Height Segments', height_segments, 1, 3, 64)
-	add_tree_range(tree, 'Hemisphere', hemisphere, 0.01, 0, 0.99)
-	add_tree_empty(tree)
-	add_tree_check(tree, 'Generate Cap', generate_cap)
+func mesh_parameters(editor):
+	editor.add_tree_range('Width', width)
+	editor.add_tree_range('Length', length)
+	editor.add_tree_range('Height', height)
+	editor.add_tree_range('Segments', segments, 1, 3, 64)
+	editor.add_tree_range('Height Segments', height_segments, 1, 3, 64)
+	editor.add_tree_range('Hemisphere', hemisphere, 0.01, 0, 0.99)
+	editor.add_tree_empty()
+	editor.add_tree_check('Generate Cap', generate_cap)
 	
 

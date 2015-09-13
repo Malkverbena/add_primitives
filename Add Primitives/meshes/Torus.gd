@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 var major_radius = 0.8
 var minor_radius = 0.2
@@ -10,27 +10,8 @@ var generate_ends = true
 static func get_name():
 	return "Torus"
 	
-func set_parameter(name, value):
-	if name == 'major_radius':
-		major_radius = value
-		
-	elif name == 'minor_radius':
-		minor_radius = value
-		
-	elif name == 'torus_segments':
-		torus_segments = value
-		
-	elif name == 'segments':
-		segments = value
-		
-	elif name == 'slice':
-		slice = deg2rad(value)
-		
-	elif name == 'generate_ends':
-		generate_ends = value
-		
 func create(smooth, invert):
-	var sa = PI * 2 - slice
+	var sa = PI * 2 - deg2rad(slice)
 	var bend_radius = major_radius/sa
 	
 	var angle = sa/torus_segments
@@ -80,13 +61,13 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, "Major Radius", major_radius)
-	add_tree_range(tree, "Minor Radius", minor_radius)
-	add_tree_range(tree, "Torus Segments", torus_segments, 1, 3, 64)
-	add_tree_range(tree, "Segments", segments, 1, 3, 64)
-	add_tree_range(tree, "Slice", rad2deg(slice), 1, 0, 359)
-	add_tree_empty(tree)
-	add_tree_check(tree, "Generate Ends", generate_ends)
+func mesh_parameters(editor):
+	editor.add_tree_range('Major Radius', major_radius)
+	editor.add_tree_range('Minor Radius', minor_radius)
+	editor.add_tree_range('Torus Segments', torus_segments, 1, 3, 64)
+	editor.add_tree_range('Segments', segments, 1, 3, 64)
+	editor.add_tree_range('Slice', slice, 1, 0, 359)
+	editor.add_tree_empty()
+	editor.add_tree_check('Generate Ends', generate_ends)
 	
 

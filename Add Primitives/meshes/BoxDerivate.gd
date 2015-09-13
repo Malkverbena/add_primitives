@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 const Derivate = {
 	C_SHAPE = 0,
@@ -19,19 +19,6 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func set_parameter(name, value):
-	if name == 'derivate':
-		derivate = value
-		
-	elif name == 'width':
-		width = value
-		
-	elif name == 'length':
-		length = value
-		
-	elif name == 'height':
-		height = value
-		
 func create(smooth, invert):
 	var fd = Vector3(width,0,0)     #Foward Direction
 	var rd = Vector3(0,0,length)    #Right Direction
@@ -75,10 +62,10 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_combo(tree, 'Derivate', 'C Shape,L Shape,Corner,Remove Upper Face,Remove Caps', derivate)
-	add_tree_range(tree, 'Width', width)
-	add_tree_range(tree, 'Length', length)
-	add_tree_range(tree, 'Height', height)
+func mesh_parameters(editor):
+	editor.add_tree_combo('Derivate', derivate, 'C Shape,L Shape,Corner,Remove Upper Face,Remove Caps')
+	editor.add_tree_range('Width', width)
+	editor.add_tree_range('Length', length)
+	editor.add_tree_range('Height', height)
 	
 

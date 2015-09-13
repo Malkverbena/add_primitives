@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 var front_length = 2.0
 var front_width = 1.0
@@ -12,22 +12,6 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func set_parameter(name, value):
-	if name == 'front_length':
-		front_length = value
-		
-	elif name == 'front_width':
-		front_width = value
-		
-	elif name == 'side_length':
-		side_length = value
-		
-	elif name == 'side_width':
-		side_width = value
-		
-	elif name == 'height':
-		height = value
-		
 func create(smooth, invert):
 	var h = Vector3(0, height, 0)
 	
@@ -77,11 +61,11 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Front Length', front_length)
-	add_tree_range(tree, 'Front Width', front_width)
-	add_tree_range(tree, 'Side Length', side_length)
-	add_tree_range(tree, 'Side Width', side_width)
-	add_tree_range(tree, 'Height', height, 0.01, 0, 100)
+func mesh_parameters(editor):
+	editor.add_tree_range('Front Length', front_length)
+	editor.add_tree_range('Front Width', front_width)
+	editor.add_tree_range('Side Length', side_length)
+	editor.add_tree_range('Side Width', side_width)
+	editor.add_tree_range('Height', height, 0.01, 0, 100)
 	
 

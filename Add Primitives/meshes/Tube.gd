@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 var height = 2.0
 var outer_radius = 1.0
@@ -11,30 +11,8 @@ var generate_ends = true
 static func get_name():
 	return "Tube"
 	
-func set_parameter(name, value):
-	if name == 'height':
-		height = value
-		
-	elif name == 'outer_radius':
-		outer_radius = value
-		
-	elif name == 'inner_radius':
-		inner_radius = value
-		
-	elif name == 'sides':
-		sides = value
-		
-	elif name == 'slice':
-		slice = deg2rad(value)
-		
-	elif name == 'generate_caps':
-		generate_caps = value
-		
-	elif name == 'generate_ends':
-		generate_ends = value
-		
 func create(smooth, invert):
-	var sa = PI * 2 - slice
+	var sa = PI * 2 - deg2rad(slice)
 	
 	var ic = build_circle_verts(Vector3(), sides, inner_radius, sa)
 	var oc = build_circle_verts(Vector3(), sides, outer_radius, sa)
@@ -51,7 +29,7 @@ func create(smooth, invert):
 			add_quad([oc[idx + 1] + ofs, ic[idx + 1] + ofs, ic[idx] + ofs, oc[idx] + ofs])
 			add_quad([oc[idx] - ofs, ic[idx] - ofs, ic[idx + 1] - ofs, oc[idx + 1] - ofs])
 			
-	if generate_ends and slice != 0:
+	if generate_ends and slice:
 		add_quad([oc[0] + ofs, ic[0] + ofs, ic[0] - ofs, oc[0] - ofs])
 		add_quad([ic[sides] + ofs, oc[sides] + ofs, oc[sides] - ofs, ic[sides] - ofs])
 		
@@ -65,14 +43,14 @@ func create(smooth, invert):
 	
 	return mesh
 
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Height', height)
-	add_tree_range(tree, 'Outer Radius', outer_radius)
-	add_tree_range(tree, 'Inner Radius', inner_radius)
-	add_tree_range(tree, 'Sides', sides, 1, 1, 50)
-	add_tree_range(tree, 'Slice', rad2deg(slice), 1, 0, 359)
-	add_tree_empty(tree)
-	add_tree_check(tree, 'Generate Caps', generate_caps)
-	add_tree_check(tree, 'Generate Ends', generate_ends)
+func mesh_parameters(editor):
+	editor.add_tree_range('Height', height)
+	editor.add_tree_range('Outer Radius', outer_radius)
+	editor.add_tree_range('Inner Radius', inner_radius)
+	editor.add_tree_range('Sides', sides, 1, 1, 50)
+	editor.add_tree_range('Slice', slice, 1, 0, 359)
+	editor.add_tree_empty()
+	editor.add_tree_check('Generate Caps', generate_caps)
+	editor.add_tree_check('Generate Ends', generate_ends)
 	
 

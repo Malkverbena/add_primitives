@@ -51,7 +51,7 @@ func commit():
 			
 	if regen_normalmaps:
 		mesh.regen_normalmaps()
-	
+		
 	clear()
 	
 	return mesh
@@ -209,70 +209,5 @@ static func plane_uv(start, end, last = true):
 		uv.remove(3)
 		
 	return uv
-	
-# Tree Item helper functions
-static func _create_item(tree):
-	var root = tree.get_root()
-	
-	if not root:
-		root = tree.create_item()
-		
-	var item = tree.create_item(root)
-	
-	return item
-	
-static func add_tree_empty(tree):
-	var tree_item = _create_item(tree)
-	
-	tree_item.set_selectable(0, false)
-	tree_item.set_selectable(1, false)
-	
-static func add_tree_range(tree, text, value, step = 0.01, min_ = 0.01, max_ = 100):
-	var tree_item = _create_item(tree)
-	
-	tree_item.set_text(0, text)
-	
-	if typeof(step) == TYPE_INT:
-		tree_item.set_icon(0, tree.get_icon('Integer', 'EditorIcons'))
-	else:
-		tree_item.set_icon(0, tree.get_icon('Real', 'EditorIcons'))
-	tree_item.set_selectable(0, false)
-	
-	tree_item.set_cell_mode(1, 2)
-	tree_item.set_range_config(1, min_, max_, step)
-	tree_item.set_range(1, value)
-	tree_item.set_editable(1, true)
-	
-static func add_tree_combo(tree, text, items, selected = 0):
-	var tree_item = _create_item(tree)
-	
-	tree_item.set_text(0, text)
-	tree_item.set_icon(0, tree.get_icon('Enum', 'EditorIcons'))
-	tree_item.set_selectable(0, false)
-	tree_item.set_cell_mode(1, 2)
-	tree_item.set_text(1, items)
-	tree_item.set_range(1, selected)
-	tree_item.set_editable(1, true)
-	
-static func add_tree_check(tree, text, checked = false):
-	var tree_item = _create_item(tree)
-	
-	tree_item.set_text(0, text)
-	tree_item.set_icon(0, tree.get_icon('Bool', 'EditorIcons'))
-	tree_item.set_selectable(0, false)
-	tree_item.set_cell_mode(1, 1)
-	tree_item.set_checked(1, checked)
-	tree_item.set_text(1, 'On')
-	tree_item.set_editable(1, true)
-	
-static func add_tree_entry(tree, text, string = ''):
-	var tree_item = _create_item(tree)
-	
-	tree_item.set_text(0, text)
-	tree_item.set_icon(0, tree.get_icon('String', 'EditorIcons'))
-	tree_item.set_selectable(0, false)
-	tree_item.set_cell_mode(1, 0)
-	tree_item.set_text(1, string)
-	tree_item.set_editable(1, true)
 	
 

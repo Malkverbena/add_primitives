@@ -1,4 +1,4 @@
-extends 'builder/MeshBuilder.gd'
+extends "../MeshBuilder.gd"
 
 var width = 1.0
 var length = 1.0
@@ -11,24 +11,11 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func set_parameter(name, value):
-	if name == 'width':
-		width = value
-		
-	elif name == 'length':
-		length = value
-		
-	elif name == 'segments':
-		segments = value
-		
-	elif name == 'slice':
-		slice = deg2rad(value)
-		
 func create(smooth, invert):
 	var c = Vector3(0,0,0)
 	var r = Vector2(width, length)
 	
-	var sa = PI * 2 - slice
+	var sa = PI * 2 - deg2rad(slice)
 	
 	var ellipse = build_ellipse_verts(c, segments, r, sa)
 	var ellipse_uv = build_ellipse_verts(Vector3(0.5,0,0.5), segments, r, sa)
@@ -48,10 +35,10 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Width', width)
-	add_tree_range(tree, 'Length', length)
-	add_tree_range(tree, 'Segments', segments, 1, 3, 64)
-	add_tree_range(tree, 'Slice', rad2deg(slice), 1, 0, 359)
+func mesh_parameters(editor):
+	editor.add_tree_range('Width', width)
+	editor.add_tree_range('Length', length)
+	editor.add_tree_range('Segments', segments, 1, 3, 64)
+	editor.add_tree_range('Slice', slice, 1, 0, 359)
 	
 

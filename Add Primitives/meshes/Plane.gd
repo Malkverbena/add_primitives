@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 var length = 2.0
 var width = 2.0
@@ -8,19 +8,6 @@ var end_height = 0.0
 static func get_name():
 	return "Plane"
 	
-func set_parameter(name, value):
-	if name == 'length':
-		length = value
-		
-	elif name == 'width':
-		width = value
-		
-	elif name == 'start_height':
-		start_height = value
-		
-	elif name == 'end_height':
-		end_height = value
-		
 func create(smooth, invert):
 	var verts = [Vector3(-width/2, end_height, -length/2),
 	             Vector3(width/2, end_height, -length/2),
@@ -41,10 +28,10 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, "Length", length)
-	add_tree_range(tree, "Width", width)
-	add_tree_range(tree, "Start Height", start_height, 0.01, -100, 100)
-	add_tree_range(tree, "End Height", end_height, 0.01, -100, 100)
+func mesh_parameters(editor):
+	editor.add_tree_range('Length', length)
+	editor.add_tree_range('Width', width)
+	editor.add_tree_range('Start Height', start_height, 0.01, -100, 100)
+	editor.add_tree_range('End Height', end_height, 0.01, -100, 100)
 	
 

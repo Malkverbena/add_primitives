@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 var width = 1.0
 var height = 1.0
@@ -9,22 +9,6 @@ var generate_end = true
 static func get_name():
 	return "Wedge"
 	
-func set_parameter(name, value):
-	if name == 'width':
-		width = value
-		
-	elif name == 'height':
-		height = value
-		
-	elif name == 'length':
-		length = value
-		
-	elif name == 'generate_bottom':
-		generate_bottom = value
-		
-	elif name == 'generate_end':
-		generate_end = value
-		
 func create(smooth, invert):
 	var fd = Vector3(0, 0, length)
 	var rd = Vector3(width, 0, 0)
@@ -56,12 +40,12 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Width', width)
-	add_tree_range(tree, 'Height', height)
-	add_tree_range(tree, 'Length', length)
-	add_tree_empty(tree)
-	add_tree_check(tree, 'Generate Bottom', generate_bottom)
-	add_tree_check(tree, 'Generate End', generate_end)
+func mesh_parameters(editor):
+	editor.add_tree_range('Width', width)
+	editor.add_tree_range('Height', height)
+	editor.add_tree_range('Length', length)
+	editor.add_tree_empty()
+	editor.add_tree_check('Generate Bottom', generate_bottom)
+	editor.add_tree_check('Generate End', generate_end)
 	
 

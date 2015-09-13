@@ -1,6 +1,6 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
-var angle = PI/2
+var angle = 90
 var stair_height = 2.0
 var steps = 8
 var outer_radius = 2.0
@@ -14,36 +14,16 @@ static func get_name():
 static func get_container():
 	return "Add Stair"
 	
-func set_parameter(name, value):
-	if name == 'angle':
-		angle = deg2rad(value)
-		
-	elif name == 'stair_height':
-		stair_height = value
-		
-	elif name == 'steps':
-		steps = value
-		
-	elif name == 'outer_radius':
-		outer_radius = value
-		
-	elif name == 'inner_radius':
-		inner_radius = value
-		
-	elif name == 'generate_bottom':
-		generate_bottom = value
-		
-	elif name == 'generate_end':
-		generate_end = value
-		
 func create(smooth, invert):
 	var h = stair_height/steps
 	
-	var oc = angle * outer_radius
-	var ic = angle * inner_radius
+	var rad = deg2rad(angle)
 	
-	var c = build_circle_verts(Vector3(), steps, inner_radius, angle)
-	var c2 = build_circle_verts(Vector3(), steps, outer_radius, angle)
+	var oc = rad * outer_radius
+	var ic = rad * inner_radius
+	
+	var c = build_circle_verts(Vector3(), steps, inner_radius, rad)
+	var c2 = build_circle_verts(Vector3(), steps, outer_radius, rad)
 	
 	var w = abs(outer_radius - inner_radius)
 	
@@ -111,14 +91,14 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Angle', rad2deg(angle), 1, 1, 360)
-	add_tree_range(tree, 'Stair Height', stair_height)
-	add_tree_range(tree, 'Steps', steps, 1, 2, 64)
-	add_tree_range(tree, 'Outer Radius', outer_radius)
-	add_tree_range(tree, 'Inner Radius', inner_radius)
-	add_tree_empty(tree)
-	add_tree_check(tree, 'Generate Bottom', generate_bottom)
-	add_tree_check(tree, 'Generate End', generate_end)
+func mesh_parameters(editor):
+	editor.add_tree_range('Angle', angle, 1, 1, 360)
+	editor.add_tree_range('Stair Height', stair_height)
+	editor.add_tree_range('Steps', steps, 1, 2, 64)
+	editor.add_tree_range('Outer Radius', outer_radius)
+	editor.add_tree_range('Inner Radius', inner_radius)
+	editor.add_tree_empty()
+	editor.add_tree_check('Generate Bottom', generate_bottom)
+	editor.add_tree_check('Generate End', generate_end)
 	
 

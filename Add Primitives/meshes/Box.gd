@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 var width = 2.0
 var length = 2.0
@@ -7,20 +7,10 @@ var height = 2.0
 static func get_name():
 	return "Box"
 	
-func set_parameter(name, value):
-	if name == 'width':
-		width = value
-		
-	elif name == 'length':
-		length = value
-		
-	elif name == 'height':
-		height = value
-		
 func create(smooth, invert):
-	var fd = Vector3(width,0,0)
-	var rd = Vector3(0,0,length)
-	var ud = Vector3(0,height,0)
+	var fd = Vector3(width, 0, 0)
+	var rd = Vector3(0, 0, length)
+	var ud = Vector3(0, height, 0)
 	
 	var ofs = Vector3(-width/2,-height/2,-length/2)
 	
@@ -40,9 +30,9 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Width', width)
-	add_tree_range(tree, 'Length', length)
-	add_tree_range(tree, 'Height', height)
+func mesh_parameters(editor):
+	editor.add_tree_range('Width', width)
+	editor.add_tree_range('Length', length)
+	editor.add_tree_range('Height', height)
 	
 

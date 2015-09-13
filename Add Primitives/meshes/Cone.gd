@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 var radius = 1.0
 var height = 2.0
@@ -9,27 +9,11 @@ var generate_ends = true
 static func get_name():
 	return "Cone"
 	
-func set_parameter(name, value):
-	if name == 'radius':
-		radius = value
-		
-	elif name == 'height':
-		height = value
-		
-	elif name == 'sides':
-		sides = value
-		
-	elif name == 'slice':
-		slice = deg2rad(value)
-		
-	elif name == 'generate_ends':
-		generate_ends = value
-		
 func create(smooth, invert):
 	var center_top = Vector3(0, height/2, 0)
 	var min_pos = Vector3(0, -height/2, 0)
 	
-	var sa = PI * 2 - slice
+	var sa = PI * 2 - deg2rad(slice)
 	
 	var circle = build_circle_verts(min_pos, sides, radius, sa)
 	var circle_uv = build_circle_verts(Vector3(0.5,0,0.5), sides, radius, sa)
@@ -65,11 +49,11 @@ func create(smooth, invert):
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Radius', radius)
-	add_tree_range(tree, 'Height', height)
-	add_tree_range(tree, 'Sides', sides, 1, 3, 64)
-	add_tree_range(tree, 'Slice', rad2deg(slice), 1, 0, 359)
-	add_tree_empty(tree)
-	add_tree_check(tree, 'Generate Ends', generate_ends)
+func mesh_parameters(editor):
+	editor.add_tree_range('Radius', radius)
+	editor.add_tree_range('Height', height)
+	editor.add_tree_range('Sides', sides, 1, 3, 64)
+	editor.add_tree_range('Slice', slice, 1, 0, 359)
+	editor.add_tree_empty()
+	editor.add_tree_check('Generate Ends', generate_ends)
 

@@ -1,4 +1,4 @@
-extends "builder/MeshBuilder.gd"
+extends "../MeshBuilder.gd"
 
 var steps = 10
 var width = 1.0
@@ -13,26 +13,9 @@ static func get_name():
 static func get_container():
 	return "Add Stair"
 	
-func set_parameter(name, value):
-	if name == 'steps':
-		steps = value
-		
-	elif name == 'width':
-		width = value
-		
-	elif name == 'height':
-		height = value
-		
-	elif name == 'length':
-		length = value
-		
-	elif name == 'generate_end':
-		generate_end = value
-		
-	elif name == 'generate_bottom':
-		generate_bottom = value
-		
 func create(smooth, invert):
+	var ofs_x = -width/2
+	
 	var sh = height/steps
 	var sl = length/steps
 	
@@ -53,33 +36,33 @@ func create(smooth, invert):
 	add_smooth_group(smooth)
 	
 	for i in range(steps):
-		add_quad(build_plane_verts(d[1], d[0], Vector3(0, (i+1) * sh, i * sl)), [py+w, py+w+l, py+l, py])
-		add_quad(build_plane_verts(d[2], d[0], Vector3(0, i * sh, i * sl)), [pz+w, pz+h+w, pz+h, pz])
+		add_quad(build_plane_verts(d[1], d[0], Vector3(ofs_x, (i+1) * sh, i * sl)), [py+w, py+w+l, py+l, py])
+		add_quad(build_plane_verts(d[2], d[0], Vector3(ofs_x, i * sh, i * sl)), [pz+w, pz+h+w, pz+h, pz])
 		
 		var ch = Vector2(0, sh * (i+1))
 		
-		add_quad(build_plane_verts(d[1], Vector3(0, ch.y, 0), Vector3(0, 0, i * sl)), [py+ch, py+ch+l, py+l, py])
-		add_quad(build_plane_verts(Vector3(0, ch.y, 0), d[1], Vector3(width, 0, i * sl)), [py+l, py+l+ch, py+ch, py])
+		add_quad(build_plane_verts(d[1], Vector3(0, ch.y, 0), Vector3(ofs_x, 0, i * sl)), [py+ch, py+ch+l, py+l, py])
+		add_quad(build_plane_verts(Vector3(0, ch.y, 0), d[1], Vector3(-ofs_x, 0, i * sl)), [py+l, py+l+ch, py+ch, py])
 		
 		py.x += sl
 		pz.x += sh
 		
 	if generate_end:
-		build_plane(d[0], Vector3(0, steps * sh, 0), Vector3(0, 0, steps * sl))
+		build_plane(d[0], Vector3(0, height, 0), Vector3(ofs_x, 0, length))
 		
 	if generate_bottom:
-		build_plane(d[0], Vector3(0, 0, steps * sl))
+		build_plane(d[0], Vector3(0, 0, length), Vector3(ofs_x, 0, 0))
 		
 	var mesh = commit()
 	
 	return mesh
 	
-func mesh_parameters(tree):
-	add_tree_range(tree, 'Steps', steps, 1, 2, 64)
-	add_tree_range(tree, 'Width', width)
-	add_tree_range(tree, 'Height', height)
-	add_tree_range(tree, 'Length', length)
-	add_tree_empty(tree)
-	add_tree_check(tree, 'Generate End', generate_end)
-	add_tree_check(tree, 'Generate Bottom', generate_bottom)
+func mesh_parameters(editor):
+	editor.add_tree_range('Steps', steps, 1, 2, 64)
+	editor.add_tree_range('Width', width)
+	editor.add_tree_range('Height', height)
+	editor.add_tree_range('Length', length)
+	editor.add_tree_empty()
+	editor.add_tree_check('Generate End', generate_end)
+	editor.add_tree_check('Generate Bottom', generate_bottom)
 
