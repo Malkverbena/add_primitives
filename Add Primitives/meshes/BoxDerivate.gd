@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 const Derivate = {
 	C_SHAPE = 0,
@@ -19,7 +19,7 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func create(smooth, invert):
+func create():
 	var fd = Vector3(width,0,0)     #Foward Direction
 	var rd = Vector3(0,0,length)    #Right Direction
 	var ud = Vector3(0,height,0)    #Up Dir
@@ -28,35 +28,34 @@ func create(smooth, invert):
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	if derivate == Derivate.C_SHAPE:
-		build_plane(rd, ud, ofs)
-		build_plane(-rd, -fd, -ofs)
-		build_plane(-ud, -rd, -ofs)
+		add_plane(rd, ud, ofs)
+		add_plane(-rd, -fd, -ofs)
+		add_plane(-ud, -rd, -ofs)
 		
 	elif derivate == Derivate.L_SHAPE:
-		build_plane(ud, rd, ofs)
-		build_plane(rd, fd, ofs)
+		add_plane(ud, rd, ofs)
+		add_plane(rd, fd, ofs)
 		
 	elif derivate == Derivate.CORNER:
-		build_plane(-rd, -fd, -ofs)
-		build_plane(-ud, -rd, -ofs)
-		build_plane(-fd, -ud, -ofs)
+		add_plane(-rd, -fd, -ofs)
+		add_plane(-ud, -rd, -ofs)
+		add_plane(-fd, -ud, -ofs)
 		
 	elif derivate == Derivate.REMOVE_UPPER_FACE:
-		build_plane(fd, rd, ofs)
-		build_plane(rd, ud, ofs)
-		build_plane(ud, fd, ofs)
-		build_plane(-ud, -rd, -ofs)
-		build_plane(-fd, -ud, -ofs)
+		add_plane(fd, rd, ofs)
+		add_plane(rd, ud, ofs)
+		add_plane(ud, fd, ofs)
+		add_plane(-ud, -rd, -ofs)
+		add_plane(-fd, -ud, -ofs)
 		
 	elif derivate == Derivate.REMOVE_CAPS:
-		build_plane(rd, ud, ofs)
-		build_plane(ud, fd, ofs)
-		build_plane(-ud, -rd, -ofs)
-		build_plane(-fd, -ud, -ofs)
+		add_plane(rd, ud, ofs)
+		add_plane(ud, fd, ofs)
+		add_plane(-ud, -rd, -ofs)
+		add_plane(-fd, -ud, -ofs)
 		
 	var mesh = commit()
 	

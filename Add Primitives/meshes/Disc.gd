@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var outer_radius = 1.0
 var inner_radius = 0.5
@@ -11,14 +11,13 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func create(smooth, invert):
+func create():
 	var sa = PI * 2 - deg2rad(slice)
 	
-	var circle = build_circle_verts(Vector3(), segments, 1, sa)
+	var circle = Utils.build_circle_verts(Vector3(), segments, 1, sa)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for i in range(segments):

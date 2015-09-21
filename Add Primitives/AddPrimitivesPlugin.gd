@@ -84,29 +84,22 @@ class AddPrimitives:
 	var builder
 	var base_mesh
 	
-	var mesh_buffer = []
-	
 	var mesh_scripts = {}
 	var modules = {}
 	
 	# Utilites
 	var dir
 	
-	static func module_call(object, method, arg=null):
+	static func module_call(object, method, args=[]):
 		if not object:
 			return null
 			
-		if object.has_method(method):
-			var vr
+		if not object.has_method(method):
+			return null
 			
-			if arg:
-				vr = object.call(method, arg)
-			else:
-				vr = object.call(method)
-				
-			return vr
-			
-		return null
+		var vr = object.callv(method, args)
+		
+		return vr
 		
 	func get_object():
 		return node
@@ -125,7 +118,7 @@ class AddPrimitives:
 		mesh_scripts.clear()
 		
 		for c in popup_menu.get_children():
-			if c.is_type("PopupMenu"):
+			if c extends PopupMenu:
 				c.free()
 				
 		var submenus = {}
@@ -138,14 +131,14 @@ class AddPrimitives:
 		for f_name in scripts:
 			var p = path.plus_file('meshes'.plus_file(f_name))
 			
-			var temp_script = load(p)
+			var temp = load(p)
 			
-			var name = temp_script.get_name()
+			var name = temp.get_name()
 			
 			if not name:
 				continue
 				
-			var container = temp_script.get_container()
+			var container = temp.get_container()
 			
 			if container:
 				container = container.replace(' ', '_').to_lower()
@@ -163,22 +156,21 @@ class AddPrimitives:
 		if submenus.size():
 			popup_menu.add_separator()
 			
-			for i in submenus.keys():
+			for sub in submenus.keys():
 				var submenu = PopupMenu.new()
-				submenu.set_name(i)
+				submenu.set_name(sub)
 				
 				popup_menu.add_child(submenu)
 				
-				var n = i.replace('_', ' ')
-				n = n.capitalize()
+				var n = sub.replace('_', ' ').capitalize()
 				
-				popup_menu.add_submenu_item(n, i)
+				popup_menu.add_submenu_item(n, sub)
 				
 				if not submenu.is_connected("item_pressed", self, "popup_signal"):
 					submenu.connect("item_pressed", self, "popup_signal", [submenu])
 					
-				for j in submenus[i]:
-					submenu.add_item(j)
+				for name in submenus[sub]:
+					submenu.add_item(name)
 					
 		if not modules.empty():
 			popup_menu.add_separator()
@@ -235,7 +227,7 @@ class AddPrimitives:
 			update_menu()
 			
 		elif modules.has(command):
-			mesh_instance = module_call(modules[command], "create", node)
+			mesh_instance = module_call(modules[command], "create", [node])
 			
 			last_module = command
 			
@@ -253,21 +245,19 @@ class AddPrimitives:
 				add_mesh_instance()
 				mesh_instance.set_name(command)
 				
-				var mesh
-				
 				if builder.has_method('mesh_parameters'):
-					mesh = builder.create(false, false)
-					
 					mesh_dialog.edit(mesh_instance, builder)
 					_set_edit_disabled(false)
+					
+					update_mesh()
 					
 					mesh_dialog.show_dialog()
 					
 				else:
-					mesh = builder.create()
+					base_mesh = builder.create()
 					
-				mesh_instance.set_mesh(mesh)
-				mesh.set_name(command.to_lower())
+				mesh_instance.set_mesh(base_mesh)
+				base_mesh.set_name(command.to_lower())
 				
 	func add_mesh_instance():
 		mesh_instance = MeshInstance.new()
@@ -280,20 +270,13 @@ class AddPrimitives:
 		if mesh_instance.is_inside_tree():
 			mesh_instance.queue_free()
 			
-	func update_mesh(name = "", value = null):
+	func update_mesh():
 		var start = OS.get_ticks_msec()
 		
-		var smooth = mesh_dialog.get("parameters/smooth")
-		var invert = mesh_dialog.get("parameters/invert")
-		
-		if name and value != null:
-			builder.set(name, value)
-			
-		base_mesh = builder.create(smooth, invert)
+		base_mesh = builder.create()
 		
 		assert( base_mesh != null )
 		
-		base_mesh.set_name(mesh_instance.get_name().to_lower())
 		mesh_instance.set_mesh(base_mesh)
 		
 		modify_mesh()
@@ -301,12 +284,12 @@ class AddPrimitives:
 		exec_time = OS.get_ticks_msec() - start
 		mesh_dialog.display_text("Generation time: " + str(exec_time) + " ms")
 		
-	func modify_mesh(name = "", value = null):
+	func modify_mesh():
 		var start = OS.get_ticks_msec()
 		
 		var modifier = mesh_dialog.get_editor("modifiers")
 		
-		mesh_buffer.clear()
+		var mesh_buffer = []
 		
 		var count = 0
 		
@@ -315,12 +298,6 @@ class AddPrimitives:
 			
 		assert( mesh_instance.get_mesh() )
 		
-		if name and value != null:
-			var edited = modifier.get_edited_modifier()
-			
-			if edited:
-				edited.set(name, value)
-				
 		for item in modifier.tree_items():
 			if not item.is_checked(1):
 				continue
@@ -341,8 +318,6 @@ class AddPrimitives:
 			
 			count += 1
 			
-		mesh_instance.get_mesh().set_name(mesh_instance.get_name().to_lower())
-		
 		exec_time = OS.get_ticks_msec() - start
 		mesh_dialog.display_text("Generation time: " + str(exec_time) + " ms")
 		
@@ -363,18 +338,19 @@ class AddPrimitives:
 			mesh_instance.set_scale(value)
 			
 	func _set_edit_disabled(disable):
-		popup_menu.set_item_disabled(popup_menu.get_item_count() - 2, disable)
+		var count = popup_menu.get_item_count()
 		
-	func _mesh_dialog_hide():
-		base_mesh = null
-		mesh_buffer.clear()
+		if not count:
+			return
+			
+		popup_menu.set_item_disabled(count - 2, disable)
 		
 	func _node_removed(node):
 		if node == mesh_instance:
 			_set_edit_disabled(true)
 			
 			if mesh_dialog.is_visible():
-				_mesh_dialog_hide()
+				mesh_dialog.hide()
 				
 	func _enter_tree():
 		load_modules()
@@ -399,17 +375,14 @@ class AddPrimitives:
 		mesh_dialog.connect_editor("transform", self, "transform_mesh")
 		
 		mesh_dialog.connect("cancel", self, "remove_mesh_instace")
-		mesh_dialog.connect("popup_hide", self, "_mesh_dialog_hide")
 		
 		get_tree().connect("node_removed", self, "_node_removed")
 		
 	func _exit_tree():
 		popup_menu.clear()
-		
 		mesh_dialog.clear()
 		
 		base_mesh = null
-		mesh_buffer.clear()
 		
 		mesh_scripts.clear()
 		modules.clear()
@@ -459,8 +432,5 @@ func _enter_tree():
 	
 func _exit_tree():
 	edit(null)
-	
-	add_primitives.get_mesh_dialog().queue_free()
-	add_primitives.queue_free()
 	
 

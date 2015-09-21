@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var angle = 90
 var stair_height = 2.0
@@ -14,7 +14,7 @@ static func get_name():
 static func get_container():
 	return "Add Stair"
 	
-func create(smooth, invert):
+func create():
 	var h = stair_height/steps
 	
 	var rad = deg2rad(angle)
@@ -22,14 +22,13 @@ func create(smooth, invert):
 	var oc = rad * outer_radius
 	var ic = rad * inner_radius
 	
-	var c = build_circle_verts(Vector3(), steps, inner_radius, rad)
-	var c2 = build_circle_verts(Vector3(), steps, outer_radius, rad)
+	var c = Utils.build_circle_verts(Vector3(), steps, inner_radius, rad)
+	var c2 = Utils.build_circle_verts(Vector3(), steps, outer_radius, rad)
 	
 	var w = abs(outer_radius - inner_radius)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for i in range(steps):

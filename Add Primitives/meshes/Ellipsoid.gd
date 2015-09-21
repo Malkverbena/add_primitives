@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var width = 1.0
 var length = 1.0
@@ -14,10 +14,10 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func create(smooth, invert):
+func create():
 	var cc = Vector3(0,-height,0)
 	
-	var ellipse = build_ellipse_verts(Vector3(), segments, Vector2(width, length))
+	var ellipse = Utils.build_ellipse_verts(Vector3(), segments, Vector2(width, length))
 	
 	var h_val = 1.0 - hemisphere
 	
@@ -28,11 +28,8 @@ func create(smooth, invert):
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
-	
 	if hemisphere > 0.0:
 		pos.y = cos(angle * height_segments) * height
-		#rd = Vector3(sin(angle * h), 0, sin(angle * h))
 		rd.x = sin(angle * height_segments)
 		rd.z = rd.x
 		

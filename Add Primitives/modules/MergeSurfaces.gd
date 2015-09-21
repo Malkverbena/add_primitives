@@ -14,8 +14,7 @@ class MergeDialog:
 		tree.clear()
 		
 		tree.set_hide_root(true)
-		tree.set_columns(2)
-		tree.set_column_min_width(0, 2)
+		tree.set_columns(1)
 		
 		var root = tree.create_item()
 		
@@ -24,15 +23,12 @@ class MergeDialog:
 		for s in surfaces:
 			var item = tree.create_item(root)
 			
+			item.set_cell_mode(0, item.CELL_MODE_CHECK)
+			item.set_checked(0, true)
 			item.set_text(0, s.get_name())
 			item.set_icon(0, icon)
-			item.set_selectable(0, false)
+			item.set_editable(0, true)
 			item.set_metadata(0, s.get_path())
-			
-			item.set_cell_mode(1, item.CELL_MODE_CHECK)
-			item.set_checked(1, true)
-			item.set_text(1, 'On')
-			item.set_editable(1, true)
 			
 	func edit(instance, instances):
 		mesh_instance = instance
@@ -60,7 +56,7 @@ class MergeDialog:
 		var item = root.get_children()
 		
 		while item:
-			if item.is_checked(1):
+			if item.is_checked(0):
 				var path = item.get_metadata(0)
 				
 				if not has_node(path):
@@ -129,13 +125,10 @@ class MergeDialog:
 	func _init(base):
 		set_title("Merge Surfaces")
 		
-		var panel = PanelContainer.new()
-		add_child(panel)
-		panel.set_area_as_parent_rect(get_constant("margin", "Dialogs"))
-		panel.set_margin(MARGIN_BOTTOM, get_constant("button_margin", "Dialogs")+10)
-		
 		var vb = VBoxContainer.new()
-		panel.add_child(vb)
+		add_child(vb)
+		vb.set_area_as_parent_rect(get_constant("margin", "Dialogs"))
+		vb.set_margin(MARGIN_BOTTOM, get_constant("button_margin", "Dialogs")+10)
 		
 		var hb = HBoxContainer.new()
 		vb.add_child(hb)
@@ -148,9 +141,6 @@ class MergeDialog:
 		var s = Control.new()
 		hb.add_child(s)
 		s.set_h_size_flags(SIZE_EXPAND_FILL)
-		
-		var vsep = VSeparator.new()
-		hb.add_child(vsep)
 		
 		var reload = ToolButton.new()
 		reload.set_button_icon(base.get_icon("Reload", "EditorIcons"))

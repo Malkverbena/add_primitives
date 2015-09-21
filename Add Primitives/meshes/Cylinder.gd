@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var radius = 1.0
 var height = 2.0
@@ -9,12 +9,12 @@ var generate_caps = true
 static func get_name():
 	return "Cylinder"
 	
-func create(smooth, invert):
+func create():
 	var circumference = PI * 2 * radius 
 	var h = height
 	
-	var circle = build_circle_verts(Vector3(0, h/2, 0), sides, radius)
-	var circle_uv = build_circle_verts(Vector3(0.5, 0, 0.5), sides, radius)
+	var circle = Utils.build_circle_verts(Vector3(0, h/2, 0), sides, radius)
+	var circle_uv = Utils.build_circle_verts(Vector3(0.5, 0, 0.5), sides, radius)
 	
 	if invert:
 		circle.invert()

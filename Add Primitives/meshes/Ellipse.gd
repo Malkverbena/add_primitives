@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var width = 1.0
 var length = 1.0
@@ -11,18 +11,17 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func create(smooth, invert):
+func create():
 	var c = Vector3(0,0,0)
 	var r = Vector2(width, length)
 	
 	var sa = PI * 2 - deg2rad(slice)
 	
-	var ellipse = build_ellipse_verts(c, segments, r, sa)
-	var ellipse_uv = build_ellipse_verts(Vector3(0.5,0,0.5), segments, r, sa)
+	var ellipse = Utils.build_ellipse_verts(c, segments, r, sa)
+	var ellipse_uv = Utils.build_ellipse_verts(Vector3(0.5,0,0.5), segments, r, sa)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for i in range(segments):

@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var radius = 1.0
 var height = 2.0
@@ -9,20 +9,19 @@ var generate_ends = true
 static func get_name():
 	return "Cone"
 	
-func create(smooth, invert):
+func create():
 	var center_top = Vector3(0, height/2, 0)
 	var min_pos = Vector3(0, -height/2, 0)
 	
 	var sa = PI * 2 - deg2rad(slice)
 	
-	var circle = build_circle_verts(min_pos, sides, radius, sa)
-	var circle_uv = build_circle_verts(Vector3(0.5,0,0.5), sides, radius, sa)
+	var circle = Utils.build_circle_verts(min_pos, sides, radius, sa)
+	var circle_uv = Utils.build_circle_verts(Vector3(0.5, 0, 0.5), sides, radius, sa)
 	
 	var uv
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for idx in range(sides):

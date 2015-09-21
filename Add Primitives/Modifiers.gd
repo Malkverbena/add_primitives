@@ -27,7 +27,7 @@ class ModifierBase:
 	extends MeshDataTool
 	
 	static func get_name():
-		pass
+		return ""
 		
 	func modifier_parameters(editor):
 		pass

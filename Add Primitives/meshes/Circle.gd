@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var radius = 1
 var segments = 16
@@ -7,17 +7,16 @@ var slice = 0
 static func get_name():
 	return "Circle"
 	
-func create(smooth, invert):
+func create():
 	var c = Vector3(0,0,0)
 	
 	var sa = PI * 2 - deg2rad(slice)
 	
-	var circle = build_circle_verts(c, segments, radius, sa)
-	var circle_uv = build_circle_verts(Vector3(0.5,0,0.5), segments, radius, sa)
+	var circle = Utils.build_circle_verts(c, segments, radius, sa)
+	var circle_uv = Utils.build_circle_verts(Vector3(0.5, 0, 0.5), segments, radius, sa)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for i in range(segments):

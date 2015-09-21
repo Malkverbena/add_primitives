@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var height = 2.0
 var outer_radius = 1.0
@@ -11,17 +11,16 @@ var generate_ends = true
 static func get_name():
 	return "Tube"
 	
-func create(smooth, invert):
+func create():
 	var sa = PI * 2 - deg2rad(slice)
 	
-	var ic = build_circle_verts(Vector3(), sides, inner_radius, sa)
-	var oc = build_circle_verts(Vector3(), sides, outer_radius, sa)
+	var ic = Utils.build_circle_verts(Vector3(), sides, inner_radius, sa)
+	var oc = Utils.build_circle_verts(Vector3(), sides, outer_radius, sa)
 	
 	var ofs = Vector3(0, height/2, 0)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(false)
 	
 	if generate_caps:
@@ -47,7 +46,7 @@ func mesh_parameters(editor):
 	editor.add_tree_range('Height', height)
 	editor.add_tree_range('Outer Radius', outer_radius)
 	editor.add_tree_range('Inner Radius', inner_radius)
-	editor.add_tree_range('Sides', sides, 1, 1, 50)
+	editor.add_tree_range('Sides', sides, 1, 3, 64)
 	editor.add_tree_range('Slice', slice, 1, 0, 359)
 	editor.add_tree_empty()
 	editor.add_tree_check('Generate Caps', generate_caps)

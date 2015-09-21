@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var major_radius = 0.8
 var minor_radius = 0.2
@@ -10,22 +10,22 @@ var generate_ends = true
 static func get_name():
 	return "Torus"
 	
-func create(smooth, invert):
+func create():
 	var sa = PI * 2 - deg2rad(slice)
 	var bend_radius = major_radius/sa
 	
 	var angle = sa/torus_segments
 	
-	var s = build_circle_verts(Vector3(), torus_segments, major_radius, sa)
+	var s = Utils.build_circle_verts(Vector3(), torus_segments, major_radius, sa)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	var temp_circle
 	
-	var c = build_circle_verts_rot(s[0], segments, minor_radius, Matrix3(Vector3(1,0,0), PI/2))
+	var c = Utils.build_circle_verts_rot(s[0], segments, minor_radius, Matrix3(Vector3(1,0,0), PI/2))
+	
 	var c2 = []
 	
 	if not slice:

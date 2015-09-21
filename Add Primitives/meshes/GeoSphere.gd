@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 const Solid = {
 	OCTAHEDRON = 0,
@@ -86,7 +86,7 @@ static func create_icosahedron(verts, radius):
 	
 	return faces
 	
-func create(smooth, invert):
+func create():
 	var v = []
 	var faces
 	
@@ -100,7 +100,6 @@ func create(smooth, invert):
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for i in range(subdivisions):

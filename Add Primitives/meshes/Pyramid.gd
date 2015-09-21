@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var width = 2.0
 var length = 2.0
@@ -10,10 +10,10 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func create(smooth, invert):
+func create():
 	var ofs = Vector3(width/2, height/2, length/2)
 	
-	var plane = build_plane_verts(Vector3(width,0,0), Vector3(0,0,length), -ofs)
+	var plane = Utils.build_plane_verts(Vector3(width,0,0), Vector3(0,0,length), -ofs)
 	
 	var ch = Vector3(0, height, 0)
 	
@@ -24,10 +24,9 @@ func create(smooth, invert):
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
-	build_plane(Vector3(width,0,0), Vector3(0,0,length), -ofs)
+	add_plane(Vector3(width,0,0), Vector3(0,0,length), -ofs)
 	
 	add_tri([ch, plane[1], plane[0]], uv)
 	add_tri([ch, plane[3], plane[2]], uv)

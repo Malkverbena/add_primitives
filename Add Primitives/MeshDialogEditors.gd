@@ -310,7 +310,7 @@ class ModifierEditor:
 	
 	var modifiers = {}
 	
-	signal modifier_edited(name, value)
+	signal modifier_edited
 	
 	static func get_signal():
 		return "modifier_edited"
@@ -450,7 +450,7 @@ class ModifierEditor:
 			
 		tree.update()
 		
-		emit_signal("modifier_edited", "", null)
+		emit_signal("modifier_edited")
 		
 	func _add_modifier(id):
 		var mod = menu.get_item_text(menu.get_item_index(id))
@@ -460,7 +460,7 @@ class ModifierEditor:
 		if items.size() and reload.is_disabled():
 			reload.set_disabled(false)
 			
-		emit_signal("modifier_edited", "", null)
+		emit_signal("modifier_edited")
 		
 	func _rebuild_tree(cache):
 		var root = _create_root()
@@ -497,14 +497,19 @@ class ModifierEditor:
 		if parent == tree.get_root():
 			edited_modifier = item.get_metadata(0)
 			
-			emit_signal("modifier_edited", "", null)
+			emit_signal("modifier_edited")
 			
 		edited_modifier = parent.get_metadata(0)
 		
 		var name = get_parameter_name(item)
 		var value = get_parameter_value(item)
 		
-		emit_signal("modifier_edited", name, value)
+		var obj = instance_from_id(edited_modifier)
+		
+		if obj:
+			obj.set(name, value)
+			
+		emit_signal("modifier_edited")
 		
 	func _item_selected():
 		var item = tree.get_selected()
@@ -574,21 +579,29 @@ class ModifierEditor:
 		
 # End ModifierEditor
 
+
+
 class ParameterEditor:
 	extends TreeEditor
 	
-	var smooth = false
-	var invert = false
+	var obj
 	
 	var smooth_button
 	var invert_button
 	
-	signal parameter_edited(name, value)
+	signal parameter_edited
 	
 	static func get_signal():
 		return "parameter_edited"
 		
-	func create_parameters(script):
+	func edit(builder):
+		if not builder:
+			obj = null
+			
+			clear()
+			
+		obj = builder
+		
 		tree.clear()
 		
 		tree.set_hide_root(true)
@@ -600,10 +613,7 @@ class ParameterEditor:
 		
 		last = tree.create_item()
 		
-		script.mesh_parameters(self)
-		
-		smooth = false
-		invert = false
+		builder.mesh_parameters(self)
 		
 		smooth_button.set_pressed(false)
 		invert_button.set_pressed(false)
@@ -612,9 +622,9 @@ class ParameterEditor:
 		tree.clear()
 		
 	func _check_box_pressed(pressed, name):
-		set(name, pressed)
+		obj.set(name, pressed)
 		
-		emit_signal("parameter_edited", "", null)
+		emit_signal("parameter_edited")#, "", null)
 		
 	func _item_edited():
 		var item = tree.get_edited()
@@ -622,7 +632,10 @@ class ParameterEditor:
 		var name = get_parameter_name(item)
 		var value = get_parameter_value(item)
 		
-		emit_signal("parameter_edited", name, value)
+		if obj:
+			obj.set(name, value)
+			
+		emit_signal("parameter_edited")
 		
 	func _init():
 		set_name("parameters")

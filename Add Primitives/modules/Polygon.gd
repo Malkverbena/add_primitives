@@ -86,9 +86,9 @@ class PolygonDialog:
 	
 	var poly = []
 	
-	const LINE_COLOR = Color(1,0,0)
+	const LINE_COLOR = Color(1, 0, 0)
 	const LINE_WIDTH = 2
-	const GRID_COLOR = Color(0.2,0.5,0.8, 0.5)
+	const GRID_COLOR = Color(0.2, 0.5, 0.8, 0.5)
 	
 	signal poly_edited
 	
@@ -97,15 +97,12 @@ class PolygonDialog:
 		
 		for i in range(poly.size()):
 			var j = (i + 1) % poly.size()
+			
 			sum += poly[i].x * poly[j].y;
 			sum -= poly[j].x * poly[i].y;
 			
-		if sum > 0:
-			return true
-			
-		else:
-			return false
-			
+		return sum > 0
+		
 	static func knife_polygon(poly, start, end, close = false):
 		var intersections = {}
 		
@@ -234,16 +231,16 @@ class PolygonDialog:
 		return vec
 		
 	func poly2mesh():
-		var s = canvas.get_size()
-		
-		var ofs = Vector3()
-		ofs[data.current_axis] = data.depth/2
-		
 		var index = Array(Geometry.triangulate_polygon(Vector2Array(poly)))
 		
 		if index.empty():
 			return
 			
+		var s = canvas.get_size()
+		
+		var ofs = Vector3()
+		ofs[data.current_axis] = data.depth/2
+		
 		var surf = SurfaceTool.new()
 		
 		surf.begin(VS.PRIMITIVE_TRIANGLES)
@@ -568,8 +565,6 @@ class PolygonDialog:
 				canvas.update()
 				
 	func _canvas_draw():
-		var start = OS.get_ticks_msec()
-		
 		var s = canvas.get_size()
 		var r = Rect2(Vector2(), s)
 		
@@ -621,9 +616,6 @@ class PolygonDialog:
 		clear_canvas()
 		
 		data.clear()
-		
-		snap_popup.queue_free()
-		queue_free()
 		
 	func _init(base):
 		set_title("New Polygon")
@@ -759,7 +751,7 @@ class PolygonDialog:
 		
 		connect("poly_edited", self, "update_mesh")
 		
-		# Snap Popup
+		#Snap Popup
 		snap_popup = PopupPanel.new()
 		snap_popup.set_size(Vector2(180, 40))
 		
@@ -774,9 +766,9 @@ class PolygonDialog:
 		
 		var x = SpinBox.new()
 		x.set_val(grid_step.x)
-		x.set_min(0.01)
+		x.set_min(1)
 		x.set_max(100)
-		x.set_step(0.01)
+		x.set_suffix('px')
 		
 		hb.add_child(l)
 		hb.add_child(x)
@@ -788,9 +780,9 @@ class PolygonDialog:
 		
 		var y = SpinBox.new()
 		y.set_val(grid_step.y)
-		y.set_min(0.01)
+		y.set_min(1)
 		y.set_max(100)
-		y.set_step(0.01)
+		y.set_suffix('px')
 		
 		hb.add_child(l)
 		hb.add_child(y)

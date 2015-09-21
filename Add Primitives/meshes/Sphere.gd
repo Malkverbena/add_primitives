@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var radius = 1.0
 var segments = 16
@@ -9,8 +9,8 @@ var generate_cap = true
 static func get_name():
 	return "Sphere"
 	
-func create(smooth, invert):
-	var circle = build_circle_verts(Vector3(), segments, radius)
+func create():
+	var circle = Utils.build_circle_verts(Vector3(), segments, radius)
 	
 	var h_val = 1.0 - hemisphere
 	
@@ -20,8 +20,6 @@ func create(smooth, invert):
 	var rd = Vector3(sin(angle), 0, sin(angle))
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
-	
-	set_invert(invert)
 	
 	if hemisphere > 0.0:
 		pos.y = cos(angle * height_segments) * radius

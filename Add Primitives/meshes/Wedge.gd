@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var width = 1.0
 var height = 1.0
@@ -9,7 +9,7 @@ var generate_end = true
 static func get_name():
 	return "Wedge"
 	
-func create(smooth, invert):
+func create():
 	var fd = Vector3(0, 0, length)
 	var rd = Vector3(width, 0, 0)
 	var ud = Vector3(0, height, 0)
@@ -18,23 +18,22 @@ func create(smooth, invert):
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	if generate_bottom:
-		build_plane(rd, fd, ofs)
+		add_plane(rd, fd, ofs)
 		
 	if generate_end:
-		build_plane(ud, rd, ofs)
+		add_plane(ud, rd, ofs)
 		
 	var d = ofs.distance_to(ofs + Vector3(0, -height, length))
 	
 	ofs.y += height
 	
-	add_quad([ofs, ofs + rd, ofs + Vector3(width, -height, length), ofs + Vector3(0, -height, length)], plane_uv(width, d))
+	add_quad([ofs, ofs + rd, ofs + Vector3(width, -height, length), ofs + Vector3(0, -height, length)], Utils.plane_uv(width, d))
 	
-	add_tri([ofs + Vector3(0, -height, length), ofs - ud, ofs], plane_uv(length, height, false))
-	add_tri([ofs + rd, ofs + rd - ud, ofs + Vector3(width, -height, length)], plane_uv(height, length, false))
+	add_tri([ofs + Vector3(0, -height, length), ofs - ud, ofs], Utils.plane_uv(length, height, false))
+	add_tri([ofs + rd, ofs + rd - ud, ofs + Vector3(width, -height, length)], Utils.plane_uv(height, length, false))
 	
 	var mesh = commit()
 	

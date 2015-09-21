@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var radius = 1
 var height = 1
@@ -10,20 +10,19 @@ var generate_ends = true
 static func get_name():
 	return "Capsule"
 	
-func create(smooth, invert):
+func create():
 	var angle = PI/height_segments
 	var sa = PI * 2 - deg2rad(slice)
 	
 	var cc = Vector3(0, radius + height, 0)
 	
-	var circle = build_circle_verts(Vector3(), sides, radius, sa)
+	var circle = Utils.build_circle_verts(Vector3(), sides, radius, sa)
 	
 	var r = Vector3(sin(angle), 0, sin(angle))
 	var p = Vector3(0,-cos(angle) * radius - height, 0)
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for idx in range(sides):
@@ -77,7 +76,7 @@ func mesh_parameters(editor):
 	editor.add_tree_range('Radius', radius)
 	editor.add_tree_range('Height', height)
 	editor.add_tree_range('Sides', sides, 1, 3, 64)
-	editor.add_tree_range('Height Segments', height_segments, 2, 4, 64)
+	editor.add_tree_range('Height Segments', height_segments, 2, 2, 64)
 	editor.add_tree_range('Slice', slice, 1, 0, 359)
 	editor.add_tree_empty()
 	editor.add_tree_check('Generate Ends', generate_ends)

@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var steps = 10
 var width = 1.0
@@ -13,7 +13,7 @@ static func get_name():
 static func get_container():
 	return "Add Stair"
 	
-func create(smooth, invert):
+func create():
 	var ofs_x = -width/2
 	
 	var sh = height/steps
@@ -32,26 +32,25 @@ func create(smooth, invert):
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for i in range(steps):
-		add_quad(build_plane_verts(d[1], d[0], Vector3(ofs_x, (i+1) * sh, i * sl)), [py+w, py+w+l, py+l, py])
-		add_quad(build_plane_verts(d[2], d[0], Vector3(ofs_x, i * sh, i * sl)), [pz+w, pz+h+w, pz+h, pz])
+		add_quad(Utils.build_plane_verts(d[1], d[0], Vector3(ofs_x, (i+1) * sh, i * sl)), [py+w, py+w+l, py+l, py])
+		add_quad(Utils.build_plane_verts(d[2], d[0], Vector3(ofs_x, i * sh, i * sl)), [pz+w, pz+h+w, pz+h, pz])
 		
 		var ch = Vector2(0, sh * (i+1))
 		
-		add_quad(build_plane_verts(d[1], Vector3(0, ch.y, 0), Vector3(ofs_x, 0, i * sl)), [py+ch, py+ch+l, py+l, py])
-		add_quad(build_plane_verts(Vector3(0, ch.y, 0), d[1], Vector3(-ofs_x, 0, i * sl)), [py+l, py+l+ch, py+ch, py])
+		add_quad(Utils.build_plane_verts(d[1], Vector3(0, ch.y, 0), Vector3(ofs_x, 0, i * sl)), [py+ch, py+ch+l, py+l, py])
+		add_quad(Utils.build_plane_verts(Vector3(0, ch.y, 0), d[1], Vector3(-ofs_x, 0, i * sl)), [py+l, py+l+ch, py+ch, py])
 		
 		py.x += sl
 		pz.x += sh
 		
 	if generate_end:
-		build_plane(d[0], Vector3(0, height, 0), Vector3(ofs_x, 0, length))
+		add_plane(d[0], Vector3(0, height, 0), Vector3(ofs_x, 0, length))
 		
 	if generate_bottom:
-		build_plane(d[0], Vector3(0, 0, length), Vector3(ofs_x, 0, 0))
+		add_plane(d[0], Vector3(0, 0, length), Vector3(ofs_x, 0, 0))
 		
 	var mesh = commit()
 	

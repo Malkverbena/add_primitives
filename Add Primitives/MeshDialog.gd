@@ -77,7 +77,12 @@ func connect_editor(name, obj, method):
 	if not editor:
 		return
 		
-	editor.connect(editor.get_signal(), obj, method)
+	var signal_ = editor.get_signal()
+	
+	if not signal_:
+		return
+		
+	editor.connect(signal_, obj, method)
 	
 func edit(instance, builder = null):
 	mesh_instance = instance
@@ -88,7 +93,7 @@ func edit(instance, builder = null):
 	if builder:
 		set_title("New " + builder.get_name())
 		
-		parameter_editor.create_parameters(builder)
+		parameter_editor.edit(builder)
 		
 	modifier_editor.create_modifiers()
 	transform_editor.update_from_instance(mesh_instance)
@@ -126,7 +131,7 @@ func clear():
 	transform_editor.clear()
 	
 func _color_changed(color):
-	if mesh_instance.is_type("MeshInstance"):
+	if mesh_instance extends MeshInstance:
 		var mat = mesh_instance.get_material_override()
 		
 		if mat:

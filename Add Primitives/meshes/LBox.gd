@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var front_length = 2.0
 var front_width = 1.0
@@ -12,7 +12,7 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func create(smooth, invert):
+func create():
 	var h = Vector3(0, height, 0)
 	
 	var v = [Vector3(0, 0, 0),
@@ -34,7 +34,6 @@ func create(smooth, invert):
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	add_quad([v[0]+h, v[1]+h, v[2]+h, v[3]+h], [uv[0], uv[1], uv[2], uv[3]])

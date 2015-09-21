@@ -1,7 +1,7 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var spirals = 1
-var height = 2.0
+var spiral_height = 2.0
 var steps_per_spiral = 8
 var outer_radius = 2.0
 var inner_radius = 1.0
@@ -13,24 +13,23 @@ static func get_name():
 static func get_container():
 	return "Add Stair"
 	
-func create(smooth, invert):
+func create():
 	var angle = (PI*2)/steps_per_spiral
 	
 	var or_ = Vector3(outer_radius, 1, outer_radius)
 	var ir = Vector3(inner_radius, 1, inner_radius)
 	
-	var c = build_circle_verts(Vector3(), steps_per_spiral, inner_radius)
-	var c2 = build_circle_verts(Vector3(), steps_per_spiral, outer_radius)
+	var c = Utils.build_circle_verts(Vector3(), steps_per_spiral, inner_radius)
+	var c2 = Utils.build_circle_verts(Vector3(), steps_per_spiral, outer_radius)
 	
-	var s = height/steps_per_spiral
+	var s = spiral_height/steps_per_spiral
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
 	for sp in range(spirals):
-		var ofs = Vector3(0, height*sp, 0)
+		var ofs = Vector3(0, spiral_height * sp, 0)
 		
 		for i in range(steps_per_spiral):
 			var h = Vector3(0, i * s, 0) + ofs
@@ -68,7 +67,7 @@ func create(smooth, invert):
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Spirals', spirals, 1, 1, 64)
-	editor.add_tree_range('Spiral Height', height)
+	editor.add_tree_range('Spiral Height', spiral_height)
 	editor.add_tree_range('Steps per Spiral', steps_per_spiral, 1, 3, 64)
 	editor.add_tree_range('Outer Radius', outer_radius)
 	editor.add_tree_range('Inner Radius', inner_radius)

@@ -1,4 +1,4 @@
-extends "../MeshBuilder.gd"
+extends "../Primitive.gd"
 
 var length = 2.0
 var width = 2.0
@@ -8,7 +8,7 @@ var end_height = 0.0
 static func get_name():
 	return "Plane"
 	
-func create(smooth, invert):
+func create():
 	var verts = [Vector3(-width/2, end_height, -length/2),
 	             Vector3(width/2, end_height, -length/2),
 	             Vector3(width/2, start_height, length/2),
@@ -19,10 +19,9 @@ func create(smooth, invert):
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
-	set_invert(invert)
 	add_smooth_group(smooth)
 	
-	add_quad(verts, plane_uv(w, l))
+	add_quad(verts, Utils.plane_uv(w, l))
 	
 	var mesh = commit()
 	
