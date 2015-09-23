@@ -181,12 +181,12 @@ func create(object):
 		
 		return instance
 		
-func edit_primitive():
-	if not merge_dialog.get_mesh_instance():
-		merge_dialog.edit(null)
-		
-	merge_dialog.show_dialog()
+	return null
 	
+func edit_primitive():
+	if merge_dialog.is_hidden():
+		merge_dialog.show_dialog()
+		
 func clear():
 	merge_dialog.clear()
 	

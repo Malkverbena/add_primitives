@@ -113,83 +113,6 @@ class AddPrimitives:
 	func edit(object):
 		node = object
 		
-	func update_menu():
-		popup_menu.clear()
-		mesh_scripts.clear()
-		
-		for c in popup_menu.get_children():
-			if c extends PopupMenu:
-				c.free()
-				
-		var submenus = {}
-		
-		var path = dir.get_data_dir()
-		
-		var scripts = dir.get_file_list(path.plus_file('meshes'), 'gd')
-		scripts.sort()
-		
-		for f_name in scripts:
-			var p = path.plus_file('meshes'.plus_file(f_name))
-			
-			var temp = load(p)
-			
-			var name = temp.get_name()
-			
-			if not name:
-				continue
-				
-			var container = temp.get_container()
-			
-			if container:
-				container = container.replace(' ', '_').to_lower()
-				
-				if not submenus.has(container):
-					submenus[container] = []
-					
-				submenus[container].push_back(name)
-				
-			else:
-				popup_menu.add_item(name)
-				
-			mesh_scripts[name] = p
-			
-		if submenus.size():
-			popup_menu.add_separator()
-			
-			for sub in submenus.keys():
-				var submenu = PopupMenu.new()
-				submenu.set_name(sub)
-				
-				popup_menu.add_child(submenu)
-				
-				var n = sub.replace('_', ' ').capitalize()
-				
-				popup_menu.add_submenu_item(n, sub)
-				
-				if not submenu.is_connected("item_pressed", self, "popup_signal"):
-					submenu.connect("item_pressed", self, "popup_signal", [submenu])
-					
-				for name in submenus[sub]:
-					submenu.add_item(name)
-					
-		if not modules.empty():
-			popup_menu.add_separator()
-			
-			for m in modules:
-				popup_menu.add_item(m)
-				
-		popup_menu.add_separator()
-		
-		popup_menu.add_icon_item(get_icon('Edit', 'EditorIcons'), 'Edit Primitive')
-		
-		if not mesh_instance:
-			popup_menu.set_item_disabled(popup_menu.get_item_count() - 1, true)
-			
-		popup_menu.add_icon_item(get_icon('Reload', 'EditorIcons'), 'Reload')
-		
-		if not popup_menu.is_connected("item_pressed", self, "popup_signal"):
-			popup_menu.connect("item_pressed", self, "popup_signal", [popup_menu])
-			
 	func load_modules():
 		var path = dir.get_data_dir().plus_file('modules')
 		
@@ -211,20 +134,10 @@ class AddPrimitives:
 		var command = menu.get_item_text(menu.get_item_index(id))
 		
 		if command == 'Edit Primitive':
-			if not mesh_instance:
-				return
-				
-			if last_module:
-				module_call(modules[last_module], "edit_primitive")
-				
-				return
-				
-			mesh_dialog.show_dialog()
-			
-			update_mesh()
+			_edit_primitive()
 			
 		elif command == 'Reload':
-			update_menu()
+			_update_menu()
 			
 		elif modules.has(command):
 			mesh_instance = module_call(modules[command], "create", [node])
@@ -277,6 +190,7 @@ class AddPrimitives:
 		
 		assert( base_mesh != null )
 		
+		base_mesh.set_name(builder.get_name().to_lower())
 		mesh_instance.set_mesh(base_mesh)
 		
 		modify_mesh()
@@ -291,12 +205,12 @@ class AddPrimitives:
 		
 		var mesh_buffer = []
 		
-		var count = 0
-		
 		if mesh_instance.get_mesh() != base_mesh:
 			mesh_instance.set_mesh(base_mesh)
 			
 		assert( mesh_instance.get_mesh() )
+		
+		var count = 0
 		
 		for item in modifier.tree_items():
 			if not item.is_checked(1):
@@ -337,6 +251,83 @@ class AddPrimitives:
 			
 			mesh_instance.set_scale(value)
 			
+	func _update_menu():
+		_set_edit_disabled(true)
+		
+		popup_menu.clear()
+		mesh_scripts.clear()
+		
+		for c in popup_menu.get_children():
+			if c extends PopupMenu:
+				c.free()
+				
+		var submenus = {}
+		
+		var path = dir.get_data_dir()
+		
+		var scripts = dir.get_file_list(path.plus_file('meshes'), 'gd')
+		scripts.sort()
+		
+		for f_name in scripts:
+			var p = path.plus_file('meshes'.plus_file(f_name))
+			
+			var temp = load(p)
+			var name = temp.get_name()
+			
+			if not name:
+				continue
+				
+			var container = temp.get_container()
+			
+			if container:
+				container = container.replace(' ', '_').to_lower()
+				
+				if not submenus.has(container):
+					submenus[container] = []
+					
+				submenus[container].push_back(name)
+				
+			else:
+				popup_menu.add_item(name)
+				
+			mesh_scripts[name] = p
+			
+		if submenus.size():
+			popup_menu.add_separator()
+			
+			for sub in submenus.keys():
+				var submenu = PopupMenu.new()
+				submenu.set_name(sub)
+				
+				popup_menu.add_child(submenu)
+				
+				var n = sub.replace('_', ' ').capitalize()
+				
+				popup_menu.add_submenu_item(n, sub)
+				
+				submenu.connect("item_pressed", self, "popup_signal", [submenu])
+				
+				for name in submenus[sub]:
+					submenu.add_item(name)
+					
+		if not modules.empty():
+			popup_menu.add_separator()
+			
+			for m in modules:
+				popup_menu.add_item(m)
+				
+		popup_menu.add_separator()
+		
+		popup_menu.add_icon_item(get_icon('Edit', 'EditorIcons'), 'Edit Primitive', -1, KEY_MASK_SHIFT + KEY_E)
+		
+		if not mesh_instance:
+			popup_menu.set_item_disabled(popup_menu.get_item_count() - 1, true)
+			
+		popup_menu.add_icon_item(get_icon('Reload', 'EditorIcons'), 'Reload')
+		
+		if not popup_menu.is_connected("item_pressed", self, "popup_signal"):
+			popup_menu.connect("item_pressed", self, "popup_signal", [popup_menu])
+			
 	func _set_edit_disabled(disable):
 		var count = popup_menu.get_item_count()
 		
@@ -344,7 +335,29 @@ class AddPrimitives:
 			return
 			
 		popup_menu.set_item_disabled(count - 2, disable)
+		set_process_unhandled_key_input(not disable)
 		
+	func _edit_primitive():
+		if not mesh_instance:
+			return
+			
+		if last_module:
+			module_call(modules[last_module], "edit_primitive")
+			
+			return
+			
+		if mesh_dialog.is_hidden():
+			mesh_dialog.show_dialog()
+			
+			update_mesh()
+			
+	func _unhandled_key_input(key_event):
+		if key_event.pressed and not key_event.echo:
+			if key_event.scancode == KEY_E and key_event.shift:
+				_edit_primitive()
+				
+				get_tree().set_input_as_handled()
+				
 	func _node_removed(node):
 		if node == mesh_instance:
 			_set_edit_disabled(true)
@@ -352,10 +365,12 @@ class AddPrimitives:
 			if mesh_dialog.is_visible():
 				mesh_dialog.hide()
 				
+			mesh_instance = null
+			
 	func _enter_tree():
 		load_modules()
 		
-		update_menu()
+		_update_menu()
 		
 		var base = get_node("/root/EditorNode").get_gui_base()
 		
@@ -399,7 +414,6 @@ class AddPrimitives:
 		spatial_menu.set_tooltip("Add New Primitive")
 		
 		popup_menu = spatial_menu.get_popup()
-		popup_menu.set_custom_minimum_size(Vector2(140, 0))
 		
 		add_child(spatial_menu)
 		

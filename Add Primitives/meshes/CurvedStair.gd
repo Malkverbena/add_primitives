@@ -5,6 +5,7 @@ var stair_height = 2.0
 var steps = 8
 var outer_radius = 2.0
 var inner_radius = 1.0
+var generate_sides = true
 var generate_bottom = true
 var generate_end = true
 
@@ -56,26 +57,27 @@ func create():
 		
 		add_quad([c2[i] + sh - base, c2[i] + sh, c[i] + sh, c[i] + sh - base], uv)
 		
-		base.y *= i + 1
-		
-		var u1 = float(i) / steps
-		var u2 = float(i+1) / steps
-		var v = sh.y
-		
-		uv[0] = Vector2(u1 * oc, v)
-		uv[1] = Vector2(u1 * oc, 0)
-		uv[2] = Vector2(u2 * oc, 0)
-		uv[3] = Vector2(u2 * oc, v)
-		
-		add_quad([c2[i] + base, c2[i], c2[i+1], c2[i+1] + base], uv)
-		
-		uv[0] = Vector2(u2 * ic, v)
-		uv[1] = Vector2(u2 * ic, 0)
-		uv[2] = Vector2(u1 * ic, 0)
-		uv[3] = Vector2(u1 * ic, v)
-		
-		add_quad([c[i+1] + base, c[i+1], c[i], c[i] + base], uv)
-		
+		if generate_sides:
+			base.y *= i + 1
+			
+			var u1 = float(i) / steps
+			var u2 = float(i+1) / steps
+			var v = sh.y
+			
+			uv[0] = Vector2(u1 * oc, v)
+			uv[1] = Vector2(u1 * oc, 0)
+			uv[2] = Vector2(u2 * oc, 0)
+			uv[3] = Vector2(u2 * oc, v)
+			
+			add_quad([c2[i] + base, c2[i], c2[i+1], c2[i+1] + base], uv)
+			
+			uv[0] = Vector2(u2 * ic, v)
+			uv[1] = Vector2(u2 * ic, 0)
+			uv[2] = Vector2(u1 * ic, 0)
+			uv[3] = Vector2(u1 * ic, v)
+			
+			add_quad([c[i+1] + base, c[i+1], c[i], c[i] + base], uv)
+			
 	if generate_end:
 		var sh = Vector3(0, h * steps, 0)
 		
@@ -97,6 +99,7 @@ func mesh_parameters(editor):
 	editor.add_tree_range('Outer Radius', outer_radius)
 	editor.add_tree_range('Inner Radius', inner_radius)
 	editor.add_tree_empty()
+	editor.add_tree_check('Generate Sides', generate_sides)
 	editor.add_tree_check('Generate Bottom', generate_bottom)
 	editor.add_tree_check('Generate End', generate_end)
 	

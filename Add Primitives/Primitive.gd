@@ -82,7 +82,7 @@ func add_quad(vertex = [], uv = []):
 		add_vertex(vertex[3])
 		add_vertex(vertex[0])
 		
-func add_plane(start, end, offset = Vector3(0,0,0)):
+func add_plane(start, end, offset = Vector3()):
 	var verts = []
 	verts.resize(4)
 	

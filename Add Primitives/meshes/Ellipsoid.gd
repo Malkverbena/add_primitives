@@ -5,7 +5,9 @@ var length = 1.0
 var height = 1.0
 var segments = 16
 var height_segments = 8
+var slice = 0
 var hemisphere = 0.0
+var generate_ends = true
 var generate_cap = true
 
 static func get_name():
@@ -17,7 +19,7 @@ static func get_container():
 func create():
 	var cc = Vector3(0,-height,0)
 	
-	var ellipse = Utils.build_ellipse_verts(Vector3(), segments, Vector2(width, length))
+	var ellipse = Utils.build_ellipse_verts(Vector3(), segments, Vector2(width, length), deg2rad(360 - slice))
 	
 	var h_val = 1.0 - hemisphere
 	
@@ -28,14 +30,33 @@ func create():
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
+	if slice and generate_ends:
+		add_smooth_group(false)
+		
+		var center = Vector3(0, cos(angle * height_segments) * height, 0)
+		
+		for i in range(height_segments):
+			var rp = sin(angle * i)
+			var rn = sin(angle * (i + 1))
+			
+			rp = Vector3(rp, 0, rp)
+			rn = Vector3(rn, 0, rn)
+			
+			var p = Vector3(0, cos(angle * i) * height, 0)
+			var n = Vector3(0, cos(angle * (i+1)) * height, 0)
+			
+			add_tri([center, ellipse[0] * rp + p, ellipse[0] * rn + n])
+			add_tri([center, ellipse[segments] * rn + n, ellipse[segments] * rp + p])
+			
 	if hemisphere > 0.0:
 		pos.y = cos(angle * height_segments) * height
 		rd.x = sin(angle * height_segments)
 		rd.z = rd.x
 		
 		if generate_cap:
-			add_smooth_group(false)
-			
+			if not slice:
+				add_smooth_group(false)
+				
 			for idx in range(segments):
 				add_tri([pos, ellipse[idx] * rd + pos, ellipse[idx+1] * rd + pos])
 				
@@ -75,8 +96,10 @@ func mesh_parameters(editor):
 	editor.add_tree_range('Height', height)
 	editor.add_tree_range('Segments', segments, 1, 3, 64)
 	editor.add_tree_range('Height Segments', height_segments, 1, 3, 64)
+	editor.add_tree_range('Slice', slice, 1, 0, 359)
 	editor.add_tree_range('Hemisphere', hemisphere, 0.01, 0, 0.99)
 	editor.add_tree_empty()
+	editor.add_tree_check('Generate Ends', generate_ends)
 	editor.add_tree_check('Generate Cap', generate_cap)
 	
 

@@ -4,8 +4,9 @@ var steps = 10
 var width = 1.0
 var height = 2.0
 var length = 2.0
-var generate_end = true
+var generate_sides = true
 var generate_bottom = true
+var generate_end = true
 
 static func get_name():
 	return "Linear Stair"
@@ -38,11 +39,14 @@ func create():
 		add_quad(Utils.build_plane_verts(d[1], d[0], Vector3(ofs_x, (i+1) * sh, i * sl)), [py+w, py+w+l, py+l, py])
 		add_quad(Utils.build_plane_verts(d[2], d[0], Vector3(ofs_x, i * sh, i * sl)), [pz+w, pz+h+w, pz+h, pz])
 		
-		var ch = Vector2(0, sh * (i+1))
-		
-		add_quad(Utils.build_plane_verts(d[1], Vector3(0, ch.y, 0), Vector3(ofs_x, 0, i * sl)), [py+ch, py+ch+l, py+l, py])
-		add_quad(Utils.build_plane_verts(Vector3(0, ch.y, 0), d[1], Vector3(-ofs_x, 0, i * sl)), [py+l, py+l+ch, py+ch, py])
-		
+		if generate_sides:
+			var ch = Vector2(0, sh * (i+1))
+			
+			add_quad(Utils.build_plane_verts(d[1], Vector3(0, ch.y, 0), Vector3(ofs_x, 0, i * sl)),\
+			         [py+ch, py+ch+l, py+l, py])
+			add_quad(Utils.build_plane_verts(Vector3(0, ch.y, 0), d[1], Vector3(-ofs_x, 0, i * sl)),\
+			         [py+l, py+l+ch, py+ch, py])
+			
 		py.x += sl
 		pz.x += sh
 		
@@ -62,6 +66,8 @@ func mesh_parameters(editor):
 	editor.add_tree_range('Height', height)
 	editor.add_tree_range('Length', length)
 	editor.add_tree_empty()
-	editor.add_tree_check('Generate End', generate_end)
+	editor.add_tree_check('Generate Sides', generate_sides)
 	editor.add_tree_check('Generate Bottom', generate_bottom)
+	editor.add_tree_check('Generate End', generate_end)
+	
 

@@ -155,20 +155,20 @@ class PolygonDialog:
 			
 			mode_display.set_text("Mode:")
 			
-	func set_axis(id):
-		if id == Vector3.AXIS_X:
+	func set_axis(axis):
+		if axis == Vector3.AXIS_X:
 			data.axis[0] = Vector3.AXIS_Z
 			data.axis[1] = Vector3.AXIS_Y
 			
-		elif id == Vector3.AXIS_Y:
+		elif axis == Vector3.AXIS_Y:
 			data.axis[0] = Vector3.AXIS_Z
 			data.axis[1] = Vector3.AXIS_X
 			
-		elif id == Vector3.AXIS_Z:
+		elif axis == Vector3.AXIS_Z:
 			data.axis[0] = Vector3.AXIS_X
 			data.axis[1] = Vector3.AXIS_Y
 			
-		data.current_axis = id
+		data.current_axis = axis
 		
 		emit_signal("poly_edited")
 		
@@ -241,11 +241,11 @@ class PolygonDialog:
 		var ofs = Vector3()
 		ofs[data.current_axis] = data.depth/2
 		
-		var surf = SurfaceTool.new()
+		var st = SurfaceTool.new()
 		
-		surf.begin(VS.PRIMITIVE_TRIANGLES)
+		st.begin(VS.PRIMITIVE_TRIANGLES)
 		
-		surf.add_smooth_group(false)
+		st.add_smooth_group(false)
 		
 		if data.current_axis == Vector3.AXIS_X and not data.invert:
 			index.invert()
@@ -255,8 +255,8 @@ class PolygonDialog:
 			
 		if data.gen_top:
 			for i in index:
-				surf.add_uv(poly[i]/s)
-				surf.add_vertex(to_vec3(poly[i]/s) + ofs)
+				st.add_uv(poly[i]/s)
+				st.add_vertex(to_vec3(poly[i]/s) + ofs)
 				
 		if data.depth:
 			if data.gen_sides:
@@ -284,19 +284,19 @@ class PolygonDialog:
 					
 					var u2 = Vector2(b, 0)/s
 					
-					surf.add_uv(u1+h)
-					surf.add_vertex(v1 + ofs)
-					surf.add_uv(u2+h)
-					surf.add_vertex(v2 + ofs)
-					surf.add_uv(u2)
-					surf.add_vertex(v2 - ofs)
+					st.add_uv(u1+h)
+					st.add_vertex(v1 + ofs)
+					st.add_uv(u2+h)
+					st.add_vertex(v2 + ofs)
+					st.add_uv(u2)
+					st.add_vertex(v2 - ofs)
 					
-					surf.add_uv(u2)
-					surf.add_vertex(v2 - ofs)
-					surf.add_uv(u1)
-					surf.add_vertex(v1 - ofs)
-					surf.add_uv(u1+h)
-					surf.add_vertex(v1 + ofs)
+					st.add_uv(u2)
+					st.add_vertex(v2 - ofs)
+					st.add_uv(u1)
+					st.add_vertex(v1 - ofs)
+					st.add_uv(u1+h)
+					st.add_vertex(v1 + ofs)
 					
 					u1 = u2
 					
@@ -307,18 +307,18 @@ class PolygonDialog:
 				for i in range(index.size() -1, -1, -1):
 					i = index[i]
 					
-					surf.add_uv(poly[i]/s)
-					surf.add_vertex(to_vec3(poly[i]/s) - ofs)
+					st.add_uv(poly[i]/s)
+					st.add_vertex(to_vec3(poly[i]/s) - ofs)
 					
 		index.clear()
 		
-		surf.generate_normals()
-		surf.index()
+		st.generate_normals()
+		st.index()
 		
-		var mesh = surf.commit()
-		surf.clear()
+		var mesh = st.commit()
+		st.clear()
 		
-		mesh.set_name(mesh_instance.get_name().to_lower())
+		mesh.set_name("polygon")
 		
 		return mesh
 		
@@ -376,7 +376,6 @@ class PolygonDialog:
 			mesh_instance.set_mesh(mesh)
 			
 		var exec_time = OS.get_ticks_msec() - start
-		
 		text_display.set_text("Generation time: " + str(exec_time) + " ms")
 		
 	func default():
@@ -815,11 +814,9 @@ func create(object):
 	return instance
 	
 func edit_primitive():
-	if not polygon_dialog.get_mesh_instance():
-		return
+	if polygon_dialog.is_hidden():
+		polygon_dialog.show_dialog()
 		
-	polygon_dialog.show_dialog()
-	
 func clear():
 	polygon_dialog.set_mesh_instance(null)
 	

@@ -624,7 +624,7 @@ class ParameterEditor:
 	func _check_box_pressed(pressed, name):
 		obj.set(name, pressed)
 		
-		emit_signal("parameter_edited")#, "", null)
+		emit_signal("parameter_edited")
 		
 	func _item_edited():
 		var item = tree.get_edited()
