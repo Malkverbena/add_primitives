@@ -4,6 +4,7 @@ var radius = 1.0
 var height = 2.0
 var sides = 16
 var slice = 0
+var generate_bottom = true
 var generate_ends = true
 
 static func get_name():
@@ -38,12 +39,13 @@ func create():
 		add_tri([center_top, min_pos, circle[0]], uv)
 		add_tri([center_top, circle[sides], min_pos], [uv[0], uv[2], uv[1]])
 		
-	for idx in range(sides):
-		uv = [Vector2(circle_uv[idx + 1].x, circle_uv[idx + 1].z),
-		      Vector2(circle_uv[idx].x, circle_uv[idx].z), Vector2(0.5, 0.5)]
-		
-		add_tri([circle[idx + 1], circle[idx], min_pos], uv)
-		
+	if generate_bottom:
+		for idx in range(sides):
+			uv = [Vector2(circle_uv[idx + 1].x, circle_uv[idx + 1].z),
+			      Vector2(circle_uv[idx].x, circle_uv[idx].z), Vector2(0.5, 0.5)]
+			
+			add_tri([circle[idx + 1], circle[idx], min_pos], uv)
+			
 	var mesh = commit()
 	
 	return mesh
@@ -54,5 +56,6 @@ func mesh_parameters(editor):
 	editor.add_tree_range('Sides', sides, 1, 3, 64)
 	editor.add_tree_range('Slice', slice, 1, 0, 359)
 	editor.add_tree_empty()
+	editor.add_tree_check('Generate Bottom', generate_bottom)
 	editor.add_tree_check('Generate Ends', generate_ends)
 

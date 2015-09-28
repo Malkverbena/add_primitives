@@ -43,7 +43,7 @@ func create():
 		add_quad([c[i]+sh, c2[i]+sh, c2[i+1]+sh, c[i+1]+sh], uv)
 		
 		if generate_bottom:
-			if not invert:
+			if not flip_normals:
 				uv.invert()
 				
 			add_quad([c[i+1], c2[i+1], c2[i], c[i]], uv)

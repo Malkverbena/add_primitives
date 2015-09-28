@@ -22,13 +22,14 @@
 
 extends Reference
 
-static func build_plane_verts(start, end, offset = Vector3(0,0,0)):
+static func build_plane_verts(dir1, dir2, offset = Vector3(0,0,0)):
 	var verts = []
+	verts.resize(4)
 	
-	verts.push_back(offset + end)
-	verts.push_back(offset + end + start)
-	verts.push_back(offset + start)
-	verts.push_back(offset)
+	verts[0] = offset
+	verts[1] = offset + dir2
+	verts[2] = offset + dir2 + dir1
+	verts[3] = offset + dir1
 	
 	return verts
 	
@@ -63,9 +64,7 @@ static func build_circle_verts_rot(pos, segments, radius = 1, matrix = Matrix3()
 		var a = s_angle * i
 		
 		var vector = Vector3(cos(a), 0, sin(a)) * radius
-		
 		vector = matrix.xform(vector)
-		
 		vector += pos
 		
 		circle_verts[i] = vector
@@ -84,7 +83,6 @@ static func build_ellipse_verts(pos, segments, radius = Vector2(1,1), angle = PI
 		var a = s_angle * i
 		
 		var vector = Vector3(sin(a) * radius.x, 0, cos(a) * radius.y)
-		
 		vector += pos
 		
 		ellipse_verts[i] = vector
@@ -97,8 +95,14 @@ static func build_ellipse_verts(pos, segments, radius = Vector2(1,1), angle = PI
 		
 	return ellipse_verts
 	
-static func plane_uv(start, end, last = true):
-	var uv = [Vector2(start, end), Vector2(0, end), Vector2(0, 0), Vector2(start, 0)]
+static func plane_uv(dir1, dir2, last = true):
+	var uv = []
+	uv.resize(4)
+	
+	uv[0] = Vector2(0, 0)
+	uv[1] = Vector2(0, dir2)
+	uv[2] = Vector2(dir1, dir2)
+	uv[3] = Vector2(dir1, 0)
 	
 	if not last:
 		uv.remove(3)

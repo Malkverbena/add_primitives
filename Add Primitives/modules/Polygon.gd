@@ -193,9 +193,12 @@ class PolygonDialog:
 			
 		redraw()
 		
-	func set_mesh_instance(mesh_instance):
-		self.mesh_instance = mesh_instance
+	func edit(node):
+		mesh_instance = node
 		
+		if node == null:
+			clear()
+			
 	func get_mesh_instance():
 		return mesh_instance
 		
@@ -411,17 +414,19 @@ class PolygonDialog:
 			
 		options.set_item_checked(options.get_item_index(Options.CLOSE), true)
 		
-		clear_canvas()
+		_clear_canvas()
 		
 	func redraw():
 		set_mode(-1)
 		canvas.update()
 		set_mode(Mode.DRAW)
 		
-	func clear_canvas():
+	func clear():
 		poly.clear()
 		set_mode(Mode.DRAW)
 		
+	func _clear_canvas():
+		clear()
 		canvas.update()
 		
 		emit_signal("poly_edited")
@@ -432,7 +437,7 @@ class PolygonDialog:
 			
 		mesh_instance = null
 		
-		clear_canvas()
+		_clear_canvas()
 		
 	func _changed(arg1 = null):
 		emit_signal("poly_edited")
@@ -612,7 +617,7 @@ class PolygonDialog:
 		canvas.draw_line(Vector2(s.x/2, 0), Vector2(s.x/2, s.y), ac[data.axis[1]], 2)
 		
 	func _exit_tree():
-		clear_canvas()
+		clear()
 		
 		data.clear()
 		
@@ -707,7 +712,7 @@ class PolygonDialog:
 		clear.set_text("Clear")
 		clear.set_button_icon(base.get_icon("RemoveHl", "EditorIcons"))
 		toolbar_top.add_child(clear)
-		clear.connect("pressed", self, "clear_canvas")
+		clear.connect("pressed", self, "_clear_canvas")
 		
 		canvas = Control.new()
 		vb.add_child(canvas)
@@ -806,7 +811,7 @@ func create(object):
 	object.add_child(instance)
 	instance.set_owner(root)
 	
-	polygon_dialog.set_mesh_instance(instance)
+	polygon_dialog.edit(instance)
 	
 	polygon_dialog.default()
 	polygon_dialog.show_dialog()
@@ -818,10 +823,15 @@ func edit_primitive():
 		polygon_dialog.show_dialog()
 		
 func clear():
-	polygon_dialog.set_mesh_instance(null)
+	polygon_dialog.edit(null)
+	polygon_dialog.clear()
 	
-	polygon_dialog.clear_canvas()
+func node_removed():
+	polygon_dialog.edit(null)
 	
+	if polygon_dialog.is_visible():
+		polygon_dialog.hide()
+		
 func _init(base):
 	var gui_base = base.get_node("/root/EditorNode").get_gui_base()
 	

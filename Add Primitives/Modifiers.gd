@@ -145,7 +145,7 @@ class ShearModifier:
 		return mesh_temp
 		
 	func modifier_parameters(editor):
-		editor.add_tree_combo(shear_axis, 'Shear Axis', 'x,y,z')
+		editor.add_tree_combo('Shear Axis', shear_axis, 'x,y,z')
 		editor.add_tree_range('Value', value)
 		
 # End ShearModifier
@@ -214,11 +214,7 @@ class ArrayModifier:
 		var ofs = offset
 		
 		if relative:
-			var vec = Vector3()
-			
-			vec.x = aabb.get_endpoint(0).x - aabb.get_endpoint(7).x
-			vec.y = aabb.get_endpoint(0).y - aabb.get_endpoint(7).y
-			vec.z = aabb.get_endpoint(0).z - aabb.get_endpoint(7).z
+			var vec = aabb.get_endpoint(0) - aabb.get_endpoint(7)
 			
 			ofs *= vec.abs()
 			
@@ -283,11 +279,7 @@ class OffsetModifier:
 		var ofs = offset
 		
 		if relative:
-			var vec = Vector3()
-			
-			vec.x = aabb.get_endpoint(0).x - aabb.get_endpoint(7).x
-			vec.y = aabb.get_endpoint(0).y - aabb.get_endpoint(7).y
-			vec.z = aabb.get_endpoint(0).z - aabb.get_endpoint(7).z
+			var vec = aabb.get_endpoint(0) - aabb.get_endpoint(7)
 			
 			ofs *= vec.abs()
 			
@@ -318,31 +310,16 @@ class OffsetModifier:
 class RandomModifier:
 	extends ModifierBase
 	
-	var random = Vector3(0.5, 0.5, 0.5)
+	var random_seed = 0
+	var amount = 1
 	
 	static func get_name():
 		return "Random"
 		
-	func _set(name, value):
-		if name == 'x':
-			random.x = value
-			
-			return true
-			
-		elif name == 'y':
-			random.y = value
-			
-			return true
-			
-		elif name == 'z':
-			random.z = value
-			
-			return true
-			
-		return false
-		
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
+		
+		seed(random_seed + 1)
 		
 		var cache = {}
 		
@@ -353,9 +330,9 @@ class RandomModifier:
 				var v = get_vertex(i)
 				
 				if not cache.has(v):
-					cache[v] = Vector3(rand_range(-1,1) * random.x,\
-					                   rand_range(-1,1) * random.y,\
-					                   rand_range(-1,1) * random.z)
+					cache[v] = Vector3(rand_range(-1,1) ,\
+					                   rand_range(-1,1) ,\
+					                   rand_range(-1,1)) * amount
 					
 				v += cache[v]
 				
@@ -370,9 +347,8 @@ class RandomModifier:
 		return mesh_temp
 		
 	func modifier_parameters(editor):
-		editor.add_tree_range('X', random.x, 0.01, 0, 100)
-		editor.add_tree_range('Y', random.y, 0.01, 0, 100)
-		editor.add_tree_range('Z', random.z, 0.01, 0, 100)
+		editor.add_tree_range('Amount', amount)
+		editor.add_tree_range('Random Seed', random_seed, 1, 0, 61)
 		
 # End RandomModifier
 
@@ -426,7 +402,7 @@ class UVTransformModifier:
 		if rotation:
 			m32 = m32.rotated(deg2rad(rotation))
 			
-		if scale != Vector2():
+		if scale != Vector2(1, 1):
 			m32 = m32.scaled(scale)
 			
 		for surf in range(mesh.get_surface_count()):
@@ -464,15 +440,15 @@ class UVTransformModifier:
 ################################################################################
 ################################################################################
 
-func get_modifiers():
+static func get_modifiers():
 	var modifiers = {
-		"Taper"  :TaperModifier,
-		"Shear"  :ShearModifier,
-		"Twist"  :TwistModifier,
-		"Array"  :ArrayModifier, 
-		"Offset" :OffsetModifier,
-		"Random" :RandomModifier,
-		"UV Transform" :UVTransformModifier 
+		"Taper"  : TaperModifier,
+		"Shear"  : ShearModifier,
+		"Twist"  : TwistModifier,
+		"Array"  : ArrayModifier, 
+		"Offset" : OffsetModifier,
+		"Random" : RandomModifier,
+		"UV Transform" : UVTransformModifier 
 	}
 	
 	return modifiers

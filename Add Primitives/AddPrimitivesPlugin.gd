@@ -73,7 +73,6 @@ class AddPrimitives:
 	extends HBoxContainer
 	
 	var last_module = ""
-	var exec_time = 0
 	
 	var popup_menu
 	var mesh_dialog
@@ -84,39 +83,24 @@ class AddPrimitives:
 	var builder
 	var base_mesh
 	
-	var mesh_scripts = {}
+	var primitives = {}
 	var modules = {}
 	
 	# Utilites
-	var dir
+	var Dir = DirectoryUtilities.new()
 	
 	static func module_call(object, method, args=[]):
-		if not object:
-			return null
+		if object and object.has_method(method):
+			return object.callv(method, args)
 			
-		if not object.has_method(method):
-			return null
-			
-		var vr = object.callv(method, args)
-		
-		return vr
-		
-	func get_object():
-		return node
-		
-	func get_mesh_instance():
-		return mesh_instance
-		
-	func get_mesh_dialog():
-		return mesh_dialog
+		return null
 		
 	func edit(object):
 		node = object
 		
 	func load_modules():
-		var path = dir.get_data_dir().plus_file('modules')
-		
-		var mods = dir.get_file_list(path, 'gd')
+		var path = Dir.get_data_dir().plus_file('modules')
+		var mods = Dir.get_file_list(path, 'gd')
 		
 		for m in mods:
 			var temp = load(path.plus_file(m))
@@ -125,52 +109,6 @@ class AddPrimitives:
 				temp = temp.new(self)
 				
 				modules[temp.get_name()] = temp
-				
-		mods.clear()
-		
-	func popup_signal(id, menu):
-		popup_menu.hide()
-		
-		var command = menu.get_item_text(menu.get_item_index(id))
-		
-		if command == 'Edit Primitive':
-			_edit_primitive()
-			
-		elif command == 'Reload':
-			_update_menu()
-			
-		elif modules.has(command):
-			mesh_instance = module_call(modules[command], "create", [node])
-			
-			last_module = command
-			
-			_set_edit_disabled(mesh_instance == null)
-			
-		else:
-			if last_module:
-				module_call(modules[last_module], "clear")
-				
-			last_module = ""
-			
-			builder = load(mesh_scripts[command]).new()
-			
-			if builder.has_method('create'):
-				add_mesh_instance()
-				mesh_instance.set_name(command)
-				
-				if builder.has_method('mesh_parameters'):
-					mesh_dialog.edit(mesh_instance, builder)
-					_set_edit_disabled(false)
-					
-					update_mesh()
-					
-					mesh_dialog.show_dialog()
-					
-				else:
-					base_mesh = builder.create()
-					
-				mesh_instance.set_mesh(base_mesh)
-				base_mesh.set_name(command.to_lower())
 				
 	func add_mesh_instance():
 		mesh_instance = MeshInstance.new()
@@ -195,22 +133,19 @@ class AddPrimitives:
 		
 		modify_mesh()
 		
-		exec_time = OS.get_ticks_msec() - start
-		mesh_dialog.display_text("Generation time: " + str(exec_time) + " ms")
+		_display_info(base_mesh, start)
 		
 	func modify_mesh():
 		var start = OS.get_ticks_msec()
 		
 		var modifier = mesh_dialog.get_editor("modifiers")
 		
-		var mesh_buffer = []
-		
 		if mesh_instance.get_mesh() != base_mesh:
 			mesh_instance.set_mesh(base_mesh)
 			
 		assert( mesh_instance.get_mesh() )
 		
-		var count = 0
+		var mesh = base_mesh.duplicate()
 		
 		for item in modifier.tree_items():
 			if not item.is_checked(1):
@@ -218,44 +153,54 @@ class AddPrimitives:
 				
 			var obj = instance_from_id(item.get_metadata(0))
 			
-			var mesh
 			var aabb = mesh_instance.get_aabb()
 			
-			if count:
-				mesh = obj.modifier(mesh_buffer[count - 1], aabb)
-				
-			else:
-				mesh = obj.modifier(base_mesh, aabb)
-				
-			mesh_buffer.push_back(mesh)
+			mesh = obj.modifier(mesh, aabb)
 			mesh_instance.set_mesh(mesh)
 			
-			count += 1
-			
-		exec_time = OS.get_ticks_msec() - start
-		mesh_dialog.display_text("Generation time: " + str(exec_time) + " ms")
+		_display_info(mesh, start)
 		
-	func transform_mesh(what):
-		if what == 0:
-			var value = mesh_dialog.get("transform/translation")
+	func _display_info(mesh, start = 0):
+		var exec_time = OS.get_ticks_msec() - start
+		
+		var vertex_count = 0
+		var face_count = 0
+		
+		for i in range(mesh.get_surface_count()):
+			var surf_v = mesh.surface_get_array_len(i)
 			
-			mesh_instance.set_translation(value)
+			vertex_count += surf_v
 			
-		elif what == 1:
-			var value = mesh_dialog.get("transform/rotation")
+			if mesh.surface_get_format(i) & VS.ARRAY_FORMAT_INDEX:
+				face_count += mesh.surface_get_array_index_len(i)/3
+				
+			else:
+				face_count += surf_v/3
+				
+		var text = "Verts: " + str(vertex_count) + " | Triangles: " + str(face_count) +\
+		           "\nGeneration time: " + str(exec_time) + " ms"
+		
+		mesh_dialog.display_text(text)
+		
+	func _popup_signal(id, menu):
+		popup_menu.hide()
+		
+		var command = menu.get_item_text(menu.get_item_index(id))
+		
+		if command == 'Reload':
+			_update_menu()
 			
-			mesh_instance.set_rotation(value)
+		elif command == 'Edit Primitive':
+			_edit_primitive()
 			
-		elif what == 2:
-			var value = mesh_dialog.get("transform/scale")
-			
-			mesh_instance.set_scale(value)
+		else:
+			_create_primitive(command)
 			
 	func _update_menu():
-		_set_edit_disabled(true)
+		builder = null
 		
 		popup_menu.clear()
-		mesh_scripts.clear()
+		primitives.clear()
 		
 		for c in popup_menu.get_children():
 			if c extends PopupMenu:
@@ -263,21 +208,21 @@ class AddPrimitives:
 				
 		var submenus = {}
 		
-		var path = dir.get_data_dir()
+		var path = Dir.get_data_dir()
 		
-		var scripts = dir.get_file_list(path.plus_file('meshes'), 'gd')
+		var scripts = Dir.get_file_list(path.plus_file('meshes'), 'gd')
 		scripts.sort()
 		
 		for f_name in scripts:
 			var p = path.plus_file('meshes'.plus_file(f_name))
 			
-			var temp = load(p)
-			var name = temp.get_name()
+			var script = load(p)
+			var name = script.get_name()
 			
 			if not name:
 				continue
 				
-			var container = temp.get_container()
+			var container = script.get_container()
 			
 			if container:
 				container = container.replace(' ', '_').to_lower()
@@ -290,7 +235,7 @@ class AddPrimitives:
 			else:
 				popup_menu.add_item(name)
 				
-			mesh_scripts[name] = p
+			primitives[name] = script
 			
 		if submenus.size():
 			popup_menu.add_separator()
@@ -305,7 +250,7 @@ class AddPrimitives:
 				
 				popup_menu.add_submenu_item(n, sub)
 				
-				submenu.connect("item_pressed", self, "popup_signal", [submenu])
+				submenu.connect("item_pressed", self, "_popup_signal", [submenu])
 				
 				for name in submenus[sub]:
 					submenu.add_item(name)
@@ -319,15 +264,50 @@ class AddPrimitives:
 		popup_menu.add_separator()
 		
 		popup_menu.add_icon_item(get_icon('Edit', 'EditorIcons'), 'Edit Primitive', -1, KEY_MASK_SHIFT + KEY_E)
-		
-		if not mesh_instance:
-			popup_menu.set_item_disabled(popup_menu.get_item_count() - 1, true)
-			
 		popup_menu.add_icon_item(get_icon('Reload', 'EditorIcons'), 'Reload')
 		
-		if not popup_menu.is_connected("item_pressed", self, "popup_signal"):
-			popup_menu.connect("item_pressed", self, "popup_signal", [popup_menu])
+		_set_edit_disabled(true)
+		
+		if not popup_menu.is_connected("item_pressed", self, "_popup_signal"):
+			popup_menu.connect("item_pressed", self, "_popup_signal", [popup_menu])
 			
+	func _create_primitive(name):
+		if modules.has(name):
+			last_module = name
+			mesh_instance = module_call(modules[name], "create", [node])
+			
+			_set_edit_disabled(mesh_instance == null)
+			
+			return
+			
+		if last_module:
+			module_call(modules[last_module], "clear")
+			
+			last_module = ""
+			
+		builder = primitives[name].new()
+		
+		if builder.has_method('create'):
+			add_mesh_instance()
+			mesh_instance.set_name(name)
+			
+			var start = OS.get_ticks_msec()
+			
+			base_mesh = builder.create()
+			
+			assert( base_mesh != null )
+			
+			base_mesh.set_name(name.to_lower())
+			mesh_instance.set_mesh(base_mesh)
+			
+			_display_info(base_mesh, start)
+			
+			if builder.has_method('mesh_parameters'):
+				mesh_dialog.edit(mesh_instance, builder)
+				_set_edit_disabled(false)
+				
+				mesh_dialog.show_dialog()
+				
 	func _set_edit_disabled(disable):
 		var count = popup_menu.get_item_count()
 		
@@ -362,6 +342,11 @@ class AddPrimitives:
 		if node == mesh_instance:
 			_set_edit_disabled(true)
 			
+			if last_module:
+				module_call(modules[last_module], "node_removed")
+				
+				last_module = ""
+				
 			if mesh_dialog.is_visible():
 				mesh_dialog.hide()
 				
@@ -377,17 +362,8 @@ class AddPrimitives:
 		mesh_dialog = preload("MeshDialog.gd").new(base)
 		base.add_child(mesh_dialog)
 		
-		# Load modifiers
-		var m_path = dir.get_data_dir().plus_file('Modifiers.gd')
-		var temp = load(m_path).new()
-		
-		var modifiers = temp.get_modifiers()
-		
-		mesh_dialog.set("modifiers/modifiers", modifiers)
-		
 		mesh_dialog.connect_editor("parameters", self, "update_mesh")
 		mesh_dialog.connect_editor("modifiers", self, "modify_mesh")
-		mesh_dialog.connect_editor("transform", self, "transform_mesh")
 		
 		mesh_dialog.connect("cancel", self, "remove_mesh_instace")
 		
@@ -397,14 +373,13 @@ class AddPrimitives:
 		popup_menu.clear()
 		mesh_dialog.clear()
 		
+		builder = null
 		base_mesh = null
 		
-		mesh_scripts.clear()
+		primitives.clear()
 		modules.clear()
 		
 	func _init():
-		dir = DirectoryUtilities.new()
-		
 		var separator = VSeparator.new()
 		add_child(separator)
 		

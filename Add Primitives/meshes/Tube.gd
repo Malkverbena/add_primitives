@@ -5,7 +5,8 @@ var outer_radius = 1.0
 var inner_radius = 0.5
 var sides = 16
 var slice = 0
-var generate_caps = true
+var generate_top = true
+var generate_bottom = true
 var generate_ends = true
 
 static func get_name():
@@ -23,11 +24,14 @@ func create():
 	
 	add_smooth_group(false)
 	
-	if generate_caps:
+	if generate_top or generate_bottom:
 		for idx in range(sides):
-			add_quad([oc[idx + 1] + ofs, ic[idx + 1] + ofs, ic[idx] + ofs, oc[idx] + ofs])
-			add_quad([oc[idx] - ofs, ic[idx] - ofs, ic[idx + 1] - ofs, oc[idx + 1] - ofs])
-			
+			if generate_top:
+				add_quad([oc[idx + 1] + ofs, ic[idx + 1] + ofs, ic[idx] + ofs, oc[idx] + ofs])
+				
+			if generate_bottom:
+				add_quad([oc[idx] - ofs, ic[idx] - ofs, ic[idx + 1] - ofs, oc[idx + 1] - ofs])
+				
 	if generate_ends and slice:
 		add_quad([oc[0] + ofs, ic[0] + ofs, ic[0] - ofs, oc[0] - ofs])
 		add_quad([ic[sides] + ofs, oc[sides] + ofs, oc[sides] - ofs, ic[sides] - ofs])
@@ -49,7 +53,8 @@ func mesh_parameters(editor):
 	editor.add_tree_range('Sides', sides, 1, 3, 64)
 	editor.add_tree_range('Slice', slice, 1, 0, 359)
 	editor.add_tree_empty()
-	editor.add_tree_check('Generate Caps', generate_caps)
+	editor.add_tree_check('Generate Top', generate_top)
+	editor.add_tree_check('Generate Bottom', generate_bottom)
 	editor.add_tree_check('Generate Ends', generate_ends)
 	
 

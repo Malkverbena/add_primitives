@@ -33,7 +33,7 @@ class MergeDialog:
 	func edit(instance, instances):
 		mesh_instance = instance
 		
-		if not mesh_instance:
+		if mesh_instance == null:
 			clear()
 			
 			return
@@ -190,6 +190,12 @@ func edit_primitive():
 func clear():
 	merge_dialog.clear()
 	
+func node_removed():
+	merge_dialog.edit(null)
+	
+	if merge_dialog.is_visible():
+		merge_dialog.hide()
+		
 func _init(base):
 	var gui_base = base.get_node("/root/EditorNode").get_gui_base()
 	

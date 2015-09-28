@@ -25,7 +25,7 @@ extends SurfaceTool
 const Utils = preload("Utils.gd")
 
 var smooth = false
-var invert = false
+var flip_normals = false
 
 static func get_name():
 	return ""
@@ -36,7 +36,7 @@ static func get_container():
 func add_tri(vertex = [], uv = []):
 	assert( vertex.size() == 3 )
 	
-	if invert:
+	if flip_normals:
 		vertex.invert()
 		uv.invert()
 		
@@ -56,7 +56,7 @@ func add_tri(vertex = [], uv = []):
 func add_quad(vertex = [], uv = []):
 	assert( vertex.size() == 4 )
 	
-	if invert:
+	if flip_normals:
 		vertex.invert()
 		uv.invert()
 		
@@ -112,9 +112,9 @@ func commit():
 	
 	.commit(mesh)
 	
-	if mesh.surface_get_format(0) & mesh.ARRAY_FORMAT_TEX_UV:
-		mesh.regen_normalmaps()
-		
+	#if mesh.get_surface_count() and mesh.surface_get_format(0) & mesh.ARRAY_FORMAT_TEX_UV:
+	#	mesh.regen_normalmaps()
+	#	
 	clear()
 	
 	return mesh

@@ -33,17 +33,18 @@ var main_panel
 var color_hb
 
 var options
-var color
+var color_picker
 var text_display
+
+# Default editors
 var parameter_editor
 var modifier_editor
-var transform_editor
 
 signal cancel
 
 static func create_display_material(instance):
 	var fixed_material = FixedMaterial.new()
-	fixed_material.set_name('_display_material')
+	fixed_material.set_name('__display_material__')
 	fixed_material.set_parameter(fixed_material.PARAM_DIFFUSE, Color(0,1,0))
 	
 	instance.set_material_override(fixed_material)
@@ -96,13 +97,12 @@ func edit(instance, builder = null):
 		parameter_editor.edit(builder)
 		
 	modifier_editor.create_modifiers()
-	transform_editor.update_from_instance(mesh_instance)
 	
 func show_dialog():
 	if not mesh_instance:
 		return
 		
-	color.set_color(Color(0,1,0))
+	color_picker.set_color(Color(0,1,0))
 	
 	if mesh_instance.get_material_override():
 		color_hb.hide()
@@ -114,10 +114,8 @@ func show_dialog():
 			color_hb.show()
 			
 	set_current_editor(0)
-	transform_editor.update_from_instance(mesh_instance)
 	
-	var sy = 260 + text_display.get_size().y
-	
+	var sy = 260 + text_display.get_line_height() * 2
 	popup_centered(Vector2(240, sy))
 	
 func display_text(text):
@@ -128,7 +126,6 @@ func clear():
 	
 	parameter_editor.clear()
 	modifier_editor.clear()
-	transform_editor.clear()
 	
 func _color_changed(color):
 	if mesh_instance extends MeshInstance:
@@ -170,22 +167,22 @@ func _popup_hide():
 	if mesh_instance:
 		var mat = mesh_instance.get_material_override()
 		
-		if mat and mat.get_name() == '_display_material':
+		if mat and mat.get_name() == '__display_material__':
 			mesh_instance.set_material_override(null)
 			
 func _init(base):
 	main_vbox = VBoxContainer.new()
 	add_child(main_vbox)
 	main_vbox.set_area_as_parent_rect(get_constant('margin', 'Dialogs'))
-	main_vbox.set_margin(MARGIN_BOTTOM, get_constant("button_margin","Dialogs")+10)
+	main_vbox.set_margin(MARGIN_BOTTOM, get_constant("button_margin","Dialogs")+4)
 	
 	var hb = HBoxContainer.new()
 	main_vbox.add_child(hb)
 	hb.set_h_size_flags(SIZE_EXPAND_FILL)
 	
 	options = OptionButton.new()
+	options.set_custom_minimum_size(Vector2(100, 0))
 	hb.add_child(options)
-	options.set_custom_minimum_size(Vector2(100,0))
 	options.connect("item_selected", self, "set_current_editor")
 	
 	var s = Control.new()
@@ -196,19 +193,18 @@ func _init(base):
 	hb.add_child(color_hb)
 	
 	var l = Label.new()
-	l.set_text("Display")
+	l.set_text("Display ")
 	color_hb.add_child(l)
 	
-	color = ColorPickerButton.new()
-	color.set_color(Color(0,1,0))
-	color.set_edit_alpha(false)
-	color_hb.add_child(color)
+	color_picker = ColorPickerButton.new()
+	color_picker.set_color(Color(0,1,0))
+	color_picker.set_edit_alpha(false)
+	color_hb.add_child(color_picker)
 	
-	var sy = color.get_minimum_size().y
+	var sy = color_picker.get_minimum_size().y
+	color_picker.set_custom_minimum_size(Vector2(sy, sy))
 	
-	color.set_custom_minimum_size(Vector2(sy, sy))
-	
-	color.connect("color_changed", self, "_color_changed")
+	color_picker.connect("color_changed", self, "_color_changed")
 	
 	main_panel = PanelContainer.new()
 	main_vbox.add_child(main_panel)
@@ -223,10 +219,6 @@ func _init(base):
 	main_panel.add_child(modifier_editor)
 	modifier_editor.hide()
 	
-	transform_editor = editors.TransformEditor.new()
-	main_panel.add_child(transform_editor)
-	transform_editor.hide()
-	
 	for editor in main_panel.get_children():
 		var name = editor.get_name().capitalize()
 		
@@ -237,7 +229,6 @@ func _init(base):
 	main_vbox.add_child(text_display)
 	
 	var cancel = add_cancel("Cancel")
-	
 	cancel.connect("pressed", self, "_cancel")
 	
 	connect("popup_hide", self, "_popup_hide")

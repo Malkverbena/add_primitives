@@ -36,16 +36,16 @@ func create():
 	add_smooth_group(smooth)
 	
 	for i in range(steps):
-		add_quad(Utils.build_plane_verts(d[1], d[0], Vector3(ofs_x, (i+1) * sh, i * sl)), [py+w, py+w+l, py+l, py])
-		add_quad(Utils.build_plane_verts(d[2], d[0], Vector3(ofs_x, i * sh, i * sl)), [pz+w, pz+h+w, pz+h, pz])
+		add_quad(Utils.build_plane_verts(d[1], d[0], Vector3(ofs_x, (i+1) * sh, i * sl)), [py, py+w, py+w+l, py+l])
+		add_quad(Utils.build_plane_verts(d[2], d[0], Vector3(ofs_x, i * sh, i * sl)), [pz, pz+w, pz+w+h, pz+h])
 		
 		if generate_sides:
 			var ch = Vector2(0, sh * (i+1))
 			
 			add_quad(Utils.build_plane_verts(d[1], Vector3(0, ch.y, 0), Vector3(ofs_x, 0, i * sl)),\
-			         [py+ch, py+ch+l, py+l, py])
+			         [py, py+ch, py+ch+l, py+l])
 			add_quad(Utils.build_plane_verts(Vector3(0, ch.y, 0), d[1], Vector3(-ofs_x, 0, i * sl)),\
-			         [py+l, py+l+ch, py+ch, py])
+			         [py, py+l, py+l+ch, py+ch])
 			
 		py.x += sl
 		pz.x += sh

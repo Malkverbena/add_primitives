@@ -17,10 +17,10 @@ func create():
 	
 	var ch = Vector3(0, height, 0)
 	
-	var hl = sqrt(pow(length/2, 2) + pow(height, 2))
 	var hw = sqrt(pow(width/2, 2) + pow(height, 2))
+	var hl = sqrt(pow(length/2, 2) + pow(height, 2))
 	
-	var uv = [Vector2(width/2, 0), Vector2(width, hl), Vector2(0, hl)]
+	var uv = [Vector2(length/2, 0), Vector2(length, hw), Vector2(0, hw)]
 	
 	begin(VS.PRIMITIVE_TRIANGLES)
 	
@@ -31,9 +31,9 @@ func create():
 	add_tri([ch, plane[1], plane[0]], uv)
 	add_tri([ch, plane[3], plane[2]], uv)
 	
-	uv[0].x = length/2
-	uv[1] = Vector2(length, hw)
-	uv[2].y = hw
+	uv[0].x = width/2
+	uv[1] = Vector2(width, hl)
+	uv[2].y = hl
 	
 	add_tri([ch, plane[2], plane[1]], uv)
 	add_tri([ch, plane[0], plane[3]], uv)

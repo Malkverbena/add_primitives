@@ -5,7 +5,8 @@ var height = 2.0
 var sides = 16
 var height_segments = 1
 var slice = 0
-var generate_caps = true
+var generate_top = true
+var generate_bottom = true
 var generate_ends = true
 
 static func get_name():
@@ -28,17 +29,20 @@ func create():
 	
 	add_smooth_group(false)
 	
-	if generate_caps:
+	if generate_top or generate_bottom:
 		var top = Vector3(0, h/2, 0)
 		
 		var c = Vector2(0.5, 0.5)
 		
 		for idx in range(sides):
-			add_tri([top, circle[idx], circle[idx + 1]],\
-			        [c, Vector2(uv[idx].x, uv[idx].z), Vector2(uv[idx + 1].x, uv[idx + 1].z)])
-			add_tri([pos/2, circle[idx + 1] + pos, circle[idx] + pos],\
-			        [c, Vector2(uv[idx + 1].x, uv[idx + 1].z), Vector2(uv[idx].x, uv[idx].z)])
-			
+			if generate_top:
+				add_tri([top, circle[idx], circle[idx + 1]],\
+				        [c, Vector2(uv[idx].x, uv[idx].z), Vector2(uv[idx + 1].x, uv[idx + 1].z)])
+				
+			if generate_bottom:
+				add_tri([pos/2, circle[idx + 1] + pos, circle[idx] + pos],\
+				        [c, Vector2(uv[idx + 1].x, uv[idx + 1].z), Vector2(uv[idx].x, uv[idx].z)])
+				
 	if generate_ends and slice:
 		var t = Vector3(0, h/2, 0)
 		
@@ -98,7 +102,8 @@ func mesh_parameters(editor):
 	editor.add_tree_range('Height Segments', height_segments, 1, 1, 64)
 	editor.add_tree_range('Slice', slice, 1, 0, 359)
 	editor.add_tree_empty()
-	editor.add_tree_check('Generate Caps', generate_caps)
+	editor.add_tree_check('Generate Top', generate_top)
+	editor.add_tree_check('Generate Bottom', generate_bottom)
 	editor.add_tree_check('Generate Ends', generate_ends)
 	
 

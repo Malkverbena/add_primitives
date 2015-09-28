@@ -23,155 +23,6 @@
 
 extends Reference
 
-class TransformEditor:
-	extends VBoxContainer
-	
-	var emit = true
-	
-	var translation = Vector3(0,0,0)
-	var rotation = Vector3(0,0,0)
-	var scale = Vector3(1,1,1)
-	
-	var spin_boxes = []
-	
-	signal transform_changed(what)
-	
-	static func get_signal():
-		return "transform_changed"
-		
-	func set_translation(value, axis):
-		translation[axis] = value
-		
-		if emit:
-			emit_signal("transform_changed", 0)
-			
-	func set_rotation(value, axis):
-		rotation[axis] = deg2rad(value)
-		
-		if emit:
-			emit_signal("transform_changed", 1)
-			
-	func set_scale(value, axis):
-		scale[axis] = value
-		
-		if emit:
-			emit_signal("transform_changed", 2)
-			
-	func add_spacer(parent):
-		var c = Control.new()
-		
-		parent.add_child(c)
-		c.set_h_size_flags(SIZE_EXPAND_FILL)
-		c.set_v_size_flags(SIZE_EXPAND_FILL)
-		
-	func add_label(parent, label):
-		var l = Label.new()
-		
-		l.set_text(label)
-		l.set_align(l.ALIGN_LEFT)
-		l.set_valign(l.VALIGN_FILL)
-		
-		parent.add_child(l)
-		
-	func add_row():
-		var hb = HBoxContainer.new()
-		
-		add_child(hb)
-		hb.set_h_size_flags(SIZE_EXPAND_FILL)
-		
-		return hb
-		
-	func add_spinbox(parent, value, step, min_, max_):
-		var spin = SpinBox.new()
-		
-		spin.set_val(value)
-		spin.set_step(step)
-		spin.set_min(min_)
-		spin.set_max(max_)
-		parent.add_child(spin)
-		
-		spin_boxes.push_back(spin)
-		
-		spin.set_h_size_flags(SIZE_EXPAND)
-		
-		return spin
-		
-	func update_from_instance(instance):
-		var tns = instance.get_translation()
-		var rot = instance.get_rotation()
-		var scl = instance.get_scale()
-		
-		emit = false
-		
-		spin_boxes[0].set_val(tns[Vector3.AXIS_X])
-		spin_boxes[1].set_val(tns[Vector3.AXIS_Y])
-		spin_boxes[2].set_val(tns[Vector3.AXIS_Z])
-		
-		spin_boxes[3].set_val(rot[Vector3.AXIS_X])
-		spin_boxes[4].set_val(rot[Vector3.AXIS_Y])
-		spin_boxes[5].set_val(rot[Vector3.AXIS_Z])
-		
-		spin_boxes[6].set_val(scl[Vector3.AXIS_X])
-		spin_boxes[7].set_val(scl[Vector3.AXIS_Y])
-		spin_boxes[8].set_val(scl[Vector3.AXIS_Z])
-		
-		emit = true
-		
-	func clear():
-		spin_boxes.clear()
-		
-	func _init():
-		set_name("transform")
-		set_v_size_flags(SIZE_EXPAND_FILL)
-		
-		var hb = add_row()
-		
-		add_label(hb, 'Translation:')
-		
-		hb = add_row()
-		
-		var tx = add_spinbox(hb, 0, 0.01, -500, 500)
-		var ty = add_spinbox(hb, 0, 0.01, -500, 500)
-		var tz = add_spinbox(hb, 0, 0.01, -500, 500)
-		
-		tx.connect("value_changed", self, "set_translation", [Vector3.AXIS_X])
-		ty.connect("value_changed", self, "set_translation", [Vector3.AXIS_Y])
-		tz.connect("value_changed", self, "set_translation", [Vector3.AXIS_Z])
-		
-		add_spacer(self)
-		
-		hb = add_row()
-		
-		add_label(hb, 'Rotation:')
-		
-		hb = add_row()
-		
-		var rx = add_spinbox(hb, 0, 1, -360, 360) 
-		var ry = add_spinbox(hb, 0, 1, -360, 360) 
-		var rz = add_spinbox(hb, 0, 1, -360, 360) 
-		
-		rx.connect("value_changed", self, "set_rotation", [Vector3.AXIS_X])
-		ry.connect("value_changed", self, "set_rotation", [Vector3.AXIS_Y])
-		rz.connect("value_changed", self, "set_rotation", [Vector3.AXIS_Z])
-		
-		add_spacer(self)
-		
-		hb = add_row()
-		
-		add_label(hb, 'Scale:')
-		
-		hb = add_row()
-		
-		var sx = add_spinbox(hb, 1, 0.01, -100, 100)
-		var sy = add_spinbox(hb, 1, 0.01, -100, 100)
-		var sz = add_spinbox(hb, 1, 0.01, -100, 100)
-		
-		sx.connect("value_changed", self, "set_scale", [Vector3.AXIS_X])
-		sy.connect("value_changed", self, "set_scale", [Vector3.AXIS_Y])
-		sz.connect("value_changed", self, "set_scale", [Vector3.AXIS_Z])
-		
-# End TransformEditor
-
 #Base class for ParameterEditor and ModifierEditor
 class TreeEditor:
 	extends VBoxContainer
@@ -294,8 +145,7 @@ class ModifierEditor:
 	const Tool = {
 		ERASE = 0,
 		MOVE_UP = 1,
-		MOVE_DOWN = 2,
-		RELOAD = 3
+		MOVE_DOWN = 2
 	}
 	
 	var edited_modifier = null
@@ -304,7 +154,6 @@ class ModifierEditor:
 	var remove
 	var move_up
 	var move_down
-	var reload
 	
 	var items = []
 	
@@ -325,10 +174,10 @@ class ModifierEditor:
 		return instance_from_id(edited_modifier)
 		
 	func create_modifiers():
-		tree.clear()
 		items.clear()
 		
 		menu.clear()
+		tree.clear()
 		
 		var keys = modifiers.keys()
 		keys.sort()
@@ -374,9 +223,9 @@ class ModifierEditor:
 			var data = {
 				name = item.get_text(0),
 				metadata = item.get_metadata(0),
+				is_selected = item.is_selected(0),
 				is_checked = item.is_checked(1),
-				is_collapsed = item.is_collapsed(),
-				is_selected = item.is_selected(0)
+				is_collapsed = item.is_collapsed()
 			}
 			
 			cache.append(data)
@@ -415,10 +264,9 @@ class ModifierEditor:
 			
 			item.get_parent().remove_child(item)
 			
-			if items.empty() and not reload.is_disabled():
-				reload.set_disabled(true)
-				
 			remove.set_disabled(true)
+			move_up.set_disabled(true)
+			move_down.set_disabled(true)
 			
 		if what == Tool.MOVE_UP or what == Tool.MOVE_DOWN:
 			var obj = instance_from_id(item.get_metadata(0))
@@ -457,9 +305,6 @@ class ModifierEditor:
 		
 		create_modifier(modifiers[mod])
 		
-		if items.size() and reload.is_disabled():
-			reload.set_disabled(false)
-			
 		emit_signal("modifier_edited")
 		
 	func _rebuild_tree(cache):
@@ -499,6 +344,8 @@ class ModifierEditor:
 			
 			emit_signal("modifier_edited")
 			
+			return
+			
 		edited_modifier = parent.get_metadata(0)
 		
 		var name = get_parameter_name(item)
@@ -527,6 +374,10 @@ class ModifierEditor:
 	func _init(base):
 		set_name("modifiers")
 		
+		# Load modifiers
+		var temp = preload("Modifiers.gd")
+		modifiers = temp.get_modifiers()
+		
 		var hbox_tools = HBoxContainer.new()
 		add_child(hbox_tools)
 		hbox_tools.set_h_size_flags(SIZE_EXPAND_FILL)
@@ -548,7 +399,7 @@ class ModifierEditor:
 		remove.set_disabled(true)
 		hbox_tools.add_child(remove)
 		
-		#Spacer
+		# Spacer
 		var s = Control.new()
 		hbox_tools.add_child(s)
 		s.set_h_size_flags(SIZE_EXPAND_FILL)
@@ -563,23 +414,14 @@ class ModifierEditor:
 		move_down.set_disabled(true)
 		hbox_tools.add_child(move_down)
 		
-		reload = ToolButton.new()
-		reload.set_button_icon(base.get_icon('Reload', 'EditorIcons'))
-		reload.set_tooltip("Reload Modifiers")
-		reload.set_disabled(true)
-		hbox_tools.add_child(reload)
-		
 		remove.connect("pressed", self, "_modifier_tools", [Tool.ERASE])
 		move_up.connect("pressed", self, "_modifier_tools", [Tool.MOVE_UP])
 		move_down.connect("pressed", self, "_modifier_tools", [Tool.MOVE_DOWN])
-		reload.connect("pressed", self, "_modifier_tools", [Tool.RELOAD])
 		
 		tree.connect("item_edited", self, "_item_edited")
 		tree.connect("cell_selected", self, "_item_selected")
 		
 # End ModifierEditor
-
-
 
 class ParameterEditor:
 	extends TreeEditor
@@ -587,7 +429,7 @@ class ParameterEditor:
 	var obj
 	
 	var smooth_button
-	var invert_button
+	var flip_button
 	
 	signal parameter_edited
 	
@@ -595,15 +437,15 @@ class ParameterEditor:
 		return "parameter_edited"
 		
 	func edit(builder):
-		if not builder:
-			obj = null
-			
-			clear()
-			
 		obj = builder
 		
 		tree.clear()
 		
+		if builder == null:
+			clear()
+			
+			return
+			
 		tree.set_hide_root(true)
 		tree.set_columns(2)
 		tree.set_column_titles_visible(true)
@@ -616,7 +458,7 @@ class ParameterEditor:
 		builder.mesh_parameters(self)
 		
 		smooth_button.set_pressed(false)
-		invert_button.set_pressed(false)
+		flip_button.set_pressed(false)
 		
 	func clear():
 		tree.clear()
@@ -652,13 +494,13 @@ class ParameterEditor:
 		hb.add_child(smooth_button)
 		smooth_button.set_h_size_flags(SIZE_EXPAND_FILL)
 		
-		invert_button = CheckBox.new()
-		invert_button.set_text('Invert Normals')
-		hb.add_child(invert_button)
-		invert_button.set_h_size_flags(SIZE_EXPAND_FILL)
+		flip_button = CheckBox.new()
+		flip_button.set_text('Flip Normals')
+		hb.add_child(flip_button)
+		flip_button.set_h_size_flags(SIZE_EXPAND_FILL)
 		
 		smooth_button.connect("toggled", self, "_check_box_pressed", ['smooth'])
-		invert_button.connect("toggled", self, "_check_box_pressed", ['invert'])
+		flip_button.connect("toggled", self, "_check_box_pressed", ['flip_normals'])
 		
 		tree.connect("item_edited", self, "_item_edited")
 		
