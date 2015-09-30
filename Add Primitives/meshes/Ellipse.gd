@@ -20,7 +20,7 @@ func create():
 	var ellipse = Utils.build_ellipse_verts(c, segments, r, sa)
 	var ellipse_uv = Utils.build_ellipse_verts(Vector3(0.5,0,0.5), segments, r, sa)
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	

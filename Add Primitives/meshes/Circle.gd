@@ -15,7 +15,7 @@ func create():
 	var circle = Utils.build_circle_verts(c, segments, radius, sa)
 	var circle_uv = Utils.build_circle_verts(Vector3(0.5, 0, 0.5), segments, radius, sa)
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	

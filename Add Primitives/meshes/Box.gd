@@ -20,7 +20,7 @@ func create():
 	
 	var ofs = Vector3(-width/2,-height/2,-length/2)
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	

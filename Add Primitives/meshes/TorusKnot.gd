@@ -30,7 +30,7 @@ func create():
 	var v = []
 	var index = 0
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	

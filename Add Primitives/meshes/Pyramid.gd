@@ -22,7 +22,7 @@ func create():
 	
 	var uv = [Vector2(length/2, 0), Vector2(length, hw), Vector2(0, hw)]
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	

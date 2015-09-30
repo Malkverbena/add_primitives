@@ -21,7 +21,7 @@ func create():
 	var pos = Vector3(0, -cos(angle) * radius, 0)
 	var rd = Vector3(sin(angle), 0, sin(angle))
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	if slice and generate_ends:
 		add_smooth_group(false)

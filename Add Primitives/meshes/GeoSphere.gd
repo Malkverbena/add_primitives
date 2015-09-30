@@ -98,7 +98,7 @@ func create():
 		
 	var last = false
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	

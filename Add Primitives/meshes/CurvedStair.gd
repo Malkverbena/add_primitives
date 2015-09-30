@@ -28,7 +28,7 @@ func create():
 	
 	var w = abs(outer_radius - inner_radius)
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	

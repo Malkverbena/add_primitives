@@ -33,6 +33,9 @@ static func get_name():
 static func get_container():
 	return ""
 	
+func begin():
+	.begin(VS.PRIMITIVE_TRIANGLES)
+	
 func add_tri(vertex = [], uv = []):
 	assert( vertex.size() == 3 )
 	
@@ -106,6 +109,7 @@ func add_plane(start, end, offset = Vector3()):
 	
 func commit():
 	var mesh = Mesh.new()
+	
 	
 	generate_normals()
 	index()

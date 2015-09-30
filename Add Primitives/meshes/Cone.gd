@@ -21,7 +21,7 @@ func create():
 	
 	var uv
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	

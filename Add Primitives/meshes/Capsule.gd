@@ -21,7 +21,7 @@ func create():
 	var r = Vector3(sin(angle), 0, sin(angle))
 	var p = Vector3(0,-cos(angle) * radius - height, 0)
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	

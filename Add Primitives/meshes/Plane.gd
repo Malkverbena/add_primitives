@@ -17,7 +17,7 @@ func create():
 	var w = verts[0].distance_to(verts[1])
 	var l = verts[0].distance_to(verts[3])
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	

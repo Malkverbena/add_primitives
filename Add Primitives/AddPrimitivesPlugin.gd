@@ -122,8 +122,6 @@ class AddPrimitives:
 			mesh_instance.queue_free()
 			
 	func update_mesh():
-		var start = OS.get_ticks_msec()
-		
 		base_mesh = builder.create()
 		
 		assert( base_mesh != null )
@@ -131,13 +129,11 @@ class AddPrimitives:
 		base_mesh.set_name(builder.get_name().to_lower())
 		mesh_instance.set_mesh(base_mesh)
 		
-		modify_mesh()
+		var mesh = modify_mesh()
 		
-		_display_info(base_mesh, start)
+		return mesh
 		
 	func modify_mesh():
-		var start = OS.get_ticks_msec()
-		
 		var modifier = mesh_dialog.get_editor("modifiers")
 		
 		if mesh_instance.get_mesh() != base_mesh:
@@ -158,7 +154,15 @@ class AddPrimitives:
 			mesh = obj.modifier(mesh, aabb)
 			mesh_instance.set_mesh(mesh)
 			
-		_display_info(mesh, start)
+		return mesh
+		
+	func _update_mesh():
+		var start = OS.get_ticks_msec()
+		_display_info(update_mesh(), start)
+		
+	func _modify_mesh():
+		var start = OS.get_ticks_msec()
+		_display_info(modify_mesh(), start)
 		
 	func _display_info(mesh, start = 0):
 		var exec_time = OS.get_ticks_msec() - start
@@ -329,8 +333,6 @@ class AddPrimitives:
 		if mesh_dialog.is_hidden():
 			mesh_dialog.show_dialog()
 			
-			update_mesh()
-			
 	func _unhandled_key_input(key_event):
 		if key_event.pressed and not key_event.echo:
 			if key_event.scancode == KEY_E and key_event.shift:
@@ -362,8 +364,8 @@ class AddPrimitives:
 		mesh_dialog = preload("MeshDialog.gd").new(base)
 		base.add_child(mesh_dialog)
 		
-		mesh_dialog.connect_editor("parameters", self, "update_mesh")
-		mesh_dialog.connect_editor("modifiers", self, "modify_mesh")
+		mesh_dialog.connect_editor("parameters", self, "_update_mesh")
+		mesh_dialog.connect_editor("modifiers", self, "_modify_mesh")
 		
 		mesh_dialog.connect("cancel", self, "remove_mesh_instace")
 		

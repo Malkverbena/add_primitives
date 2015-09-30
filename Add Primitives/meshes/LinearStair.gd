@@ -31,7 +31,7 @@ func create():
 	var l = Vector2(sl, 0)
 	var h = Vector2(sh, 0)
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	

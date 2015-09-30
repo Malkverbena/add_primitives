@@ -25,7 +25,7 @@ func create():
 	
 	var pos = Vector3(0, -h, 0)
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(false)
 	

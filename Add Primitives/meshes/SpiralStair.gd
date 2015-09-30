@@ -24,7 +24,7 @@ func create():
 	
 	var s = spiral_height/steps_per_spiral
 	
-	begin(VS.PRIMITIVE_TRIANGLES)
+	begin()
 	
 	add_smooth_group(smooth)
 	
