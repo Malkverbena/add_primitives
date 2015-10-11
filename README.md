@@ -20,11 +20,11 @@
   * Ellipsoid
   * L Box
   * Pyramid
+  * Torus Knot
 
 2. Popup Window:
   * Parameters tab
   * Modifier tab
-  * Transform tab
 
 3. Modifier System
   * Twist
