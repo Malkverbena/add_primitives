@@ -24,8 +24,7 @@
 tool
 extends EditorPlugin
 
-class DirectoryUtilities:
-	extends Directory
+class DirectoryUtilities extends Directory:
 	
 	# Get plugin folder path
 	func get_data_dir():
@@ -69,10 +68,11 @@ class DirectoryUtilities:
 		
 # End DirectoryUtilities
 
-class AddPrimitives:
-	extends HBoxContainer
+class AddPrimitives extends HBoxContainer:
 	
 	var last_module = ""
+	
+	var undo_redo
 	
 	var popup_menu
 	var mesh_dialog
@@ -103,31 +103,32 @@ class AddPrimitives:
 		var mods = Dir.get_file_list(path, 'gd')
 		
 		for m in mods:
-			var temp = load(path.plus_file(m))
+			var module = load(path.plus_file(m))
 			
-			if temp.can_instance():
-				temp = temp.new(self)
+			if module.can_instance():
+				module = module.new(self)
 				
-				modules[temp.get_name()] = temp
+				modules[module.get_name()] = module
 				
 	func add_mesh_instance():
 		mesh_instance = MeshInstance.new()
 		
-		var root = get_tree().get_edited_scene_root()
-		node.add_child(mesh_instance)
-		mesh_instance.set_owner(root)
+		var edited_scene = get_tree().get_edited_scene_root()
 		
-	func remove_mesh_instace():
-		if mesh_instance.is_inside_tree():
-			mesh_instance.queue_free()
-			
+		undo_redo.create_action("Create Primitive")
+		
+		undo_redo.add_do_method(node, "add_child", mesh_instance)
+		undo_redo.add_do_method(mesh_instance, "set_owner", edited_scene)
+		undo_redo.add_do_reference(mesh_instance)
+		
+		undo_redo.add_undo_method(node, "remove_child", mesh_instance)
+		
+		undo_redo.commit_action()
+		
 	func update_mesh():
-		base_mesh = builder.create()
+		builder.create()
 		
 		assert( base_mesh != null )
-		
-		base_mesh.set_name(builder.get_name().to_lower())
-		mesh_instance.set_mesh(base_mesh)
 		
 		var mesh = modify_mesh()
 		
@@ -139,7 +140,7 @@ class AddPrimitives:
 		if mesh_instance.get_mesh() != base_mesh:
 			mesh_instance.set_mesh(base_mesh)
 			
-		assert( mesh_instance.get_mesh() )
+		assert( base_mesh != null )
 		
 		var mesh = base_mesh.duplicate()
 		
@@ -168,7 +169,7 @@ class AddPrimitives:
 		var exec_time = OS.get_ticks_msec() - start
 		
 		var vertex_count = 0
-		var face_count = 0
+		var triangle_count = 0
 		
 		for i in range(mesh.get_surface_count()):
 			var surf_v = mesh.surface_get_array_len(i)
@@ -176,12 +177,12 @@ class AddPrimitives:
 			vertex_count += surf_v
 			
 			if mesh.surface_get_format(i) & VS.ARRAY_FORMAT_INDEX:
-				face_count += mesh.surface_get_array_index_len(i)/3
+				triangle_count += mesh.surface_get_array_index_len(i)/3
 				
 			else:
-				face_count += surf_v/3
+				triangle_count += surf_v/3
 				
-		var text = "Verts: " + str(vertex_count) + " | Triangles: " + str(face_count) +\
+		var text = "Verts: " + str(vertex_count) + " | Triangles: " + str(triangle_count) +\
 		           "\nGeneration time: " + str(exec_time) + " ms"
 		
 		mesh_dialog.display_text(text)
@@ -276,9 +277,12 @@ class AddPrimitives:
 			popup_menu.connect("item_pressed", self, "_popup_signal", [popup_menu])
 			
 	func _create_primitive(name):
+		add_mesh_instance()
+		
 		if modules.has(name):
 			last_module = name
-			mesh_instance = module_call(modules[name], "create", [node])
+			
+			module_call(modules[name], "create", [mesh_instance])
 			
 			_set_edit_disabled(mesh_instance == null)
 			
@@ -292,16 +296,13 @@ class AddPrimitives:
 		builder = primitives[name].new()
 		
 		if builder.has_method('create'):
-			add_mesh_instance()
 			mesh_instance.set_name(name)
 			
 			var start = OS.get_ticks_msec()
 			
-			base_mesh = builder.create()
+			base_mesh = builder.get_mesh()
+			builder.create()
 			
-			assert( base_mesh != null )
-			
-			base_mesh.set_name(name.to_lower())
 			mesh_instance.set_mesh(base_mesh)
 			
 			_display_info(base_mesh, start)
@@ -315,11 +316,12 @@ class AddPrimitives:
 	func _set_edit_disabled(disable):
 		var count = popup_menu.get_item_count()
 		
+		set_process_unhandled_key_input(not disable)
+		
 		if not count:
 			return
 			
 		popup_menu.set_item_disabled(count - 2, disable)
-		set_process_unhandled_key_input(not disable)
 		
 	func _edit_primitive():
 		if not mesh_instance:
@@ -356,7 +358,6 @@ class AddPrimitives:
 			
 	func _enter_tree():
 		load_modules()
-		
 		_update_menu()
 		
 		var base = get_node("/root/EditorNode").get_gui_base()
@@ -366,8 +367,6 @@ class AddPrimitives:
 		
 		mesh_dialog.connect_editor("parameters", self, "_update_mesh")
 		mesh_dialog.connect_editor("modifiers", self, "_modify_mesh")
-		
-		mesh_dialog.connect("cancel", self, "remove_mesh_instace")
 		
 		get_tree().connect("node_removed", self, "_node_removed")
 		
@@ -386,8 +385,7 @@ class AddPrimitives:
 		add_child(separator)
 		
 		var spatial_menu = MenuButton.new()
-		var icon = preload('icon_mesh_instance_add.png')
-		spatial_menu.set_button_icon(icon)
+		spatial_menu.set_button_icon(preload('icon_mesh_instance_add.png'))
 		spatial_menu.set_tooltip("Add New Primitive")
 		
 		popup_menu = spatial_menu.get_popup()
@@ -410,12 +408,14 @@ func handles(object):
 func make_visible(visible):
 	if visible:
 		add_primitives.show()
+		
 	else:
 		add_primitives.hide()
 		add_primitives.edit(null)
 		
 func _enter_tree():
 	add_primitives = AddPrimitives.new()
+	add_primitives.undo_redo = get_undo_redo()
 	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, add_primitives)
 	add_primitives.hide()
 	

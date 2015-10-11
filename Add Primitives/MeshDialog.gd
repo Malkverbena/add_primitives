@@ -21,7 +21,7 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                       #
 #==============================================================================#
 
-extends AcceptDialog
+extends WindowDialog
 
 var index = 0
 
@@ -39,8 +39,6 @@ var text_display
 # Default editors
 var parameter_editor
 var modifier_editor
-
-signal cancel
 
 static func create_display_material(instance):
 	var fixed_material = FixedMaterial.new()
@@ -115,7 +113,7 @@ func show_dialog():
 			
 	set_current_editor(0)
 	
-	var sy = 260 + text_display.get_line_height() * 2
+	var sy = 250 + text_display.get_line_height() * 2
 	popup_centered(Vector2(240, sy))
 	
 func display_text(text):
@@ -174,7 +172,6 @@ func _init(base):
 	main_vbox = VBoxContainer.new()
 	add_child(main_vbox)
 	main_vbox.set_area_as_parent_rect(get_constant('margin', 'Dialogs'))
-	main_vbox.set_margin(MARGIN_BOTTOM, get_constant("button_margin","Dialogs")+4)
 	
 	var hb = HBoxContainer.new()
 	main_vbox.add_child(hb)
@@ -227,9 +224,6 @@ func _init(base):
 	text_display = Label.new()
 	text_display.set_align(text_display.ALIGN_CENTER)
 	main_vbox.add_child(text_display)
-	
-	var cancel = add_cancel("Cancel")
-	cancel.connect("pressed", self, "_cancel")
 	
 	connect("popup_hide", self, "_popup_hide")
 	

@@ -29,9 +29,7 @@ func create():
 		add_quad([circle[i] * inner_radius, circle[i] * outer_radius,
 		          circle[i+1] * outer_radius, circle[i+1] * inner_radius], uv)
 		
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Outer Radius', outer_radius)

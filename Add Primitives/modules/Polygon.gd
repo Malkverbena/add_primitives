@@ -23,8 +23,7 @@
 
 extends Reference
 
-class PolygonDialog:
-	extends ConfirmationDialog
+class PolygonDialog extends ConfirmationDialog:
 	
 	const Mode = {
 		DRAW = 0,
@@ -33,8 +32,8 @@ class PolygonDialog:
 	}
 	
 	const Options = {
-		USE_SNAP = 0,
-		SHOW_GRID = 1,
+		SNAP = 0,
+		GRID = 1,
 		CONFIGURE_SNAP = 2,
 		GENERATE_TOP = 3,
 		GENERATE_SIDES = 4,
@@ -48,13 +47,13 @@ class PolygonDialog:
 	var pressed = false
 	var snap = false
 	var show_grid = false
-	var grid_step = Vector2(10,10)
+	var grid_step = Vector2(10, 10)
 	
-	#Knife Tool
+	# Knife Tool
 	var knife_start = Vector2()
 	var knife_end = Vector2()
 	
-	#Default Values
+	# Default Values
 	var data = {
 		next = 1,
 		clockwise = false,
@@ -65,7 +64,7 @@ class PolygonDialog:
 		invert = false,
 		close = true,
 		current_axis = Vector3.AXIS_X,
-		axis = [Vector3.AXIS_Z, Vector3.AXIS_Y],
+		axis = [Vector3.AXIS_Y, Vector3.AXIS_Z],
 		depth = 1.0,
 		radius = 1.0
 	}
@@ -123,8 +122,8 @@ class PolygonDialog:
 			intersections[i+1] = inter
 			
 		var ofs = 0
-		var keys = intersections.keys()
 		
+		var keys = intersections.keys()
 		keys.sort()
 		
 		for i in keys:
@@ -156,18 +155,12 @@ class PolygonDialog:
 			mode_display.set_text("Mode:")
 			
 	func set_axis(axis):
-		if axis == Vector3.AXIS_X:
-			data.axis[0] = Vector3.AXIS_Z
-			data.axis[1] = Vector3.AXIS_Y
-			
-		elif axis == Vector3.AXIS_Y:
-			data.axis[0] = Vector3.AXIS_Z
-			data.axis[1] = Vector3.AXIS_X
-			
-		elif axis == Vector3.AXIS_Z:
-			data.axis[0] = Vector3.AXIS_X
-			data.axis[1] = Vector3.AXIS_Y
-			
+		var axis_1 = [1, 2, 0]
+		var axis_2 = [2, 0, 1]
+		
+		data.axis[0] = axis_1[axis]
+		data.axis[1] = axis_2[axis]
+		
 		data.current_axis = axis
 		
 		emit_signal("poly_edited")
@@ -185,12 +178,8 @@ class PolygonDialog:
 		emit_signal("poly_edited")
 		
 	func set_grid_step(val, axis):
-		if axis == Vector3.AXIS_X:
-			grid_step.x = val
-			
-		elif axis == Vector3.AXIS_Y:
-			grid_step.y = val
-			
+		grid_step[axis] = val
+		
 		redraw()
 		
 	func edit(node):
@@ -205,18 +194,9 @@ class PolygonDialog:
 	func vector_to_local(vector):
 		var s = canvas.get_size()
 		
-		if vector.x < 0:
-			vector.x = 0
-			
-		elif vector.x > s.x:
-			vector.x = s.x
-			
-		if vector.y < 0:
-			vector.y = 0
-			
-		elif vector.y > s.y:
-			vector.y = s.y
-			
+		vector.x = max(0, min(vector.x, s.x))
+		vector.y = max(0, min(vector.y, s.y))
+		
 		return vector
 		
 	func snap_point(pos):
@@ -250,10 +230,7 @@ class PolygonDialog:
 		
 		st.add_smooth_group(false)
 		
-		if data.current_axis == Vector3.AXIS_X and not data.invert:
-			index.invert()
-			
-		elif data.invert and not data.current_axis == Vector3.AXIS_X:
+		if data.invert:
 			index.invert()
 			
 		if data.gen_top:
@@ -274,9 +251,7 @@ class PolygonDialog:
 				var cfg = get_range_config()
 				
 				var h = Vector2(0, data.depth/data.radius)
-				
 				var u1 = Vector2(0, 0)
-				
 				var b = 0
 				
 				for i in range(cfg.min_, cfg.max_, cfg.step):
@@ -343,15 +318,7 @@ class PolygonDialog:
 		
 		data.next = 1
 		
-		var inv = false
-		
-		if data.clockwise and data.current_axis != Vector3.AXIS_X:
-			inv = true
-			
-		elif data.current_axis == Vector3.AXIS_X and not data.clockwise:
-			inv = true
-			
-		if inv:
+		if data.clockwise:
 			data.next = -1
 			
 			config.min_ = size
@@ -361,10 +328,10 @@ class PolygonDialog:
 		return config
 		
 	func show_dialog():
-		var s = Vector2(324, 395)
+		var s = Vector2(324, 389)
 		
 		s.y += toolbar_top.get_size().y + toolbar_bottom.get_size().y
-		s.y += text_display.get_size().y * 1.5
+		s.y += text_display.get_line_height() * 1.5
 		
 		popup_centered(s)
 		
@@ -445,13 +412,13 @@ class PolygonDialog:
 	func _options(id):
 		var idx = options.get_item_index(id)
 		
-		if id == Options.USE_SNAP:
+		if id == Options.SNAP:
 			snap = not snap
 			options.set_item_checked(idx, snap)
 			
 			redraw()
 			
-		elif id == Options.SHOW_GRID:
+		elif id == Options.GRID:
 			show_grid = not show_grid
 			options.set_item_checked(idx, show_grid)
 			
@@ -628,7 +595,7 @@ class PolygonDialog:
 		var main_vbox = VBoxContainer.new()
 		add_child(main_vbox)
 		main_vbox.set_area_as_parent_rect(get_constant("margin", "Dialogs"))
-		main_vbox.set_margin(MARGIN_BOTTOM, get_constant("button_margin", "Dialogs")+10)
+		main_vbox.set_margin(MARGIN_BOTTOM, get_constant("button_margin", "Dialogs")+4)
 		
 		var hb = HBoxContainer.new()
 		main_vbox.add_child(hb)
@@ -687,8 +654,8 @@ class PolygonDialog:
 		
 		options = m_button.get_popup()
 		
-		options.add_check_item("Use Snap", Options.USE_SNAP)
-		options.add_check_item("Show Grid", Options.SHOW_GRID)
+		options.add_icon_check_item(base.get_icon("Snap", "EditorIcons"), "Snap", Options.SNAP)
+		options.add_icon_check_item(base.get_icon("Grid", "EditorIcons"), "Grid", Options.GRID)
 		options.add_item("Configure Snap", Options.CONFIGURE_SNAP)
 		options.add_separator()
 		options.add_check_item("Generate Top", Options.GENERATE_TOP)
@@ -716,7 +683,7 @@ class PolygonDialog:
 		
 		canvas = Control.new()
 		vb.add_child(canvas)
-		canvas.set_v_size_flags(SIZE_EXPAND_FILL)
+		canvas.set_custom_minimum_size(Vector2(300, 300))
 		
 		toolbar_bottom = HBoxContainer.new()
 		vb.add_child(toolbar_bottom)
@@ -755,7 +722,7 @@ class PolygonDialog:
 		
 		connect("poly_edited", self, "update_mesh")
 		
-		#Snap Popup
+		# Snap Popup
 		snap_popup = PopupPanel.new()
 		snap_popup.set_size(Vector2(180, 40))
 		
@@ -791,6 +758,9 @@ class PolygonDialog:
 		hb.add_child(l)
 		hb.add_child(y)
 		
+		x.set_h_size_flags(SIZE_EXPAND_FILL)
+		y.set_h_size_flags(SIZE_EXPAND_FILL)
+		
 		x.connect("value_changed", self, "set_grid_step", [Vector3.AXIS_X])
 		y.connect("value_changed", self, "set_grid_step", [Vector3.AXIS_Y])
 		
@@ -803,20 +773,13 @@ var polygon_dialog
 static func get_name():
 	return "Polygon"
 	
-func create(object):
-	var instance = MeshInstance.new()
-	instance.set_name("Polygon")
+func create(mesh_instance):
+	mesh_instance.set_name("Polygon")
 	
-	var root = object.get_tree().get_edited_scene_root()
-	object.add_child(instance)
-	instance.set_owner(root)
-	
-	polygon_dialog.edit(instance)
+	polygon_dialog.edit(mesh_instance)
 	
 	polygon_dialog.default()
 	polygon_dialog.show_dialog()
-	
-	return instance
 	
 func edit_primitive():
 	if polygon_dialog.is_hidden():

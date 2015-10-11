@@ -55,9 +55,7 @@ func create():
 			t.x += w.x
 			b.x += w.x
 			
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Center Length', center_length)

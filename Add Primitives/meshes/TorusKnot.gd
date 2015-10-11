@@ -83,9 +83,7 @@ func create():
 		
 	add_quad([v[b], v[b + section_segments - 1], v[section_segments - 1], v[0]])
 	
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Segments', segments, 1, 3, 64)

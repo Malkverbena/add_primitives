@@ -15,7 +15,7 @@ static func get_name():
 func create():
 	var angle = 360 - slice
 	
-	var circumference = (angle * PI * radius)/180
+	var circumference = (angle * PI * radius) / 180
 	
 	var h = height
 	var sa = deg2rad(angle)
@@ -45,7 +45,6 @@ func create():
 				
 	if generate_ends and slice:
 		var t = Vector3(0, h/2, 0)
-		
 		var p = Vector3()
 		
 		for i in range(height_segments): 
@@ -60,18 +59,20 @@ func create():
 			          Vector2(0, v2)]
 			
 			add_quad([circle[0] + p, t + p, t + n, circle[0] + n], uv)
+			
+			uv.invert()
 			add_quad([t + p, circle[sides] + p, circle[sides] + n, t + n], uv)
 			
 			p = n
 			
-	var next = pos + Vector3(0, h/height_segments, 0)
-	
 	h /= height_segments
+	
+	var next = pos + Vector3(0, h, 0)
 	
 	add_smooth_group(smooth)
 	
 	for i in range(height_segments):
-		if i == height_segments - 1:
+		if i == (height_segments - 1):
 			next.y = 0
 			
 		i = float(i)
@@ -85,15 +86,13 @@ func create():
 			var u1 = idx/sides * circumference
 			var u2 = (idx+1)/sides * circumference
 			
-			add_quad([circle[idx + 1] + pos, circle[idx + 1] + next, circle[idx] + next, circle[idx] + pos],\
-			         [Vector2(u2, v1), Vector2(u2, v2), Vector2(u1, v2), Vector2(u1, v1)])
+			add_quad([circle[idx] + pos, circle[idx + 1] + pos, circle[idx + 1] + next, circle[idx] + next],\
+			         [Vector2(u1, v1), Vector2(u2, v1), Vector2(u2, v2), Vector2(u1, v2)])
 			
 		pos = next
 		next.y += h
 		
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Radius', radius)

@@ -19,18 +19,18 @@ func create():
 	var circle = Utils.build_circle_verts(Vector3(), sides, radius, sa)
 	
 	var r = Vector3(sin(angle), 0, sin(angle))
-	var p = Vector3(0,-cos(angle) * radius - height, 0)
+	var p = -Vector3(0, cos(angle) * radius + height, 0)
 	
 	begin()
 	
 	add_smooth_group(smooth)
 	
 	for idx in range(sides):
-		add_tri([cc, (circle[idx] * r) - p, (circle[idx + 1] * r - p)])
-		add_tri([(circle[idx + 1] * r) + p, (circle[idx] * r) + p, -cc])
+		add_tri([circle[idx + 1] * r + p, circle[idx] * r + p, -cc])
+		add_tri([cc, circle[idx] * r - p, circle[idx + 1] * r - p])
 		
 	for i in range((height_segments - 2)/2):
-		var np = Vector3(0, -cos(angle * (i + 2)) * radius - height, 0)
+		var np = -Vector3(0, cos(angle * (i + 2)) * radius + height, 0)
 		var nr = Vector3(sin(angle * (i + 2)), 0, sin(angle * (i + 2)))
 		
 		for idx in range(sides):
@@ -68,9 +68,7 @@ func create():
 			
 			pos1 = pos2
 			
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Radius', radius)

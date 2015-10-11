@@ -3,8 +3,8 @@ extends "../Primitive.gd"
 var angle = 90
 var stair_height = 2.0
 var steps = 8
-var outer_radius = 2.0
 var inner_radius = 1.0
+var step_width = 1.0
 var generate_sides = true
 var generate_bottom = true
 var generate_end = true
@@ -13,20 +13,19 @@ static func get_name():
 	return "Curved Stair"
 	
 static func get_container():
-	return "Add Stair"
+	return "Stair"
 	
 func create():
 	var h = stair_height/steps
+	var outer_radius = inner_radius + step_width
 	
 	var rad = deg2rad(angle)
 	
-	var oc = rad * outer_radius
 	var ic = rad * inner_radius
+	var oc = rad * outer_radius
 	
 	var c = Utils.build_circle_verts(Vector3(), steps, inner_radius, rad)
 	var c2 = Utils.build_circle_verts(Vector3(), steps, outer_radius, rad)
-	
-	var w = abs(outer_radius - inner_radius)
 	
 	begin()
 	
@@ -52,8 +51,8 @@ func create():
 		
 		uv[0] = Vector2(0, h * i)
 		uv[1] = Vector2(0, sh.y)
-		uv[2] = Vector2(w, sh.y)
-		uv[3] = Vector2(w, h * i)
+		uv[2] = Vector2(step_width, sh.y)
+		uv[3] = Vector2(step_width, h * i)
 		
 		add_quad([c2[i] + sh - base, c2[i] + sh, c[i] + sh, c[i] + sh - base], uv)
 		
@@ -83,21 +82,19 @@ func create():
 		
 		var uv = [Vector2(0, 0),
 		          Vector2(0, sh.y),
-		          Vector2(w, sh.y),
-		          Vector2(w, 0)]
+		          Vector2(step_width, sh.y),
+		          Vector2(step_width, 0)]
 		
 		add_quad([c[steps], c[steps] + sh, c2[steps] + sh, c2[steps]], uv)
 		
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Angle', angle, 1, 1, 360)
 	editor.add_tree_range('Stair Height', stair_height)
 	editor.add_tree_range('Steps', steps, 1, 2, 64)
-	editor.add_tree_range('Outer Radius', outer_radius)
 	editor.add_tree_range('Inner Radius', inner_radius)
+	editor.add_tree_range('Step Width', step_width)
 	editor.add_tree_empty()
 	editor.add_tree_check('Generate Sides', generate_sides)
 	editor.add_tree_check('Generate Bottom', generate_bottom)

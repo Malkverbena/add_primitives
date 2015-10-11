@@ -30,14 +30,13 @@ func create():
 	
 	ofs.y += height
 	
-	add_quad([ofs, ofs + rd, ofs + Vector3(width, -height, length), ofs + Vector3(0, -height, length)], Utils.plane_uv(width, d))
+	add_quad([ofs, ofs + rd, ofs + Vector3(width, -height, length), ofs + Vector3(0, -height, length)],\
+	         Utils.plane_uv(d, width))
 	
-	add_tri([ofs + Vector3(0, -height, length), ofs - ud, ofs], Utils.plane_uv(length, height, false))
-	add_tri([ofs + rd, ofs + rd - ud, ofs + Vector3(width, -height, length)], Utils.plane_uv(height, length, false))
+	add_tri([ofs + Vector3(0, -height, length), ofs - ud, ofs], Utils.plane_uv(height, length, false))
+	add_tri([ofs + rd, ofs + rd - ud, ofs + Vector3(width, -height, length)], Utils.plane_uv(length, height, false))
 	
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Width', width)

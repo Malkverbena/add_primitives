@@ -42,9 +42,7 @@ func create():
 	if back_face:
 		add_plane(ud, fd, ofs)
 		
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Width', width)

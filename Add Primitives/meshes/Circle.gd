@@ -25,9 +25,7 @@ func create():
 		
 		add_tri([c, circle[i], circle[i+1]], uv)
 		
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Radius', radius)

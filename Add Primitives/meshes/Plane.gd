@@ -23,9 +23,7 @@ func create():
 	
 	add_quad(verts, Utils.plane_uv(w, l))
 	
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Length', length)

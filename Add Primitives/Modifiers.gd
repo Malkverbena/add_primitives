@@ -23,8 +23,7 @@
 
 extends Reference
 
-class ModifierBase:
-	extends MeshDataTool
+class ModifierBase extends MeshDataTool:
 	
 	static func get_name():
 		return ""
@@ -34,8 +33,7 @@ class ModifierBase:
 		
 # End Modifier
 
-class TaperModifier:
-	extends ModifierBase
+class TaperModifier extends ModifierBase:
 	
 	var value = -0.5
 	var lock_x_axis = false
@@ -45,7 +43,7 @@ class TaperModifier:
 		return "Taper"
 		
 	static func taper(vector, val, c, axis):
-		var vec = Vector3(1,1,1)
+		var vec = Vector3(1, 1, 1)
 		
 		for i in axis:
 			vec[i] += val * (vector.y/c)
@@ -55,8 +53,7 @@ class TaperModifier:
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
-		var h = aabb.get_endpoint(7).y - aabb.get_endpoint(0).y
-		var c = h/2 
+		var c = aabb.size.y/2 
 		
 		var m3 = Matrix3()
 		
@@ -91,8 +88,7 @@ class TaperModifier:
 		
 # End TaperModifer
 
-class ShearModifier:
-	extends ModifierBase
+class ShearModifier extends ModifierBase:
 	
 	var shear_axis = Vector3.AXIS_X
 	var value = 1
@@ -103,30 +99,8 @@ class ShearModifier:
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
-		var h
-		var c
-		
-		var s_axis
-		var b_axis
-		
-		if shear_axis == Vector3.AXIS_X or shear_axis == Vector3.AXIS_Y:
-			h = aabb.get_endpoint(7).y - aabb.get_endpoint(0).y
-			
-			if shear_axis == Vector3.AXIS_X:
-				s_axis = Vector3.AXIS_X
-				
-			elif shear_axis == Vector3.AXIS_Y:
-				s_axis = Vector3.AXIS_Z
-				
-			b_axis = Vector3.AXIS_Y
-			
-		elif shear_axis == Vector3.AXIS_Z:
-			h = aabb.get_endpoint(7).x - aabb.get_endpoint(0).x
-			
-			s_axis = Vector3.AXIS_Y
-			b_axis = Vector3.AXIS_X
-			
-		c = h/2
+		var h_axis = int(shear_axis != Vector3.AXIS_Y)
+		var c = aabb.size[h_axis]/2
 		
 		for surf in range(mesh.get_surface_count()):
 			create_from_surface(mesh, surf)
@@ -134,7 +108,7 @@ class ShearModifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v[s_axis] += value * (v[b_axis]/c)
+				v[shear_axis] += (v[h_axis]/c) * value
 				
 				set_vertex(i, v)
 				
@@ -145,13 +119,12 @@ class ShearModifier:
 		return mesh_temp
 		
 	func modifier_parameters(editor):
-		editor.add_tree_combo('Shear Axis', shear_axis, 'x,y,z')
+		editor.add_tree_combo('Shear Axis', shear_axis, 'X,Y,Z')
 		editor.add_tree_range('Value', value)
 		
 # End ShearModifier
 
-class TwistModifier:
-	extends ModifierBase
+class TwistModifier extends ModifierBase:
 	
 	var angle = 30
 	
@@ -161,8 +134,7 @@ class TwistModifier:
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
-		var h = aabb.get_endpoint(7).y - aabb.get_endpoint(0).y
-		var c = h/2
+		var c = aabb.size.y/2
 		
 		for surf in range(mesh.get_surface_count()):
 			create_from_surface(mesh, surf)
@@ -170,7 +142,7 @@ class TwistModifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v = v.rotated(Vector3(0,1,0), deg2rad(angle * (v.y/c)))
+				v = v.rotated(Vector3(0, 1, 0), deg2rad(angle * (v.y/c)))
 				
 				set_vertex(i, v)
 				
@@ -185,12 +157,11 @@ class TwistModifier:
 		
 # End TwistModifier
 
-class ArrayModifier:
-	extends ModifierBase
+class ArrayModifier extends ModifierBase:
 	
 	var count = 2
 	var relative = true
-	var offset = Vector3(1,0,0)
+	var offset = Vector3(1, 0, 0)
 	
 	static func get_name():
 		return "Array"
@@ -214,9 +185,7 @@ class ArrayModifier:
 		var ofs = offset
 		
 		if relative:
-			var vec = aabb.get_endpoint(0) - aabb.get_endpoint(7)
-			
-			ofs *= vec.abs()
+			ofs *= aabb.size
 			
 		for surf in range(mesh.get_surface_count()):
 			create_from_surface(mesh, surf)
@@ -246,11 +215,10 @@ class ArrayModifier:
 		
 # End ArrayModifier
 
-class OffsetModifier:
-	extends ModifierBase
+class OffsetModifier extends ModifierBase:
 	
 	var relative = true
-	var offset = Vector3(0,0.5,0)
+	var offset = Vector3(0, 0.5, 0)
 	
 	static func get_name():
 		return "Offset"
@@ -279,9 +247,7 @@ class OffsetModifier:
 		var ofs = offset
 		
 		if relative:
-			var vec = aabb.get_endpoint(0) - aabb.get_endpoint(7)
-			
-			ofs *= vec.abs()
+			ofs *= aabb.size
 			
 		for surf in range(mesh.get_surface_count()):
 			create_from_surface(mesh, surf)
@@ -307,8 +273,7 @@ class OffsetModifier:
 		
 # End OffsetModifier
 
-class RandomModifier:
-	extends ModifierBase
+class RandomModifier extends ModifierBase:
 	
 	var random_seed = 0
 	var amount = 1
@@ -352,12 +317,11 @@ class RandomModifier:
 		
 # End RandomModifier
 
-class UVTransformModifier:
-	extends ModifierBase
+class UVTransformModifier extends ModifierBase:
 	
 	var translation = Vector2()
 	var rotation = 0
-	var scale = Vector2(1,1)
+	var scale = Vector2(1, 1)
 	
 	static func get_name():
 		return "UV Transform"
@@ -394,17 +358,9 @@ class UVTransformModifier:
 	func modifier(mesh, aabb):
 		var mesh_temp = Mesh.new()
 		
-		var m32 = Matrix32()
+		var m32 = Matrix32(deg2rad(rotation), translation)
+		m32 = m32.scaled(scale)
 		
-		if translation != Vector2():
-			m32 = m32.translated(translation)
-			
-		if rotation:
-			m32 = m32.rotated(deg2rad(rotation))
-			
-		if scale != Vector2(1, 1):
-			m32 = m32.scaled(scale)
-			
 		for surf in range(mesh.get_surface_count()):
 			if not mesh.surface_get_format(surf) & mesh.ARRAY_FORMAT_TEX_UV:
 				continue

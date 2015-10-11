@@ -24,8 +24,7 @@
 extends Reference
 
 #Base class for ParameterEditor and ModifierEditor
-class TreeEditor:
-	extends VBoxContainer
+class TreeEditor extends VBoxContainer:
 	
 	var last = null
 	
@@ -139,8 +138,7 @@ class TreeEditor:
 		
 # End TreeEditor
 
-class ModifierEditor:
-	extends TreeEditor
+class ModifierEditor extends TreeEditor:
 	
 	const Tool = {
 		ERASE = 0,
@@ -212,27 +210,27 @@ class ModifierEditor:
 			
 		items.push_back(obj)
 		
-	func generate_cache():
-		var cache = []
+	func generate_state():
+		var state = []
 		
 		var root = tree.get_root()
 		
 		var item = root.get_children()
 		
 		while item:
-			var data = {
+			var item_state = {
 				name = item.get_text(0),
 				metadata = item.get_metadata(0),
-				is_selected = item.is_selected(0),
-				is_checked = item.is_checked(1),
-				is_collapsed = item.is_collapsed()
+				selected = item.is_selected(0),
+				checked = item.is_checked(1),
+				collapsed = item.is_collapsed()
 			}
 			
-			cache.append(data)
+			state.append(item_state)
 			
 			item = item.get_next()
 			
-		return cache
+		return state
 		
 	func clear():
 		items.clear()
@@ -284,17 +282,16 @@ class ModifierEditor:
 			items[second] = items[first]
 			items[first] = temp
 			
-			var cache = generate_cache()
+			var state = generate_state()
 			
-			temp = cache[second]
-			cache[second] = cache[first]
-			cache[first] = temp
+			temp = state[second]
+			state[second] = state[first]
+			state[first] = temp
 			
-			_rebuild_tree(cache)
-			
+			_rebuild_tree(state)
 			_item_selected()
 			
-			cache.clear()
+			state.clear()
 			
 		tree.update()
 		
@@ -307,21 +304,20 @@ class ModifierEditor:
 		
 		emit_signal("modifier_edited")
 		
-	func _rebuild_tree(cache):
+	func _rebuild_tree(state):
 		var root = _create_root()
 		
 		for i in range(items.size()):
 			last = tree.create_item(root)
-			last.set_collapsed(cache[i].is_collapsed)
+			last.set_collapsed(state[i].collapsed)
 			
 			last.set_cell_mode(0, last.CELL_MODE_STRING)
-			last.set_text(0, cache[i].name)
+			last.set_text(0, state[i].name)
 			
-			if cache[i].is_selected:
+			if state[i].selected:
 				last.select(0)
 				
 			last.set_cell_mode(1, last.CELL_MODE_CHECK)
-			last.set_checked(1, cache[i].is_checked)
 			last.set_text(1, 'On')
 			last.set_editable(1, true)
 			last.set_selectable(1, false)
@@ -329,7 +325,7 @@ class ModifierEditor:
 			last.set_custom_bg_color(0, get_color('prop_category', 'Editor'))
 			last.set_custom_bg_color(1, get_color('prop_category', 'Editor'))
 			
-			last.set_metadata(0, cache[i].metadata)
+			last.set_metadata(0, state[i].metadata)
 			
 			if items[i].has_method('modifier_parameters'):
 				items[i].modifier_parameters(self)
@@ -423,8 +419,7 @@ class ModifierEditor:
 		
 # End ModifierEditor
 
-class ParameterEditor:
-	extends TreeEditor
+class ParameterEditor extends TreeEditor:
 	
 	var obj
 	

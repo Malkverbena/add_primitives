@@ -27,11 +27,16 @@ const Utils = preload("Utils.gd")
 var smooth = false
 var flip_normals = false
 
+var mesh = Mesh.new()
+
 static func get_name():
 	return ""
 	
 static func get_container():
 	return ""
+	
+func get_mesh():
+	return mesh
 	
 func begin():
 	.begin(VS.PRIMITIVE_TRIANGLES)
@@ -43,7 +48,7 @@ func add_tri(vertex = [], uv = []):
 		vertex.invert()
 		uv.invert()
 		
-	if uv.size():
+	if uv.size() == 3:
 		add_uv(uv[0])
 		add_vertex(vertex[0])
 		add_uv(uv[1])
@@ -85,42 +90,28 @@ func add_quad(vertex = [], uv = []):
 		add_vertex(vertex[3])
 		add_vertex(vertex[0])
 		
-func add_plane(start, end, offset = Vector3()):
-	var verts = []
-	verts.resize(4)
+func add_plane(dir1, dir2, offset = Vector3()):
+	var verts = Utils.build_plane_verts(dir1, dir2, offset)
 	
-	verts[0] = offset + end
-	verts[1] = offset + end + start
-	verts[2] = offset + start
-	verts[3] = offset
+	var w = verts[0].distance_to(verts[3])
+	var h = verts[0].distance_to(verts[1])
 	
-	var uv = []
-	uv.resize(4)
-	
-	var w = verts[3].distance_to(verts[2])
-	var h = verts[3].distance_to(verts[0])
-	
-	uv[0] = Vector2(0, h)
-	uv[1] = Vector2(w, h)
-	uv[2] = Vector2(w, 0)
-	uv[3] = Vector2(0, 0)
+	var uv = Utils.plane_uv(w, h)
 	
 	add_quad(verts, uv)
 	
 func commit():
-	var mesh = Mesh.new()
-	
-	
 	generate_normals()
 	index()
 	
+	if mesh.get_surface_count():
+		mesh.surface_remove(0)
+		
 	.commit(mesh)
 	
-	#if mesh.get_surface_count() and mesh.surface_get_format(0) & mesh.ARRAY_FORMAT_TEX_UV:
-	#	mesh.regen_normalmaps()
-	#	
 	clear()
 	
-	return mesh
+func _init():
+	mesh.set_name(get_name().replace(' ', '_').to_lower())
 	
 

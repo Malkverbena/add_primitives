@@ -95,14 +95,14 @@ static func build_ellipse_verts(pos, segments, radius = Vector2(1,1), angle = PI
 		
 	return ellipse_verts
 	
-static func plane_uv(dir1, dir2, last = true):
+static func plane_uv(width, height, last = true):
 	var uv = []
 	uv.resize(4)
 	
 	uv[0] = Vector2(0, 0)
-	uv[1] = Vector2(0, dir2)
-	uv[2] = Vector2(dir1, dir2)
-	uv[3] = Vector2(dir1, 0)
+	uv[1] = Vector2(0, height)
+	uv[2] = Vector2(width, height)
+	uv[3] = Vector2(width, 0)
 	
 	if not last:
 		uv.remove(3)

@@ -103,7 +103,7 @@ func create():
 	add_smooth_group(smooth)
 	
 	for i in range(subdivisions):
-		last = i == subdivisions - 1
+		last = (i == subdivisions - 1)
 		
 		var tri2 = []
 		
@@ -135,9 +135,7 @@ func create():
 		for i in range(0, faces.size(), 3):
 			add_tri([v[faces[i]], v[faces[i+1]], v[faces[i+2]]])
 			
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_combo('Solid', solid, 'Octahedron,Icosahedron')

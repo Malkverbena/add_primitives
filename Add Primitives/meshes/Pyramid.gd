@@ -13,10 +13,9 @@ static func get_container():
 func create():
 	var ofs = Vector3(width/2, height/2, length/2)
 	
-	var plane = Utils.build_plane_verts(Vector3(width,0,0), Vector3(0,0,length), -ofs)
+	var plane = Utils.build_plane_verts(Vector3(width, 0, 0), Vector3(0, 0, length), -ofs)
 	
 	var ch = Vector3(0, height, 0)
-	
 	var hw = sqrt(pow(width/2, 2) + pow(height, 2))
 	var hl = sqrt(pow(length/2, 2) + pow(height, 2))
 	
@@ -26,7 +25,7 @@ func create():
 	
 	add_smooth_group(smooth)
 	
-	add_plane(Vector3(width,0,0), Vector3(0,0,length), -ofs)
+	add_plane(Vector3(width, 0, 0), Vector3(0, 0, length), -ofs)
 	
 	add_tri([ch, plane[1], plane[0]], uv)
 	add_tri([ch, plane[3], plane[2]], uv)
@@ -38,9 +37,7 @@ func create():
 	add_tri([ch, plane[2], plane[1]], uv)
 	add_tri([ch, plane[0], plane[3]], uv)
 	
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Width', width)

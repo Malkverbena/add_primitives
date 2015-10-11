@@ -64,26 +64,23 @@ func create():
 	for i in range(height_segments, 1, -1):
 		var n = i - 1
 		
-		var next_pos = Vector3(0, cos(angle * n) * radius, 0)
-		var next_radius = Vector3(sin(angle * n), 0, sin(angle * n))
+		var np = Vector3(0, cos(angle * n) * radius, 0)
+		var nr = Vector3(sin(angle * n), 0, sin(angle * n))
 		
 		for idx in range(segments):
-			add_quad([circle[idx+1] * rd + pos,
-			          circle[idx+1] * next_radius + next_pos,
-			          circle[idx] * next_radius + next_pos,
-			          circle[idx] * rd + pos])
+			add_quad([circle[idx] * rd + pos, circle[idx+1] * rd + pos,
+			          circle[idx+1] * nr + np, circle[idx] * nr + np])
 			
-		pos = next_pos
-		rd = next_radius
+		pos = np
+		rd = nr
+		
 		
 	pos = Vector3(0, cos(angle) * radius, 0)
 	
 	for idx in range(segments):
 		add_tri([circle[idx] * rd + pos, circle[idx+1] * rd + pos, Vector3(0, radius, 0)])
 		
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Radius', radius)

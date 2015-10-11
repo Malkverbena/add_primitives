@@ -12,7 +12,7 @@ static func get_name():
 	return "Linear Stair"
 	
 static func get_container():
-	return "Add Stair"
+	return "Stair"
 	
 func create():
 	var ofs_x = -width/2
@@ -36,8 +36,10 @@ func create():
 	add_smooth_group(smooth)
 	
 	for i in range(steps):
-		add_quad(Utils.build_plane_verts(d[1], d[0], Vector3(ofs_x, (i+1) * sh, i * sl)), [py, py+w, py+w+l, py+l])
-		add_quad(Utils.build_plane_verts(d[2], d[0], Vector3(ofs_x, i * sh, i * sl)), [pz, pz+w, pz+w+h, pz+h])
+		add_quad(Utils.build_plane_verts(d[1], d[0], Vector3(ofs_x, (i+1) * sh, i * sl)),\
+		         [py, py+w, py+w+l, py+l])
+		add_quad(Utils.build_plane_verts(d[2], d[0], Vector3(ofs_x, i * sh, i * sl)),\
+		         [pz, pz+w, pz+w+h, pz+h])
 		
 		if generate_sides:
 			var ch = Vector2(0, sh * (i+1))
@@ -56,9 +58,7 @@ func create():
 	if generate_bottom:
 		add_plane(d[0], Vector3(0, 0, length), Vector3(ofs_x, 0, 0))
 		
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Steps', steps, 1, 2, 64)

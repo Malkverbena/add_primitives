@@ -24,8 +24,7 @@ func create():
 	
 	var temp_circle
 	
-	var c = Utils.build_circle_verts_rot(s[0], segments, minor_radius, Matrix3(Vector3(1,0,0), PI/2))
-	
+	var c1 = Utils.build_circle_verts_rot(s[0], segments, minor_radius, Matrix3(Vector3(1,0,0), PI/2))
 	var c2 = []
 	
 	if not slice:
@@ -38,15 +37,15 @@ func create():
 			var m2 = Matrix3(Vector3(0,1,0), angle * (i+1))
 			
 			for idx in range(segments):
-				add_quad([m1.xform(c[idx]), m2.xform(c[idx]), m2.xform(c[idx + 1]), m1.xform(c[idx + 1])])
+				add_quad([m1.xform(c1[idx]), m2.xform(c1[idx]), m2.xform(c1[idx + 1]), m1.xform(c1[idx + 1])])
 				
 		else:
 			for idx in range(segments + 1):
-				c2[idx] = m1.xform(c[idx])
+				c2[idx] = m1.xform(c1[idx])
 				
 	if not slice:
 		for idx in range(segments):
-			add_quad([c2[idx], c[idx], c[idx + 1], c2[idx + 1]])
+			add_quad([c2[idx], c1[idx], c1[idx + 1], c2[idx + 1]])
 			
 	elif generate_ends:
 		var m = Matrix3(Vector3(0,1,0), sa)
@@ -54,12 +53,10 @@ func create():
 		add_smooth_group(false)
 		
 		for idx in range(segments):
-			add_tri([s[0], c[idx], c[idx+1]])
-			add_tri([m.xform(c[idx+1]), m.xform(c[idx]), s[torus_segments]])
+			add_tri([s[0], c1[idx], c1[idx+1]])
+			add_tri([m.xform(c1[idx+1]), m.xform(c1[idx]), s[torus_segments]])
 			
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Major Radius', major_radius)

@@ -1,7 +1,6 @@
 extends Reference
 
-class MergeDialog:
-	extends ConfirmationDialog
+class MergeDialog extends ConfirmationDialog:
 	
 	var mesh_instance
 	
@@ -30,7 +29,7 @@ class MergeDialog:
 			item.set_editable(0, true)
 			item.set_metadata(0, s.get_path())
 			
-	func edit(instance, instances):
+	func edit(instance, instances = []):
 		mesh_instance = instance
 		
 		if mesh_instance == null:
@@ -86,6 +85,9 @@ class MergeDialog:
 			var basis = gt.basis.orthonormalized()
 			var m = s.get_mesh()
 			
+			if m == null:
+				continue
+				
 			var count = m.get_surface_count()
 			
 			for surf in range(count):
@@ -161,27 +163,19 @@ var merge_dialog
 static func get_name():
 	return "Merge Surfaces"
 	
-func create(object):
+func create(mesh_instance):
 	var instances = []
 	
-	for c in object.get_children():
-		if c.is_type("MeshInstance"):
+	var parent = mesh_instance.get_parent()
+	
+	for c in parent.get_children():
+		if c extends MeshInstance and c != mesh_instance:
 			instances.push_back(c)
 			
-	if instances.size():
-		var root = object.get_tree().get_edited_scene_root()
-		
-		var instance = MeshInstance.new()
-		instance.set_name("Surfaces")
-		object.add_child(instance)
-		instance.set_owner(root)
-		
-		merge_dialog.edit(instance, instances)
-		merge_dialog.show_dialog()
-		
-		return instance
-		
-	return null
+	mesh_instance.set_name("Surfaces")
+	
+	merge_dialog.edit(mesh_instance, instances)
+	merge_dialog.show_dialog()
 	
 func edit_primitive():
 	if merge_dialog.is_hidden():

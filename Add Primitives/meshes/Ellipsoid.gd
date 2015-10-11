@@ -86,9 +86,7 @@ func create():
 	for idx in range(segments):
 		add_tri([ellipse[idx+1] * rd + pos, ellipse[idx] * rd + pos, Vector3(0, height, 0)])
 		
-	var mesh = commit()
-	
-	return mesh
+	commit()
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Width', width)
