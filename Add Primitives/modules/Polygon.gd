@@ -699,7 +699,7 @@ class PolygonDialog extends ConfirmationDialog:
 		
 		var help = TextureButton.new()
 		help.set_normal_texture(base.get_icon("Help", "EditorIcons"))
-		help.set_tooltip("Actions:\n  - Left-Click => Add Vertex\n  - Shift + Right-Click + Drag => Edit Vertex\n  - Right-Click => Delete Vertex\n  - Control + Left-Click + Drag => Knife Tool")
+		help.set_tooltip("Actions:\n  - Left-Click => Add Vertex\n  - Shift + Left-Click + Drag => Edit Vertex\n  - Right-Click => Delete Vertex\n  - Control + Left-Click + Drag => Knife Tool")
 		toolbar_bottom.add_child(help)
 		
 		handle = base.get_icon("EditorHandle", "EditorIcons")
