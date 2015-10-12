@@ -2,6 +2,7 @@ extends Reference
 
 class MergeDialog extends AcceptDialog:
 	
+	var mesh
 	var mesh_instance
 	
 	var tree
@@ -28,6 +29,11 @@ class MergeDialog extends AcceptDialog:
 			
 	func edit(instance, instances = []):
 		mesh_instance = instance
+		
+		mesh = Mesh.new()
+		mesh.set_name("surfaces")
+		
+		mesh_instance.set_mesh(mesh)
 		
 		if mesh_instance == null:
 			clear()
@@ -70,11 +76,12 @@ class MergeDialog extends AcceptDialog:
 			
 		tree.update()
 		
+		while mesh.get_surface_count():
+			mesh.surface_remove(0)
+			
 		if not surfaces.size():
 			return
 			
-		var mesh = Mesh.new()
-		
 		var data = MeshDataTool.new()
 		
 		for s in surfaces:
@@ -113,8 +120,6 @@ class MergeDialog extends AcceptDialog:
 				
 		data.clear()
 		
-		mesh_instance.set_mesh(mesh)
-		
 	func _init(base):
 		set_title("Merge Surfaces")
 		
@@ -135,15 +140,11 @@ class MergeDialog extends AcceptDialog:
 		hb.add_child(s)
 		s.set_h_size_flags(SIZE_EXPAND_FILL)
 		
-		var reload = ToolButton.new()
-		reload.set_button_icon(base.get_icon("Reload", "EditorIcons"))
-		hb.add_child(reload)
-		
-		reload.connect("pressed", self, "_merge_surfaces")
-		
 		tree = Tree.new()
 		vb.add_child(tree)
 		tree.set_v_size_flags(SIZE_EXPAND_FILL)
+		
+		tree.connect("item_edited", self, "_merge_surfaces")
 		
 		connect("confirmed", self, "_merge_surfaces")
 		
