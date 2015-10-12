@@ -132,9 +132,6 @@ func _color_changed(color):
 		if mat:
 			mat.set_parameter(mat.PARAM_DIFFUSE, color)
 			
-func _cancel():
-	emit_signal("cancel")
-	
 func _set(name, value):
 	if not name.find('/'):
 		return false

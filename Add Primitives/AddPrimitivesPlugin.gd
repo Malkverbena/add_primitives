@@ -110,21 +110,6 @@ class AddPrimitives extends HBoxContainer:
 				
 				modules[module.get_name()] = module
 				
-	func add_mesh_instance():
-		mesh_instance = MeshInstance.new()
-		
-		var edited_scene = get_tree().get_edited_scene_root()
-		
-		undo_redo.create_action("Create Primitive")
-		
-		undo_redo.add_do_method(node, "add_child", mesh_instance)
-		undo_redo.add_do_method(mesh_instance, "set_owner", edited_scene)
-		undo_redo.add_do_reference(mesh_instance)
-		
-		undo_redo.add_undo_method(node, "remove_child", mesh_instance)
-		
-		undo_redo.commit_action()
-		
 	func update_mesh():
 		builder.create()
 		
@@ -242,7 +227,7 @@ class AddPrimitives extends HBoxContainer:
 				
 			primitives[name] = script
 			
-		if submenus.size():
+		if not submenus.empty():
 			popup_menu.add_separator()
 			
 			for sub in submenus.keys():
@@ -277,7 +262,19 @@ class AddPrimitives extends HBoxContainer:
 			popup_menu.connect("item_pressed", self, "_popup_signal", [popup_menu])
 			
 	func _create_primitive(name):
-		add_mesh_instance()
+		mesh_instance = MeshInstance.new()
+		var edited_scene = get_tree().get_edited_scene_root()
+		
+		undo_redo.create_action("Create " + name)
+		
+		undo_redo.add_do_method(node, "add_child", mesh_instance)
+		undo_redo.add_do_method(mesh_instance, "set_owner", edited_scene)
+		undo_redo.add_do_reference(mesh_instance)
+		
+		undo_redo.add_undo_method(node, "remove_child", mesh_instance)
+		
+		undo_redo.commit_action()
+		
 		
 		if modules.has(name):
 			last_module = name

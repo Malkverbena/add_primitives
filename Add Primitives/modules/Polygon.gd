@@ -23,7 +23,7 @@
 
 extends Reference
 
-class PolygonDialog extends ConfirmationDialog:
+class PolygonDialog extends AcceptDialog:
 	
 	const Mode = {
 		DRAW = 0,
@@ -131,6 +131,20 @@ class PolygonDialog extends ConfirmationDialog:
 			
 			ofs += 1
 			
+	static func vector_to_local(control, vector):
+		var s = control.get_size()
+		
+		vector.x = max(0, min(vector.x, s.x))
+		vector.y = max(0, min(vector.y, s.y))
+		
+		return vector
+		
+	func edit(node):
+		mesh_instance = node
+		
+		if node == null:
+			clear()
+			
 	func set_mode(mode):
 		self.mode = mode 
 		
@@ -163,9 +177,7 @@ class PolygonDialog extends ConfirmationDialog:
 		
 		data.current_axis = axis
 		
-		emit_signal("poly_edited")
-		
-		canvas.update()
+		_update()
 		
 	func set_radius(val):
 		data.radius = val
@@ -181,23 +193,6 @@ class PolygonDialog extends ConfirmationDialog:
 		grid_step[axis] = val
 		
 		redraw()
-		
-	func edit(node):
-		mesh_instance = node
-		
-		if node == null:
-			clear()
-			
-	func get_mesh_instance():
-		return mesh_instance
-		
-	func vector_to_local(vector):
-		var s = canvas.get_size()
-		
-		vector.x = max(0, min(vector.x, s.x))
-		vector.y = max(0, min(vector.y, s.y))
-		
-		return vector
 		
 	func snap_point(pos):
 		if snap:
@@ -392,19 +387,13 @@ class PolygonDialog extends ConfirmationDialog:
 		poly.clear()
 		set_mode(Mode.DRAW)
 		
-	func _clear_canvas():
-		clear()
+	func _update():
 		canvas.update()
-		
 		emit_signal("poly_edited")
 		
-	func _cancel():
-		if mesh_instance:
-			mesh_instance.queue_free()
-			
-		mesh_instance = null
-		
-		_clear_canvas()
+	func _clear_canvas():
+		clear()
+		_update()
 		
 	func _changed(arg1 = null):
 		emit_signal("poly_edited")
@@ -435,31 +424,31 @@ class PolygonDialog extends ConfirmationDialog:
 			data.gen_top = not data.gen_top
 			options.set_item_checked(idx, data.gen_top)
 			
-			redraw()
+			_update()
 			
 		elif id == Options.GENERATE_SIDES:
 			data.gen_sides = not data.gen_sides
 			options.set_item_checked(idx, data.gen_sides)
 			
-			redraw()
+			_update()
 			
 		elif id == Options.GENERATE_BOTTOM:
 			data.gen_bottom = not data.gen_bottom
 			options.set_item_checked(idx, data.gen_bottom)
 			
-			redraw()
+			_update()
 			
 		elif id == Options.INVERT:
 			data.invert = not data.invert
 			options.set_item_checked(idx, data.invert)
 			
-			redraw()
+			_update()
 			
 		elif id == Options.CLOSE:
 			data.close = not data.close
 			options.set_item_checked(idx, data.close)
 			
-			redraw()
+			_update()
 			
 	func _canvas_input_event(ev):
 		if ev.type == InputEvent.MOUSE_BUTTON:
@@ -470,7 +459,7 @@ class PolygonDialog extends ConfirmationDialog:
 					if ev.shift:
 						edit = get_handle(ev.pos)
 						
-						if edit != -1:
+						if edit >= 0:
 							set_mode(Mode.EDIT)
 							
 					elif ev.control:
@@ -485,16 +474,15 @@ class PolygonDialog extends ConfirmationDialog:
 						
 						edit = poly.size() - 1
 						
-						canvas.update()
-						
-				elif not ev.pressed:
+						_update()
+				else:
 					pressed = false
 					edit = -1
 					
 					if mode == Mode.KNIFE:
 						knife_polygon(poly, knife_start, knife_end, data.close)
 						
-						canvas.update()
+						_update()
 						
 					set_mode(Mode.DRAW)
 					
@@ -504,36 +492,36 @@ class PolygonDialog extends ConfirmationDialog:
 					
 					edit = get_handle(ev.pos)
 					
-					if edit >= 0 and edit < poly.size():
+					if edit >= 0:
 						poly.remove(edit)
 						
-					canvas.update()
+					_update()
 					
 		elif ev.type == InputEvent.MOUSE_MOTION and pressed:
 			if edit == -1 and mode != Mode.KNIFE:
 				return
 				
 			var edit_pos = snap_point(ev.pos)
-				
+			
 			if mode == Mode.EDIT:
-				poly[edit] = vector_to_local(edit_pos)
+				poly[edit] = vector_to_local(canvas, edit_pos)
 				
-				canvas.update()
+				_update()
 				
 			elif mode == Mode.DRAW:
 				if poly.size() == 1:
 					poly.push_back(edit_pos)
 					
-					edit = poly.size() -1
+					edit = 1
 					
-				poly[edit] = vector_to_local(edit_pos)
+				poly[edit] = vector_to_local(canvas, edit_pos)
 				
-				canvas.update()
+				_update()
 				
 			elif mode == Mode.KNIFE:
-				knife_end = vector_to_local(edit_pos)
+				knife_end = vector_to_local(canvas, edit_pos)
 				
-				canvas.update()
+				_update()
 				
 	func _canvas_draw():
 		var s = canvas.get_size()
@@ -570,23 +558,21 @@ class PolygonDialog extends ConfirmationDialog:
 			data.polygon_length += poly[poly.size() - 1].distance_to(poly[0])
 			
 		if mode == Mode.KNIFE:
-			canvas.draw_line(knife_start, knife_end, Color(0,0,1, 0.6), 3)
+			canvas.draw_line(knife_start, knife_end, Color(), 4)
+			canvas.draw_line(knife_start, knife_end, Color(0.6, 0.6, 0.6), 2)
 			
 		for i in range(poly.size()):
 			canvas.draw_texture(handle, poly[i] - handle_offset)
 			
-		if mode >= 0:
-			emit_signal("poly_edited")
-			
-		var ac = [Color(1.0,0.4,0.4), Color(0.4,1.0,0.4), Color(0.4,0.4,1.0)]
+		var ac = [Color(1.0, 0.4, 0.4), Color(0.4, 1.0, 0.4), Color(0.4, 0.4, 1.0)]
 		
 		canvas.draw_line(Vector2(0, s.y/2), Vector2(s.x, s.y/2), ac[data.axis[0]], 2)
 		canvas.draw_line(Vector2(s.x/2, 0), Vector2(s.x/2, s.y), ac[data.axis[1]], 2)
 		
 	func _exit_tree():
-		clear()
-		
 		data.clear()
+		
+		clear()
 		
 	func _init(base):
 		set_title("New Polygon")
@@ -718,8 +704,6 @@ class PolygonDialog extends ConfirmationDialog:
 		text_display.set_valign(text_display.VALIGN_CENTER)
 		main_vbox.add_child(text_display)
 		
-		get_cancel().connect("pressed", self, "_cancel")
-		
 		connect("poly_edited", self, "update_mesh")
 		
 		# Snap Popup
@@ -777,7 +761,6 @@ func create(mesh_instance):
 	mesh_instance.set_name("Polygon")
 	
 	polygon_dialog.edit(mesh_instance)
-	
 	polygon_dialog.default()
 	polygon_dialog.show_dialog()
 	

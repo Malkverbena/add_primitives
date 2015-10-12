@@ -1,14 +1,11 @@
 extends Reference
 
-class MergeDialog extends ConfirmationDialog:
+class MergeDialog extends AcceptDialog:
 	
 	var mesh_instance
 	
 	var tree
 	
-	func get_mesh_instance():
-		return mesh_instance
-		
 	func create_merge_options(surfaces):
 		tree.clear()
 		
@@ -42,7 +39,7 @@ class MergeDialog extends ConfirmationDialog:
 		_merge_surfaces()
 		
 	func show_dialog():
-		popup_centered(Vector2(300, 200))
+		popup_centered(Vector2(300, 350))
 		
 	func clear():
 		tree.clear()
@@ -118,12 +115,6 @@ class MergeDialog extends ConfirmationDialog:
 		
 		mesh_instance.set_mesh(mesh)
 		
-	func _cancel():
-		if mesh_instance:
-			mesh_instance.queue_free()
-			
-		edit(null)
-		
 	func _init(base):
 		set_title("Merge Surfaces")
 		
@@ -153,8 +144,6 @@ class MergeDialog extends ConfirmationDialog:
 		tree = Tree.new()
 		vb.add_child(tree)
 		tree.set_v_size_flags(SIZE_EXPAND_FILL)
-		
-		get_cancel().connect("pressed", self, "_cancel")
 		
 		connect("confirmed", self, "_merge_surfaces")
 		
