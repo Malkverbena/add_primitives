@@ -13,7 +13,7 @@ static func get_name():
 static func get_container():
 	return "Stair"
 	
-func create():
+func update():
 	var angle = (PI * 2) / steps_per_spiral
 	var outer_radius = inner_radius + step_width
 	

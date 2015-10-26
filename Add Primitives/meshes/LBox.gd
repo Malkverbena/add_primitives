@@ -12,7 +12,7 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func create():
+func update():
 	var h = Vector3(0, height, 0)
 	
 	var v = [Vector3(0, 0, 0),

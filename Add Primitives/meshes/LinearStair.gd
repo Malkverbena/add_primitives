@@ -14,7 +14,7 @@ static func get_name():
 static func get_container():
 	return "Stair"
 	
-func create():
+func update():
 	var ofs_x = -width/2
 	
 	var sh = height/steps

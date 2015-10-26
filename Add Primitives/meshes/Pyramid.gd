@@ -10,7 +10,7 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func create():
+func update():
 	var ofs = Vector3(width/2, height/2, length/2)
 	
 	var plane = Utils.build_plane_verts(Vector3(width, 0, 0), Vector3(0, 0, length), -ofs)

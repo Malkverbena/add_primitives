@@ -10,7 +10,7 @@ var generate_ends = true
 static func get_name():
 	return "Cone"
 	
-func create():
+func update():
 	var center_top = Vector3(0, height/2, 0)
 	var min_pos = Vector3(0, -height/2, 0)
 	

@@ -9,7 +9,7 @@ var generate_end = true
 static func get_name():
 	return "Wedge"
 	
-func create():
+func update():
 	var fd = Vector3(0, 0, length)
 	var rd = Vector3(width, 0, 0)
 	var ud = Vector3(0, height, 0)

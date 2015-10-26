@@ -7,7 +7,7 @@ var slice = 0
 static func get_name():
 	return "Circle"
 	
-func create():
+func update():
 	var c = Vector3(0,0,0)
 	
 	var sa = PI * 2 - deg2rad(slice)

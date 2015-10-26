@@ -42,16 +42,16 @@ class TreeEditor extends VBoxContainer:
 		
 		var cell = item.get_cell_mode(1)
 		
-		if cell == item.CELL_MODE_CHECK:
+		if cell == TreeItem.CELL_MODE_CHECK:
 			value = item.is_checked(1)
 			
-		elif cell == item.CELL_MODE_STRING:
+		elif cell == TreeItem.CELL_MODE_STRING:
 			value = item.get_text(1)
 			
-		elif cell == item.CELL_MODE_RANGE:
+		elif cell == TreeItem.CELL_MODE_RANGE:
 			value = item.get_range(1)
 			
-		elif cell == item.CELL_MODE_CUSTOM:
+		elif cell == TreeItem.CELL_MODE_CUSTOM:
 			value = item.get_metadata(1)
 			
 		return value
@@ -93,7 +93,7 @@ class TreeEditor extends VBoxContainer:
 			item.set_icon(0, tree.get_icon('Real', 'EditorIcons'))
 		item.set_selectable(0, false)
 		
-		item.set_cell_mode(1, item.CELL_MODE_RANGE)
+		item.set_cell_mode(1, TreeItem.CELL_MODE_RANGE)
 		item.set_range_config(1, min_, max_, step)
 		item.set_range(1, value)
 		item.set_editable(1, true)
@@ -105,7 +105,7 @@ class TreeEditor extends VBoxContainer:
 		item.set_icon(0, tree.get_icon('Enum', 'EditorIcons'))
 		item.set_selectable(0, false)
 		
-		item.set_cell_mode(1, item.CELL_MODE_RANGE)
+		item.set_cell_mode(1, TreeItem.CELL_MODE_RANGE)
 		item.set_text(1, items)
 		item.set_range(1, selected)
 		item.set_editable(1, true)
@@ -117,7 +117,7 @@ class TreeEditor extends VBoxContainer:
 		item.set_icon(0, tree.get_icon('Bool', 'EditorIcons'))
 		item.set_selectable(0, false)
 		
-		item.set_cell_mode(1, item.CELL_MODE_CHECK)
+		item.set_cell_mode(1, TreeItem.CELL_MODE_CHECK)
 		item.set_checked(1, checked)
 		item.set_text(1, 'On')
 		item.set_editable(1, true)
@@ -129,7 +129,7 @@ class TreeEditor extends VBoxContainer:
 		item.set_icon(0, tree.get_icon('String', 'EditorIcons'))
 		item.set_selectable(0, false)
 		
-		item.set_cell_mode(1, item.CELL_MODE_STRING)
+		item.set_cell_mode(1, TreeItem.CELL_MODE_STRING)
 		item.set_text(1, string)
 		item.set_editable(1, true)
 		
@@ -189,10 +189,10 @@ class ModifierEditor extends TreeEditor:
 		var root = tree.get_root()
 		
 		last = tree.create_item(root)
-		last.set_cell_mode(0, last.CELL_MODE_STRING)
+		last.set_cell_mode(0, TreeItem.CELL_MODE_STRING)
 		last.set_text(0, script.get_name())
 		
-		last.set_cell_mode(1, last.CELL_MODE_CHECK)
+		last.set_cell_mode(1, TreeItem.CELL_MODE_CHECK)
 		last.set_checked(1, true)
 		last.set_text(1, 'On')
 		last.set_editable(1, true)
@@ -311,13 +311,13 @@ class ModifierEditor extends TreeEditor:
 			last = tree.create_item(root)
 			last.set_collapsed(state[i].collapsed)
 			
-			last.set_cell_mode(0, last.CELL_MODE_STRING)
+			last.set_cell_mode(0, TreeItem.CELL_MODE_STRING)
 			last.set_text(0, state[i].name)
 			
 			if state[i].selected:
 				last.select(0)
 				
-			last.set_cell_mode(1, last.CELL_MODE_CHECK)
+			last.set_cell_mode(1, TreeItem.CELL_MODE_CHECK)
 			last.set_text(1, 'On')
 			last.set_editable(1, true)
 			last.set_selectable(1, false)
@@ -421,7 +421,7 @@ class ModifierEditor extends TreeEditor:
 
 class ParameterEditor extends TreeEditor:
 	
-	var obj
+	var builder
 	
 	var smooth_button
 	var flip_button
@@ -431,14 +431,12 @@ class ParameterEditor extends TreeEditor:
 	static func get_signal():
 		return "parameter_edited"
 		
-	func edit(builder):
-		obj = builder
+	func edit(object):
+		builder = object
 		
 		tree.clear()
 		
 		if builder == null:
-			clear()
-			
 			return
 			
 		tree.set_hide_root(true)
@@ -459,7 +457,7 @@ class ParameterEditor extends TreeEditor:
 		tree.clear()
 		
 	func _check_box_pressed(pressed, name):
-		obj.set(name, pressed)
+		builder.set(name, pressed)
 		
 		emit_signal("parameter_edited")
 		
@@ -469,8 +467,8 @@ class ParameterEditor extends TreeEditor:
 		var name = get_parameter_name(item)
 		var value = get_parameter_value(item)
 		
-		if obj:
-			obj.set(name, value)
+		if builder:
+			builder.set(name, value)
 			
 		emit_signal("parameter_edited")
 		

@@ -11,7 +11,7 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func create():
+func update():
 	var c = Vector3(0,0,0)
 	var r = Vector2(width, length)
 	

@@ -111,9 +111,7 @@ class AddPrimitives extends HBoxContainer:
 				modules[module.get_name()] = module
 				
 	func update_mesh():
-		builder.create()
-		
-		assert( base_mesh != null )
+		builder.update()
 		
 		var mesh = modify_mesh()
 		
@@ -125,8 +123,6 @@ class AddPrimitives extends HBoxContainer:
 		if mesh_instance.get_mesh() != base_mesh:
 			mesh_instance.set_mesh(base_mesh)
 			
-		assert( base_mesh != null )
-		
 		var mesh = base_mesh.duplicate()
 		
 		for item in modifier.tree_items():
@@ -137,7 +133,7 @@ class AddPrimitives extends HBoxContainer:
 			
 			var aabb = mesh_instance.get_aabb()
 			
-			mesh = obj.modifier(mesh, aabb)
+			mesh = obj.modify(mesh, aabb)
 			mesh_instance.set_mesh(mesh)
 			
 		return mesh
@@ -161,20 +157,19 @@ class AddPrimitives extends HBoxContainer:
 			
 			vertex_count += surf_v
 			
-			if mesh.surface_get_format(i) & VS.ARRAY_FORMAT_INDEX:
-				triangle_count += mesh.surface_get_array_index_len(i)/3
+			var surf_idx = mesh.surface_get_array_index_len(i)
+			
+			if surf_idx == Mesh.NO_INDEX_ARRAY:
+				surf_idx = surf_v
 				
-			else:
-				triangle_count += surf_v/3
-				
+			triangle_count += surf_idx/3
+			
 		var text = "Verts: " + str(vertex_count) + " | Triangles: " + str(triangle_count) +\
 		           "\nGeneration time: " + str(exec_time) + " ms"
 		
 		mesh_dialog.display_text(text)
 		
 	func _popup_signal(id, menu):
-		popup_menu.hide()
-		
 		var command = menu.get_item_text(menu.get_item_index(id))
 		
 		if command == 'Reload':
@@ -275,7 +270,6 @@ class AddPrimitives extends HBoxContainer:
 		
 		undo_redo.commit_action()
 		
-		
 		if modules.has(name):
 			last_module = name
 			
@@ -290,26 +284,24 @@ class AddPrimitives extends HBoxContainer:
 			
 			last_module = ""
 			
-		builder = primitives[name].new()
+		var start = OS.get_ticks_msec()
 		
-		if builder.has_method('create'):
-			mesh_instance.set_name(name)
+		builder = primitives[name].new()
+		mesh_instance.set_name(name)
+		
+		builder.update()
+		base_mesh = builder.get_mesh()
+		
+		mesh_instance.set_mesh(base_mesh)
+		
+		_display_info(base_mesh, start)
+		
+		if builder.has_method('mesh_parameters'):
+			mesh_dialog.edit(mesh_instance, builder)
+			_set_edit_disabled(false)
 			
-			var start = OS.get_ticks_msec()
+			mesh_dialog.show_dialog()
 			
-			base_mesh = builder.get_mesh()
-			builder.create()
-			
-			mesh_instance.set_mesh(base_mesh)
-			
-			_display_info(base_mesh, start)
-			
-			if builder.has_method('mesh_parameters'):
-				mesh_dialog.edit(mesh_instance, builder)
-				_set_edit_disabled(false)
-				
-				mesh_dialog.show_dialog()
-				
 	func _set_edit_disabled(disable):
 		var count = popup_menu.get_item_count()
 		
@@ -340,6 +332,9 @@ class AddPrimitives extends HBoxContainer:
 				get_tree().set_input_as_handled()
 				
 	func _node_removed(node):
+		if not is_inside_tree():
+			return
+			
 		if node == mesh_instance:
 			_set_edit_disabled(true)
 			

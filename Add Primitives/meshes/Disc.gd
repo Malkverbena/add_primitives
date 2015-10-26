@@ -11,7 +11,7 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func create():
+func update():
 	var sa = PI * 2 - deg2rad(slice)
 	
 	var circle = Utils.build_circle_verts(Vector3(), segments, 1, sa)

@@ -23,7 +23,7 @@
 
 extends Reference
 
-class ModifierBase extends MeshDataTool:
+class Modifier extends MeshDataTool:
 	
 	static func get_name():
 		return ""
@@ -33,7 +33,7 @@ class ModifierBase extends MeshDataTool:
 		
 # End Modifier
 
-class TaperModifier extends ModifierBase:
+class TaperModifier extends Modifier:
 	
 	var value = -0.5
 	var lock_x_axis = false
@@ -42,16 +42,16 @@ class TaperModifier extends ModifierBase:
 	static func get_name():
 		return "Taper"
 		
-	static func taper(vector, val, c, axis):
+	static func taper(vector, value, height, axis):
 		var vec = Vector3(1, 1, 1)
 		
 		for i in axis:
-			vec[i] += val * (vector.y/c)
+			vec[i] += vector.y / height * value
 			
 		return vec
 		
-	func modifier(mesh, aabb):
-		var mesh_temp = Mesh.new()
+	func modify(mesh, aabb):
+		var new_mesh = Mesh.new()
 		
 		var c = aabb.size.y/2 
 		
@@ -75,11 +75,11 @@ class TaperModifier extends ModifierBase:
 				
 				set_vertex(i, v)
 				
-			commit_to_surface(mesh_temp)
+			commit_to_surface(new_mesh)
 			
 		clear()
 		
-		return mesh_temp
+		return new_mesh
 		
 	func modifier_parameters(editor):
 		editor.add_tree_range('Value', value)
@@ -88,7 +88,7 @@ class TaperModifier extends ModifierBase:
 		
 # End TaperModifer
 
-class ShearModifier extends ModifierBase:
+class ShearModifier extends Modifier:
 	
 	var shear_axis = Vector3.AXIS_X
 	var value = 1
@@ -96,8 +96,8 @@ class ShearModifier extends ModifierBase:
 	static func get_name():
 		return "Shear"
 		
-	func modifier(mesh, aabb):
-		var mesh_temp = Mesh.new()
+	func modify(mesh, aabb):
+		var new_mesh = Mesh.new()
 		
 		var h_axis = int(shear_axis != Vector3.AXIS_Y)
 		var c = aabb.size[h_axis]/2
@@ -108,15 +108,15 @@ class ShearModifier extends ModifierBase:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v[shear_axis] += (v[h_axis]/c) * value
+				v[shear_axis] += v[h_axis] / c * value
 				
 				set_vertex(i, v)
 				
-			commit_to_surface(mesh_temp)
+			commit_to_surface(new_mesh)
 			
 		clear()
 		
-		return mesh_temp
+		return new_mesh
 		
 	func modifier_parameters(editor):
 		editor.add_tree_combo('Shear Axis', shear_axis, 'X,Y,Z')
@@ -124,15 +124,15 @@ class ShearModifier extends ModifierBase:
 		
 # End ShearModifier
 
-class TwistModifier extends ModifierBase:
+class TwistModifier extends Modifier:
 	
 	var angle = 30
 	
 	static func get_name():
 		return "Twist"
 		
-	func modifier(mesh, aabb):
-		var mesh_temp = Mesh.new()
+	func modify(mesh, aabb):
+		var new_mesh = Mesh.new()
 		
 		var c = aabb.size.y/2
 		
@@ -142,47 +142,36 @@ class TwistModifier extends ModifierBase:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v = v.rotated(Vector3(0, 1, 0), deg2rad(angle * (v.y/c)))
+				v = v.rotated(Vector3(0, 1, 0), deg2rad(v.y / c * angle))
 				
 				set_vertex(i, v)
 				
-			commit_to_surface(mesh_temp)
+			commit_to_surface(new_mesh)
 			
 		clear()
 		
-		return mesh_temp
+		return new_mesh
 		
 	func modifier_parameters(editor):
 		editor.add_tree_range('Angle', angle, 1, -180, 180)
 		
 # End TwistModifier
 
-class ArrayModifier extends ModifierBase:
+class ArrayModifier extends Modifier:
 	
 	var count = 2
 	var relative = true
-	var offset = Vector3(1, 0, 0)
+	var x = 1.0
+	var y = 0.0
+	var z = 0.0
 	
 	static func get_name():
 		return "Array"
 		
-	func _set(name, value):
-		if name.begins_with('offset'):
-			var axis = name.split('_')[1]
-			
-			if axis == 'x':
-				offset.x = value
-				
-			elif axis == 'y':
-				offset.y = value
-				
-			elif axis == 'z':
-				offset.z = value
-				
-	func modifier(mesh, aabb):
-		var mesh_temp = Mesh.new()
+	func modify(mesh, aabb):
+		var new_mesh = Mesh.new()
 		
-		var ofs = offset
+		var ofs = Vector3(x, y, z)
 		
 		if relative:
 			ofs *= aabb.size
@@ -190,7 +179,7 @@ class ArrayModifier extends ModifierBase:
 		for surf in range(mesh.get_surface_count()):
 			create_from_surface(mesh, surf)
 			
-			commit_to_surface(mesh_temp)
+			commit_to_surface(new_mesh)
 			
 			for c in range(count - 1):
 				for i in range(get_vertex_count()):
@@ -200,51 +189,35 @@ class ArrayModifier extends ModifierBase:
 					
 					set_vertex(i, v)
 					
-				commit_to_surface(mesh_temp)
+				commit_to_surface(new_mesh)
 				
 		clear()
 		
-		return mesh_temp
+		return new_mesh
 		
 	func modifier_parameters(editor):
 		editor.add_tree_range('Count', count, 1, 1, 100)
 		editor.add_tree_check('Relative', relative)
-		editor.add_tree_range('Offset X', offset.x)
-		editor.add_tree_range('Offset Y', offset.y)
-		editor.add_tree_range('Offset Z', offset.z)
+		editor.add_tree_range('X', x)
+		editor.add_tree_range('Y', y)
+		editor.add_tree_range('Z', z)
 		
 # End ArrayModifier
 
-class OffsetModifier extends ModifierBase:
+class OffsetModifier extends Modifier:
 	
 	var relative = true
-	var offset = Vector3(0, 0.5, 0)
+	var x = 0.0
+	var y = 0.5
+	var z = 0.0
 	
 	static func get_name():
 		return "Offset"
 		
-	func _set(name, value):
-		if name == 'x':
-			offset.x = value
-			
-			return true
-			
-		elif name == 'y':
-			offset.y = value
-			
-			return true
-			
-		elif name == 'z':
-			offset.z = value
-			
-			return true
-			
-		return false
+	func modify(mesh, aabb):
+		var new_mesh = Mesh.new()
 		
-	func modifier(mesh, aabb):
-		var mesh_temp = Mesh.new()
-		
-		var ofs = offset
+		var ofs = Vector3(x, y, z)
 		
 		if relative:
 			ofs *= aabb.size
@@ -259,21 +232,21 @@ class OffsetModifier extends ModifierBase:
 				
 				set_vertex(i, v)
 				
-			commit_to_surface(mesh_temp)
+			commit_to_surface(new_mesh)
 			
 		clear()
 		
-		return mesh_temp
+		return new_mesh
 		
 	func modifier_parameters(editor):
 		editor.add_tree_check('Relative', relative)
-		editor.add_tree_range('X', offset.x)
-		editor.add_tree_range('Y', offset.y)
-		editor.add_tree_range('Z', offset.z)
+		editor.add_tree_range('X', x)
+		editor.add_tree_range('Y', y)
+		editor.add_tree_range('Z', z)
 		
 # End OffsetModifier
 
-class RandomModifier extends ModifierBase:
+class RandomModifier extends Modifier:
 	
 	var random_seed = 0
 	var amount = 1
@@ -281,8 +254,8 @@ class RandomModifier extends ModifierBase:
 	static func get_name():
 		return "Random"
 		
-	func modifier(mesh, aabb):
-		var mesh_temp = Mesh.new()
+	func modify(mesh, aabb):
+		var new_mesh = Mesh.new()
 		
 		seed(random_seed + 1)
 		
@@ -303,13 +276,13 @@ class RandomModifier extends ModifierBase:
 				
 				set_vertex(i, v)
 				
-			commit_to_surface(mesh_temp)
+			commit_to_surface(new_mesh)
 			
 		cache.clear()
 		
 		clear()
 		
-		return mesh_temp
+		return new_mesh
 		
 	func modifier_parameters(editor):
 		editor.add_tree_range('Amount', amount)
@@ -317,52 +290,25 @@ class RandomModifier extends ModifierBase:
 		
 # End RandomModifier
 
-class UVTransformModifier extends ModifierBase:
+class UVTransformModifier extends Modifier:
 	
-	var translation = Vector2()
+	var translation_x = 0.0
+	var translation_y = 0.0
 	var rotation = 0
-	var scale = Vector2(1, 1)
+	var scale_x = 1.0
+	var scale_y = 1.0
 	
 	static func get_name():
 		return "UV Transform"
 		
-	func _set(name, value):
-		if name.begins_with('translation'):
-			var axis = name.split('_')[1]
-			
-			if axis == 'x':
-				translation.x = value
-				
-				return true
-				
-			elif axis == 'y':
-				translation.y = value
-				
-				return true
-				
-		elif name.begins_with('scale'):
-			var axis = name.split('_')[1]
-			
-			if axis == 'x':
-				scale.x = value
-				
-				return true
-				
-			elif axis == 'y':
-				scale.y = value
-				
-				return true
-				
-		return false
+	func modify(mesh, aabb):
+		var new_mesh = Mesh.new()
 		
-	func modifier(mesh, aabb):
-		var mesh_temp = Mesh.new()
-		
-		var m32 = Matrix32(deg2rad(rotation), translation)
-		m32 = m32.scaled(scale)
+		var t = Matrix32(deg2rad(rotation), Vector2(translation_x, translation_y))
+		t = t.scaled(Vector2(scale_x, scale_y))
 		
 		for surf in range(mesh.get_surface_count()):
-			if not mesh.surface_get_format(surf) & mesh.ARRAY_FORMAT_TEX_UV:
+			if not mesh.surface_get_format(surf) & Mesh.ARRAY_FORMAT_TEX_UV:
 				continue
 				
 			create_from_surface(mesh, surf)
@@ -370,25 +316,25 @@ class UVTransformModifier extends ModifierBase:
 			for i in range(get_vertex_count()):
 				var uv = get_vertex_uv(i)
 				
-				uv = m32.xform(uv)
+				uv = t.xform(uv)
 				
 				set_vertex_uv(i, uv)
 				
-			commit_to_surface(mesh_temp)
+			commit_to_surface(new_mesh)
 			
 		clear()
 		
-		if not mesh_temp.get_surface_count():
+		if not new_mesh.get_surface_count():
 			return mesh
 			
-		return mesh_temp
+		return new_mesh
 		
 	func modifier_parameters(editor):
-		editor.add_tree_range('Translation X', translation.x, 0.01, 0, 100)
-		editor.add_tree_range('Translation Y', translation.y, 0.01, 0, 100)
-		editor.add_tree_range('Rotation', rotation, 1, 0, 360)
-		editor.add_tree_range('Scale X', scale.x, 0.01, 0.01, 100)
-		editor.add_tree_range('Scale Y', scale.y, 0.01, 0.01, 100)
+		editor.add_tree_range('Translation X', translation_x)
+		editor.add_tree_range('Translation Y', translation_y)
+		editor.add_tree_range('Rotation', rotation, 1, -360, 360)
+		editor.add_tree_range('Scale X', scale_x)
+		editor.add_tree_range('Scale Y', scale_y)
 		
 # End UVTransformModifier 
 

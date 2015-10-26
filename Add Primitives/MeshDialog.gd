@@ -40,6 +40,8 @@ var text_display
 var parameter_editor
 var modifier_editor
 
+const DIALOG_SIZE = Vector2(250, 275)
+
 static func create_display_material(instance):
 	var fixed_material = FixedMaterial.new()
 	fixed_material.set_name('__display_material__')
@@ -60,10 +62,9 @@ func get_editor(name):
 func set_current_editor(id):
 	var selected = main_panel.get_child(id)
 	
-	if selected.is_visible():
-		return
+	for c in main_panel.get_children():
+		c.hide()
 		
-	main_panel.get_child(index).hide()
 	selected.show()
 	
 	options.select(id)
@@ -71,7 +72,7 @@ func set_current_editor(id):
 	index = id
 	
 func connect_editor(name, obj, method):
-	var editor = main_panel.get_node(name)
+	var editor = get_editor(name)
 	
 	if not editor:
 		return
@@ -113,8 +114,7 @@ func show_dialog():
 			
 	set_current_editor(0)
 	
-	var sy = 250 + text_display.get_line_height() * 2
-	popup_centered(Vector2(240, sy))
+	popup_centered(DIALOG_SIZE)
 	
 func display_text(text):
 	text_display.set_text(text)
@@ -130,7 +130,7 @@ func _color_changed(color):
 		var mat = mesh_instance.get_material_override()
 		
 		if mat:
-			mat.set_parameter(mat.PARAM_DIFFUSE, color)
+			mat.set_parameter(FixedMaterial.PARAM_DIFFUSE, color)
 			
 func _set(name, value):
 	if not name.find('/'):
@@ -175,7 +175,7 @@ func _init(base):
 	hb.set_h_size_flags(SIZE_EXPAND_FILL)
 	
 	options = OptionButton.new()
-	options.set_custom_minimum_size(Vector2(100, 0))
+	options.set_custom_minimum_size(Vector2(120, 0))
 	hb.add_child(options)
 	options.connect("item_selected", self, "set_current_editor")
 	
@@ -196,7 +196,7 @@ func _init(base):
 	color_hb.add_child(color_picker)
 	
 	var sy = color_picker.get_minimum_size().y
-	color_picker.set_custom_minimum_size(Vector2(sy, sy))
+	color_picker.set_custom_minimum_size(Vector2(sy * 1.5, sy))
 	
 	color_picker.connect("color_changed", self, "_color_changed")
 	
@@ -211,7 +211,6 @@ func _init(base):
 	
 	modifier_editor = editors.ModifierEditor.new(base)
 	main_panel.add_child(modifier_editor)
-	modifier_editor.hide()
 	
 	for editor in main_panel.get_children():
 		var name = editor.get_name().capitalize()

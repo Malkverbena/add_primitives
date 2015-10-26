@@ -8,7 +8,7 @@ var end_height = 0.0
 static func get_name():
 	return "Plane"
 	
-func create():
+func update():
 	var verts = [Vector3(-width/2, end_height, -length/2),
 	             Vector3(width/2, end_height, -length/2),
 	             Vector3(width/2, start_height, length/2),

@@ -12,7 +12,7 @@ var generate_ends = true
 static func get_name():
 	return "Cylinder"
 	
-func create():
+func update():
 	var angle = 360 - slice
 	
 	var circumference = (angle * PI * radius) / 180

@@ -26,7 +26,7 @@ static func m3_from_dir(dir):
 	
 	return m3
 	
-func create():
+func update():
 	var v = []
 	var index = 0
 	

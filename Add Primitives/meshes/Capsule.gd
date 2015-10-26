@@ -10,7 +10,7 @@ var generate_ends = true
 static func get_name():
 	return "Capsule"
 	
-func create():
+func update():
 	var angle = PI/height_segments
 	var sa = PI * 2 - deg2rad(slice)
 	

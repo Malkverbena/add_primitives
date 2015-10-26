@@ -39,7 +39,7 @@ func get_mesh():
 	return mesh
 	
 func begin():
-	.begin(VS.PRIMITIVE_TRIANGLES)
+	.begin(Mesh.PRIMITIVE_TRIANGLES)
 	
 func add_tri(vertex = [], uv = []):
 	assert( vertex.size() == 3 )
@@ -99,6 +99,9 @@ func add_plane(dir1, dir2, offset = Vector3()):
 	var uv = Utils.plane_uv(w, h)
 	
 	add_quad(verts, uv)
+	
+func update():
+	pass
 	
 func commit():
 	generate_normals()

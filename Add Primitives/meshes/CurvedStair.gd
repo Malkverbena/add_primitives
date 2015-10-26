@@ -15,7 +15,7 @@ static func get_name():
 static func get_container():
 	return "Stair"
 	
-func create():
+func update():
 	var h = stair_height/steps
 	var outer_radius = inner_radius + step_width
 	

@@ -16,7 +16,7 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-func create():
+func update():
 	var cc = Vector3(0,-height,0)
 	
 	var ellipse = Utils.build_ellipse_verts(Vector3(), segments, Vector2(width, length), deg2rad(360 - slice))

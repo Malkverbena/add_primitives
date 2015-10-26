@@ -86,7 +86,7 @@ static func create_icosahedron(verts, radius):
 	
 	return faces
 	
-func create():
+func update():
 	var v = []
 	var faces
 	

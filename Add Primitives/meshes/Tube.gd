@@ -12,7 +12,7 @@ var generate_ends = true
 static func get_name():
 	return "Tube"
 	
-func create():
+func update():
 	var sa = PI * 2 - deg2rad(slice)
 	
 	var ic = Utils.build_circle_verts(Vector3(), sides, inner_radius, sa)

@@ -10,7 +10,7 @@ var generate_ends = true
 static func get_name():
 	return "Torus"
 	
-func create():
+func update():
 	var sa = PI * 2 - deg2rad(slice)
 	var bend_radius = major_radius/sa
 	

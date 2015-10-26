@@ -11,7 +11,7 @@ var generate_cap = true
 static func get_name():
 	return "Sphere"
 	
-func create():
+func update():
 	var circle = Utils.build_circle_verts(Vector3(), segments, radius, deg2rad(360 - slice))
 	
 	var h_val = 1.0 - hemisphere

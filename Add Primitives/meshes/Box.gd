@@ -13,7 +13,7 @@ var back_face = true
 static func get_name():
 	return "Box"
 	
-func create():
+func update():
 	var fd = Vector3(width, 0, 0)
 	var rd = Vector3(0, 0, length)
 	var ud = Vector3(0, height, 0)
