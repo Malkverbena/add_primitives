@@ -18,29 +18,29 @@ func update():
 	var rd = Vector3(0, 0, length)
 	var ud = Vector3(0, height, 0)
 	
-	var ofs = Vector3(-width/2,-height/2,-length/2)
+	var ofs = Vector3(width/2,height/2,length/2)
 	
 	begin()
 	
 	add_smooth_group(smooth)
 	
 	if right_face:
-		add_plane(-ud, -rd, -ofs)
+		add_plane(-ud, -rd, ofs)
 		
 	if left_face:
-		add_plane(rd, ud, ofs)
+		add_plane(rd, ud, -ofs)
 		
 	if top_face:
-		add_plane(-rd, -fd, -ofs)
+		add_plane(-rd, -fd, ofs)
 		
 	if bottom_face:
-		add_plane(fd, rd, ofs)
+		add_plane(fd, rd, -ofs)
 		
 	if front_face:
-		add_plane(-fd, -ud, -ofs)
+		add_plane(-fd, -ud, ofs)
 		
 	if back_face:
-		add_plane(ud, fd, ofs)
+		add_plane(ud, fd, -ofs)
 		
 	commit()
 	

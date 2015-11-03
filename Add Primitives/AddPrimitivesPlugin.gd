@@ -98,18 +98,6 @@ class AddPrimitives extends HBoxContainer:
 	func edit(object):
 		node = object
 		
-	func load_modules():
-		var path = Dir.get_data_dir().plus_file('modules')
-		var mods = Dir.get_file_list(path, 'gd')
-		
-		for m in mods:
-			var module = load(path.plus_file(m))
-			
-			if module.can_instance():
-				module = module.new(self)
-				
-				modules[module.get_name()] = module
-				
 	func update_mesh():
 		builder.update()
 		
@@ -181,6 +169,20 @@ class AddPrimitives extends HBoxContainer:
 		else:
 			_create_primitive(command)
 			
+	func _load_modules():
+		modules.clear()
+		
+		var path = Dir.get_data_dir().plus_file('modules')
+		var mods = Dir.get_file_list(path, 'gd')
+		
+		for m in mods:
+			var module = load(path.plus_file(m))
+			
+			if module.can_instance():
+				module = module.new(self)
+				
+				modules[module.get_name()] = module
+				
 	func _update_menu():
 		builder = null
 		
@@ -349,7 +351,7 @@ class AddPrimitives extends HBoxContainer:
 			mesh_instance = null
 			
 	func _enter_tree():
-		load_modules()
+		_load_modules()
 		_update_menu()
 		
 		var base = get_node("/root/EditorNode").get_gui_base()
@@ -389,7 +391,7 @@ class AddPrimitives extends HBoxContainer:
 var add_primitives
 
 static func get_name():
-	return "Add Primitives"
+	return "add_primitives"
 	
 func edit(object):
 	add_primitives.edit(object)

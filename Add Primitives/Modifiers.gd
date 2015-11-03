@@ -28,6 +28,9 @@ class Modifier extends MeshDataTool:
 	static func get_name():
 		return ""
 		
+	func modify(mesh, aabb):
+		return mesh
+		
 	func modifier_parameters(editor):
 		pass
 		

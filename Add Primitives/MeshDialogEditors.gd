@@ -82,7 +82,7 @@ class TreeEditor extends VBoxContainer:
 		item.set_selectable(0, false)
 		item.set_selectable(1, false)
 		
-	func add_tree_range(text, value, step = 0.01, min_ = -100, max_ = 100):
+	func add_tree_range(text, value, step = 0.001, min_ = -100, max_ = 100):
 		var item = tree.create_item(last)
 		
 		item.set_text(0, text)

@@ -20,27 +20,27 @@ func update():
 	var h = height
 	var sa = deg2rad(angle)
 	
-	var circle = Utils.build_circle_verts(Vector3(0, h/2, 0), sides, radius, sa)
+	var circle = Utils.build_circle_verts(Vector3(0, -h/2, 0), sides, radius, sa)
 	var uv = Utils.build_circle_verts(Vector3(0.5, 0, 0.5), sides, radius, sa)
 	
-	var pos = Vector3(0, -h, 0)
+	var pos = Vector3(0, h, 0)
 	
 	begin()
 	
 	add_smooth_group(false)
 	
 	if generate_top or generate_bottom:
-		var top = Vector3(0, h/2, 0)
+		var bottom = Vector3(0, -h/2, 0)
 		
 		var c = Vector2(0.5, 0.5)
 		
 		for idx in range(sides):
 			if generate_top:
-				add_tri([top, circle[idx], circle[idx + 1]],\
+				add_tri([pos/2, circle[idx] + pos, circle[idx + 1] + pos],\
 				        [c, Vector2(uv[idx].x, uv[idx].z), Vector2(uv[idx + 1].x, uv[idx + 1].z)])
 				
 			if generate_bottom:
-				add_tri([pos/2, circle[idx + 1] + pos, circle[idx] + pos],\
+				add_tri([bottom, circle[idx + 1], circle[idx]],\
 				        [c, Vector2(uv[idx + 1].x, uv[idx + 1].z), Vector2(uv[idx].x, uv[idx].z)])
 				
 	if generate_ends and slice:
@@ -67,7 +67,7 @@ func update():
 			
 	h /= height_segments
 	
-	var next = pos + Vector3(0, h, 0)
+	var next = pos - Vector3(0, h, 0)
 	
 	add_smooth_group(smooth)
 	
@@ -86,11 +86,11 @@ func update():
 			var u1 = idx/sides * circumference
 			var u2 = (idx+1)/sides * circumference
 			
-			add_quad([circle[idx] + pos, circle[idx + 1] + pos, circle[idx + 1] + next, circle[idx] + next],\
-			         [Vector2(u1, v1), Vector2(u2, v1), Vector2(u2, v2), Vector2(u1, v2)])
+			add_quad([circle[idx + 1] + pos, circle[idx] + pos, circle[idx] + next, circle[idx + 1] + next],\
+			         [Vector2(u2, v1), Vector2(u1, v1), Vector2(u1, v2), Vector2(u2, v2)])
 			
 		pos = next
-		next.y += h
+		next.y -= h
 		
 	commit()
 	
