@@ -44,7 +44,7 @@ func update():
 				        [c, Vector2(uv[idx + 1].x, uv[idx + 1].z), Vector2(uv[idx].x, uv[idx].z)])
 				
 	if generate_ends and slice:
-		var b = Vector3(0, -h/2, 0)
+		var bottom = Vector3(0, -h/2, 0)
 		var p = Vector3()
 		
 		for i in range(height_segments): 
@@ -58,12 +58,12 @@ func update():
 			          Vector2(radius, v2),
 			          Vector2(0, v2)]
 			
-			add_quad([b + p, circle[0] + p, circle[0] + n, b + n], uv)
+			add_quad([bottom + p, circle[0] + p, circle[0] + n, bottom + n], uv)
 			
 			if not flip_normals:
 				uv.invert()
 				
-			add_quad([b + n, circle[sides] + n, circle[sides] + p, b + p], uv)
+			add_quad([bottom + n, circle[sides] + n, circle[sides] + p, bottom + p], uv)
 			
 			p = n
 			

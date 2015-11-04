@@ -89,7 +89,7 @@ class AddPrimitives extends HBoxContainer:
 	# Utilites
 	var Dir = DirectoryUtilities.new()
 	
-	static func module_call(object, method, args=[]):
+	static func module_call(object, method, args = []):
 		if object and object.has_method(method):
 			return object.callv(method, args)
 			

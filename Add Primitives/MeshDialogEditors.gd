@@ -89,8 +89,10 @@ class TreeEditor extends VBoxContainer:
 		
 		if typeof(step) == TYPE_INT:
 			item.set_icon(0, tree.get_icon('Integer', 'EditorIcons'))
+			
 		else:
 			item.set_icon(0, tree.get_icon('Real', 'EditorIcons'))
+			
 		item.set_selectable(0, false)
 		
 		item.set_cell_mode(1, TreeItem.CELL_MODE_RANGE)
@@ -183,7 +185,8 @@ class ModifierEditor extends TreeEditor:
 		for k in keys:
 			menu.add_item(k)
 			
-		_create_root()
+		tree.clear()
+		tree.create_item()
 		
 	func create_modifier(script):
 		var root = tree.get_root()
@@ -238,17 +241,6 @@ class ModifierEditor extends TreeEditor:
 		
 		modifiers.clear()
 		
-	func _create_root():
-		tree.clear()
-		
-		tree.set_hide_root(true)
-		tree.set_columns(2)
-		tree.set_column_min_width(0, 2)
-		
-		var root = tree.create_item()
-		
-		return root
-		
 	func _modifier_tools(what):
 		var item = tree.get_selected()
 		
@@ -278,15 +270,15 @@ class ModifierEditor extends TreeEditor:
 			elif what == Tool.MOVE_DOWN:
 				second = first + 1
 				
-			var temp = items[second]
-			items[second] = items[first]
-			items[first] = temp
+			var temp = items[first]
+			items[first] = items[second]
+			items[second] = temp
 			
 			var state = generate_state()
 			
-			temp = state[second]
-			state[second] = state[first]
-			state[first] = temp
+			temp = state[first]
+			state[first] = state[second]
+			state[second] = temp
 			
 			_rebuild_tree(state)
 			_item_selected()
@@ -305,7 +297,9 @@ class ModifierEditor extends TreeEditor:
 		emit_signal("modifier_edited")
 		
 	func _rebuild_tree(state):
-		var root = _create_root()
+		tree.clear()
+		
+		var root = tree.create_item()
 		
 		for i in range(items.size()):
 			last = tree.create_item(root)
@@ -320,6 +314,7 @@ class ModifierEditor extends TreeEditor:
 			last.set_cell_mode(1, TreeItem.CELL_MODE_CHECK)
 			last.set_text(1, 'On')
 			last.set_editable(1, true)
+			last.set_checked(1, state[i].checked)
 			last.set_selectable(1, false)
 			
 			last.set_custom_bg_color(0, get_color('prop_category', 'Editor'))
@@ -377,6 +372,13 @@ class ModifierEditor extends TreeEditor:
 		var hbox_tools = HBoxContainer.new()
 		add_child(hbox_tools)
 		hbox_tools.set_h_size_flags(SIZE_EXPAND_FILL)
+		
+		tree.set_hide_root(true)
+		tree.set_columns(2)
+		tree.set_column_expand(0, true)
+		tree.set_column_min_width(0, 30)
+		tree.set_column_expand(1, true)
+		tree.set_column_min_width(1, 15)
 		
 		add_child(tree)
 		tree.set_v_size_flags(SIZE_EXPAND_FILL)
@@ -439,13 +441,6 @@ class ParameterEditor extends TreeEditor:
 		if builder == null:
 			return
 			
-		tree.set_hide_root(true)
-		tree.set_columns(2)
-		tree.set_column_titles_visible(true)
-		tree.set_column_title(0, 'Parameter')
-		tree.set_column_title(1, 'Value')
-		tree.set_column_min_width(0, 2)
-		
 		last = tree.create_item()
 		
 		builder.mesh_parameters(self)
@@ -474,6 +469,13 @@ class ParameterEditor extends TreeEditor:
 		
 	func _init():
 		set_name("parameters")
+		
+		tree.set_hide_root(true)
+		tree.set_columns(2)
+		tree.set_column_expand(0, true)
+		tree.set_column_min_width(0, 30)
+		tree.set_column_expand(1, true)
+		tree.set_column_min_width(1, 15)
 		
 		add_child(tree)
 		tree.set_v_size_flags(SIZE_EXPAND_FILL)
