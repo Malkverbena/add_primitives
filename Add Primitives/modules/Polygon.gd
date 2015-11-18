@@ -145,8 +145,8 @@ class PolygonDialog extends AcceptDialog:
 	static func vector_to_local(control, vector):
 		var s = control.get_size()
 		
-		vector.x = max(0, min(vector.x, s.x))
-		vector.y = max(0, min(vector.y, s.y))
+		vector.x = clamp(vector.x, 0, s.x)
+		vector.y = clamp(vector.y, 0, s.y)
 		
 		return vector
 		

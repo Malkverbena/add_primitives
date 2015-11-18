@@ -307,8 +307,7 @@ class UVTransformModifier extends Modifier:
 	func modify(mesh, aabb):
 		var new_mesh = Mesh.new()
 		
-		var t = Matrix32(deg2rad(rotation), Vector2(translation_x, translation_y))
-		t = t.scaled(Vector2(scale_x, scale_y))
+		var t = Matrix32(deg2rad(rotation), Vector2(translation_x, translation_y)).scaled(Vector2(scale_x, scale_y))
 		
 		for surf in range(mesh.get_surface_count()):
 			if not mesh.surface_get_format(surf) & Mesh.ARRAY_FORMAT_TEX_UV:

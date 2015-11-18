@@ -1,5 +1,6 @@
 #==============================================================================#
-# Copyright (c) 2015 Franklin Sobrinho.                                        # #                                                                              #
+# Copyright (c) 2015 Franklin Sobrinho.                                        #
+#                                                                              #
 # Permission is hereby granted, free of charge, to any person obtaining        #
 # a copy of this software and associated documentation files (the "Software"), #
 # to deal in the Software without restriction, including without               #
@@ -93,10 +94,10 @@ func add_quad(vertex = [], uv = []):
 func add_plane(dir1, dir2, offset = Vector3()):
 	var verts = Utils.build_plane_verts(dir1, dir2, offset)
 	
-	var w = verts[0].distance_to(verts[3])
-	var h = verts[0].distance_to(verts[1])
+	var width = verts[0].distance_to(verts[3])
+	var height = verts[0].distance_to(verts[1])
 	
-	var uv = Utils.plane_uv(w, h)
+	var uv = Utils.plane_uv(width, height)
 	
 	add_quad(verts, uv)
 	

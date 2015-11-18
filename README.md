@@ -1,4 +1,4 @@
-# Add Primitives
+#Add Primitives
 
 ###Features
 1. Primitives:
@@ -58,7 +58,7 @@ right folder. Else you can open a issue to see what's is wrong.
 
 After enabling the plugin:
 
-1. Add, or select, a Spatial node
+1. Add, or select, a Spatial or any CollisionObject node
 3. A menu will appear on 3D editor toolbar
 4. Select a primitive, and it'll be added to the selected Spatial node
 5. A window will appear, where you can edit the primitive parameters
