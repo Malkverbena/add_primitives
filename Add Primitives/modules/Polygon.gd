@@ -275,7 +275,7 @@ class PolygonDialog extends AcceptDialog:
 				var cfg = get_range_config(polygon.size(), clockwise)
 				
 				var h = Vector2(0, data.depth/data.radius)
-				var u1 = Vector2(0, 0)
+				var u1 = Vector2()
 				var b = 0
 				
 				for i in range(cfg.min_, cfg.max_, cfg.step):

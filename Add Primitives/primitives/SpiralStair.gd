@@ -65,11 +65,11 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Spirals', spirals, 1, 1, 64)
+	editor.add_tree_range('Spirals', spirals, 1, 64, 1)
 	editor.add_tree_range('Spiral Height', spiral_height)
-	editor.add_tree_range('Steps per Spiral', steps_per_spiral, 1, 3, 64)
+	editor.add_tree_range('Steps per Spiral', steps_per_spiral, 3, 64, 1)
 	editor.add_tree_range('Inner Radius', inner_radius)
 	editor.add_tree_range('Step Width', step_width)
-	editor.add_tree_range('Extra Step Height', extra_step_height, 0.01, -100, 100)
+	editor.add_tree_range('Extra Step Height', extra_step_height)
 	
 

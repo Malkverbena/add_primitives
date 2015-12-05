@@ -34,7 +34,7 @@ func update():
 func mesh_parameters(editor):
 	editor.add_tree_range('Outer Radius', outer_radius)
 	editor.add_tree_range('Inner Radius', inner_radius)
-	editor.add_tree_range('Segments', segments, 1, 3, 64)
-	editor.add_tree_range('Slice', slice, 1, 0, 359)
+	editor.add_tree_range('Segments', segments, 3, 64, 1)
+	editor.add_tree_range('Slice', slice, 0, 359, 1)
 	
 

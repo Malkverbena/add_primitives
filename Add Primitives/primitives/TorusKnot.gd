@@ -86,10 +86,10 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Segments', segments, 1, 3, 64)
-	editor.add_tree_range('Section Segments', section_segments, 1, 3, 64)
-	editor.add_tree_range('Radius', radius, 0.01, 0.01, 100)
-	editor.add_tree_range('Section Radius', section_radius, 0.01, 0.01, 100)
-	editor.add_tree_range('P', p, 1, 1, 8)
-	editor.add_tree_range('Q', q, 1, 1, 8)
+	editor.add_tree_range('Segments', segments, 3, 64, 1)
+	editor.add_tree_range('Section Segments', section_segments, 3, 64, 1)
+	editor.add_tree_range('Radius', radius, 0.001, 100)
+	editor.add_tree_range('Section Radius', section_radius, 0.001, 100)
+	editor.add_tree_range('P', p, 1, 8, 1)
+	editor.add_tree_range('Q', q, 1, 8, 1)
 	

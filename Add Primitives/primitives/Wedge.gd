@@ -10,31 +10,30 @@ static func get_name():
 	return "Wedge"
 	
 func update():
+	var ofs = -Vector3(width/2, height/2, length/2)
+	
+	var d = ofs.distance_to(ofs + Vector3(0, -height, length))
 	var fd = Vector3(0, 0, length)
 	var rd = Vector3(width, 0, 0)
 	var ud = Vector3(0, height, 0)
-	
-	var ofs = -Vector3(width/2, height/2, length/2)
 	
 	begin()
 	
 	add_smooth_group(smooth)
 	
 	if generate_bottom:
-		add_plane(rd, fd, ofs)
+		add_plane(fd, rd, ofs)
 		
 	if generate_end:
-		add_plane(ud, rd, ofs)
+		add_plane(rd, ud, ofs)
 		
-	var d = ofs.distance_to(ofs + Vector3(0, -height, length))
-	
 	ofs.y += height
 	
 	add_quad([ofs, ofs + rd, ofs + Vector3(width, -height, length), ofs + Vector3(0, -height, length)],\
-	         Utils.plane_uv(d, width))
+	         Utils.plane_uv(width, d))
 	
-	add_tri([ofs + Vector3(0, -height, length), ofs - ud, ofs], Utils.plane_uv(height, length, false))
-	add_tri([ofs + rd, ofs + rd - ud, ofs + Vector3(width, -height, length)], Utils.plane_uv(length, height, false))
+	add_tri([ofs + Vector3(0, -height, length), ofs - ud, ofs], Utils.plane_uv(length, height, false))
+	add_tri([ofs + rd, ofs + rd - ud, ofs + Vector3(width, -height, length)], Utils.plane_uv(height, length, false))
 	
 	commit()
 	

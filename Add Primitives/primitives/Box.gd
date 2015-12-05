@@ -25,22 +25,22 @@ func update():
 	add_smooth_group(smooth)
 	
 	if right_face:
-		add_plane(-ud, -rd, ofs)
+		add_plane(-rd, -ud, ofs)
 		
 	if left_face:
-		add_plane(rd, ud, -ofs)
+		add_plane(ud, rd, -ofs)
 		
 	if top_face:
-		add_plane(-rd, -fd, ofs)
+		add_plane(-fd, -rd, ofs)
 		
 	if bottom_face:
-		add_plane(fd, rd, -ofs)
+		add_plane(rd, fd, -ofs)
 		
 	if front_face:
-		add_plane(-fd, -ud, ofs)
+		add_plane(-ud, -fd, ofs)
 		
 	if back_face:
-		add_plane(ud, fd, -ofs)
+		add_plane(fd, ud, -ofs)
 		
 	commit()
 	

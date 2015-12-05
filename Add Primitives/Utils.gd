@@ -23,14 +23,14 @@
 
 extends Reference
 
-static func build_plane_verts(dir1, dir2, offset = Vector3(0,0,0)):
+static func build_plane_verts(dir1, dir2, offset = Vector3()):
 	var verts = []
 	verts.resize(4)
 	
 	verts[0] = offset
-	verts[1] = offset + dir2
-	verts[2] = offset + dir2 + dir1
-	verts[3] = offset + dir1
+	verts[1] = offset + dir1
+	verts[2] = offset + dir1 + dir2
+	verts[3] = offset + dir2
 	
 	return verts
 	
@@ -38,14 +38,12 @@ static func build_circle_verts(pos, segments, radius = 1, angle = PI * 2):
 	var circle_verts = []
 	circle_verts.resize(segments + 1)
 	
-	var s_angle = angle/segments
+	var s_angle = angle / segments
 	
 	for i in range(segments):
 		var a = s_angle * i
 		
-		var vector = Vector3(cos(a), 0, sin(a)) * radius + pos
-		
-		circle_verts[i] = vector
+		circle_verts[i] = Vector3(cos(a), 0, sin(a)) * radius + pos
 		
 	if rad2deg(angle) != 360:
 		circle_verts[segments] = Vector3(cos(angle), 0, sin(angle)) * radius + pos
@@ -74,7 +72,7 @@ static func build_circle_verts_rot(pos, segments, radius = 1, matrix = Matrix3()
 	
 	return circle_verts
 	
-static func build_ellipse_verts(pos, segments, radius = Vector2(1,1), angle = PI * 2):
+static func build_ellipse_verts(pos, segments, radius = Vector2(1, 1), angle = PI * 2):
 	var ellipse_verts = []
 	ellipse_verts.resize(segments + 1)
 	
@@ -83,10 +81,7 @@ static func build_ellipse_verts(pos, segments, radius = Vector2(1,1), angle = PI
 	for i in range(segments):
 		var a = s_angle * i
 		
-		var vector = Vector3(sin(a) * radius.x, 0, cos(a) * radius.y)
-		vector += pos
-		
-		ellipse_verts[i] = vector
+		ellipse_verts[i] = Vector3(sin(a) * radius.x, 0, cos(a) * radius.y) + pos
 		
 	if rad2deg(angle) != 360:
 		ellipse_verts[segments] = Vector3(sin(angle) * radius.x, 0, cos(angle) * radius.y) + pos
@@ -100,13 +95,14 @@ static func plane_uv(width, height, last = true):
 	var uv = []
 	uv.resize(4)
 	
-	uv[0] = Vector2(0, 0)
-	uv[1] = Vector2(0, height)
+	uv[0] = Vector2()
+	uv[1] = Vector2(width, 0)
 	uv[2] = Vector2(width, height)
-	uv[3] = Vector2(width, 0)
+	uv[3] = Vector2(0, height)
 	
 	if not last:
 		uv.remove(3)
 		
 	return uv
 	
+

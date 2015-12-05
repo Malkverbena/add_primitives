@@ -12,13 +12,13 @@ static func get_container():
 	return "Extra Objects"
 	
 func update():
-	var c = Vector3(0,0,0)
+	var c = Vector3()
 	var r = Vector2(width, length)
 	
 	var sa = PI * 2 - deg2rad(slice)
 	
 	var ellipse = Utils.build_ellipse_verts(c, segments, r, sa)
-	var ellipse_uv = Utils.build_ellipse_verts(Vector3(0.5,0,0.5), segments, r, sa)
+	var ellipse_uv = Utils.build_ellipse_verts(Vector3(0.5, 0, 0.5), segments, r, sa)
 	
 	begin()
 	
@@ -35,7 +35,7 @@ func update():
 func mesh_parameters(editor):
 	editor.add_tree_range('Width', width)
 	editor.add_tree_range('Length', length)
-	editor.add_tree_range('Segments', segments, 1, 3, 64)
-	editor.add_tree_range('Slice', slice, 1, 0, 359)
+	editor.add_tree_range('Segments', segments, 3, 64, 1)
+	editor.add_tree_range('Slice', slice, 0, 359, 1)
 	
 

@@ -94,8 +94,8 @@ func add_quad(vertex = [], uv = []):
 func add_plane(dir1, dir2, offset = Vector3()):
 	var verts = Utils.build_plane_verts(dir1, dir2, offset)
 	
-	var width = verts[0].distance_to(verts[3])
-	var height = verts[0].distance_to(verts[1])
+	var width = verts[0].distance_to(verts[1])
+	var height = verts[0].distance_to(verts[3])
 	
 	var uv = Utils.plane_uv(width, height)
 	

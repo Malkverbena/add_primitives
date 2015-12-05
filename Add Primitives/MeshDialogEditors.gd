@@ -26,7 +26,7 @@ extends Reference
 #Base class for ParameterEditor and ModifierEditor
 class TreeEditor extends VBoxContainer:
 	
-	var last = null
+	var current = null
 	
 	var tree
 	
@@ -77,21 +77,21 @@ class TreeEditor extends VBoxContainer:
 		return iterable
 		
 	func add_tree_empty():
-		var item = tree.create_item(last)
+		var item = tree.create_item(current)
 		
 		item.set_selectable(0, false)
 		item.set_selectable(1, false)
 		
-	func add_tree_range(text, value, step = 0.001, min_ = -100, max_ = 100):
-		var item = tree.create_item(last)
+	func add_tree_range(text, value, min_ = -100, max_ = 100, step = 0.001):
+		var item = tree.create_item(current)
 		
 		item.set_text(0, text)
 		
 		if typeof(step) == TYPE_INT:
-			item.set_icon(0, tree.get_icon('Integer', 'EditorIcons'))
+			item.set_icon(0, get_icon('Integer', 'EditorIcons'))
 			
 		else:
-			item.set_icon(0, tree.get_icon('Real', 'EditorIcons'))
+			item.set_icon(0, get_icon('Real', 'EditorIcons'))
 			
 		item.set_selectable(0, false)
 		
@@ -100,11 +100,11 @@ class TreeEditor extends VBoxContainer:
 		item.set_range(1, value)
 		item.set_editable(1, true)
 		
-	func add_tree_combo(text, selected, items):
-		var item = tree.create_item(last)
+	func add_tree_enum(text, selected, items):
+		var item = tree.create_item(current)
 		
 		item.set_text(0, text)
-		item.set_icon(0, tree.get_icon('Enum', 'EditorIcons'))
+		item.set_icon(0, get_icon('Enum', 'EditorIcons'))
 		item.set_selectable(0, false)
 		
 		item.set_cell_mode(1, TreeItem.CELL_MODE_RANGE)
@@ -113,10 +113,10 @@ class TreeEditor extends VBoxContainer:
 		item.set_editable(1, true)
 		
 	func add_tree_check(text, checked = false):
-		var item = tree.create_item(last)
+		var item = tree.create_item(current)
 		
 		item.set_text(0, text)
-		item.set_icon(0, tree.get_icon('Bool', 'EditorIcons'))
+		item.set_icon(0, get_icon('Bool', 'EditorIcons'))
 		item.set_selectable(0, false)
 		
 		item.set_cell_mode(1, TreeItem.CELL_MODE_CHECK)
@@ -125,10 +125,10 @@ class TreeEditor extends VBoxContainer:
 		item.set_editable(1, true)
 		
 	func add_tree_entry(text, string = ''):
-		var item = tree.create_item(last)
+		var item = tree.create_item(current)
 		
 		item.set_text(0, text)
-		item.set_icon(0, tree.get_icon('String', 'EditorIcons'))
+		item.set_icon(0, get_icon('String', 'EditorIcons'))
 		item.set_selectable(0, false)
 		
 		item.set_cell_mode(1, TreeItem.CELL_MODE_STRING)
@@ -191,22 +191,22 @@ class ModifierEditor extends TreeEditor:
 	func create_modifier(script):
 		var root = tree.get_root()
 		
-		last = tree.create_item(root)
-		last.set_cell_mode(0, TreeItem.CELL_MODE_STRING)
-		last.set_text(0, script.get_name())
+		current = tree.create_item(root)
+		current.set_cell_mode(0, TreeItem.CELL_MODE_STRING)
+		current.set_text(0, script.get_name())
 		
-		last.set_cell_mode(1, TreeItem.CELL_MODE_CHECK)
-		last.set_checked(1, true)
-		last.set_text(1, 'On')
-		last.set_editable(1, true)
-		last.set_selectable(1, false)
+		current.set_cell_mode(1, TreeItem.CELL_MODE_CHECK)
+		current.set_checked(1, true)
+		current.set_text(1, 'On')
+		current.set_editable(1, true)
+		current.set_selectable(1, false)
 		
-		last.set_custom_bg_color(0, get_color('prop_category', 'Editor'))
-		last.set_custom_bg_color(1, get_color('prop_category', 'Editor'))
+		current.set_custom_bg_color(0, get_color('prop_category', 'Editor'))
+		current.set_custom_bg_color(1, get_color('prop_category', 'Editor'))
 		
 		var obj = script.new()
 		
-		last.set_metadata(0, obj.get_instance_ID())
+		current.set_metadata(0, obj.get_instance_ID())
 		
 		if obj.has_method('modifier_parameters'):
 			obj.modifier_parameters(self)
@@ -302,25 +302,25 @@ class ModifierEditor extends TreeEditor:
 		var root = tree.create_item()
 		
 		for i in range(items.size()):
-			last = tree.create_item(root)
-			last.set_collapsed(state[i].collapsed)
+			current = tree.create_item(root)
+			current.set_collapsed(state[i].collapsed)
 			
-			last.set_cell_mode(0, TreeItem.CELL_MODE_STRING)
-			last.set_text(0, state[i].name)
+			current.set_cell_mode(0, TreeItem.CELL_MODE_STRING)
+			current.set_text(0, state[i].name)
 			
 			if state[i].selected:
-				last.select(0)
+				current.select(0)
 				
-			last.set_cell_mode(1, TreeItem.CELL_MODE_CHECK)
-			last.set_text(1, 'On')
-			last.set_editable(1, true)
-			last.set_checked(1, state[i].checked)
-			last.set_selectable(1, false)
+			current.set_cell_mode(1, TreeItem.CELL_MODE_CHECK)
+			current.set_text(1, 'On')
+			current.set_editable(1, true)
+			current.set_checked(1, state[i].checked)
+			current.set_selectable(1, false)
 			
-			last.set_custom_bg_color(0, get_color('prop_category', 'Editor'))
-			last.set_custom_bg_color(1, get_color('prop_category', 'Editor'))
+			current.set_custom_bg_color(0, get_color('prop_category', 'Editor'))
+			current.set_custom_bg_color(1, get_color('prop_category', 'Editor'))
 			
-			last.set_metadata(0, state[i].metadata)
+			current.set_metadata(0, state[i].metadata)
 			
 			if items[i].has_method('modifier_parameters'):
 				items[i].modifier_parameters(self)
@@ -441,7 +441,7 @@ class ParameterEditor extends TreeEditor:
 		if builder == null:
 			return
 			
-		last = tree.create_item()
+		current = tree.create_item()
 		
 		builder.mesh_parameters(self)
 		

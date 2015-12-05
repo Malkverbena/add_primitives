@@ -122,7 +122,7 @@ class ShearModifier extends Modifier:
 		return new_mesh
 		
 	func modifier_parameters(editor):
-		editor.add_tree_combo('Shear Axis', shear_axis, 'X,Y,Z')
+		editor.add_tree_enum('Shear Axis', shear_axis, 'X,Y,Z')
 		editor.add_tree_range('Value', value)
 		
 # End ShearModifier

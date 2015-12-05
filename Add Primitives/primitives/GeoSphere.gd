@@ -12,9 +12,9 @@ var subdivisions = 2
 static func get_name():
 	return "GeoSphere"
 	
-static func get_middle_point(p1, p2, verts, radius):
-	var v1 = verts[p1]
-	var v2 = verts[p2]
+static func get_middle_point(i1, i2, verts, radius):
+	var v1 = verts[i1]
+	var v2 = verts[i2]
 	
 	var middle = (v1 + v2)/2
 	
@@ -27,12 +27,12 @@ static func get_middle_point(p1, p2, verts, radius):
 static func create_octahedron(verts, radius):
 	verts.resize(6)
 	
-	verts[0] = Vector3(0,-1,0) * radius
-	verts[1] = Vector3(1,0,0) * radius
-	verts[2] = Vector3(0,0,1) * radius
-	verts[3] = Vector3(-1,0,0) * radius
-	verts[4] = Vector3(0,0,-1) * radius
-	verts[5] = Vector3(0,1,0) * radius
+	verts[0] = Vector3(0, -1, 0) * radius
+	verts[1] = Vector3(1, 0, 0) * radius
+	verts[2] = Vector3(0, 0, 1) * radius
+	verts[3] = Vector3(-1, 0, 0) * radius
+	verts[4] = Vector3(0, 0, -1) * radius
+	verts[5] = Vector3(0, 1, 0) * radius
 	
 	var faces = [2, 1, 0,
 	             3, 2, 0,
@@ -138,8 +138,8 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_combo('Solid', solid, 'Octahedron,Icosahedron')
+	editor.add_tree_enum('Solid', solid, 'Octahedron,Icosahedron')
 	editor.add_tree_range('Radius', radius)
-	editor.add_tree_range('Subdivisions', subdivisions, 1, 0, 4)
+	editor.add_tree_range('Subdivisions', subdivisions, 0, 4, 1)
 	
 

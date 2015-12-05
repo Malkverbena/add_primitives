@@ -99,9 +99,9 @@ func update():
 func mesh_parameters(editor):
 	editor.add_tree_range('Radius', radius)
 	editor.add_tree_range('Height', height)
-	editor.add_tree_range('Sides', sides, 1, 3, 64)
-	editor.add_tree_range('Height Segments', height_segments, 1, 1, 64)
-	editor.add_tree_range('Slice', slice, 1, 0, 359)
+	editor.add_tree_range('Sides', sides, 3, 64, 1)
+	editor.add_tree_range('Height Segments', height_segments, 1, 64, 1)
+	editor.add_tree_range('Slice', slice, 0, 359, 1)
 	editor.add_tree_empty()
 	editor.add_tree_check('Generate Top', generate_top)
 	editor.add_tree_check('Generate Bottom', generate_bottom)

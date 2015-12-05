@@ -80,7 +80,7 @@ func update():
 	if generate_end:
 		var sh = Vector3(0, h * steps, 0)
 		
-		var uv = [Vector2(0, 0),
+		var uv = [Vector2(),
 		          Vector2(0, sh.y),
 		          Vector2(step_width, sh.y),
 		          Vector2(step_width, 0)]
@@ -90,9 +90,9 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Angle', angle, 1, 1, 360)
+	editor.add_tree_range('Angle', angle, 1, 360, 1)
 	editor.add_tree_range('Stair Height', stair_height)
-	editor.add_tree_range('Steps', steps, 1, 2, 64)
+	editor.add_tree_range('Steps', steps, 3, 64, 1)
 	editor.add_tree_range('Inner Radius', inner_radius)
 	editor.add_tree_range('Step Width', step_width)
 	editor.add_tree_empty()

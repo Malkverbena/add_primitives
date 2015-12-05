@@ -32,6 +32,7 @@ var main_vbox
 var main_panel
 var color_hb
 
+# Widgets
 var options
 var color_picker
 var text_display

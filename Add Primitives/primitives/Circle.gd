@@ -8,7 +8,7 @@ static func get_name():
 	return "Circle"
 	
 func update():
-	var c = Vector3(0,0,0)
+	var c = Vector3()
 	
 	var sa = PI * 2 - deg2rad(slice)
 	
@@ -20,7 +20,7 @@ func update():
 	add_smooth_group(smooth)
 	
 	for i in range(segments):
-		var uv = [Vector2(0.5,0.5), Vector2(circle_uv[i].x, circle_uv[i].z), 
+		var uv = [Vector2(0.5, 0.5), Vector2(circle_uv[i].x, circle_uv[i].z), 
 		          Vector2(circle_uv[i+1].x, circle_uv[i+1].z)]
 		
 		add_tri([c, circle[i], circle[i+1]], uv)
@@ -29,7 +29,7 @@ func update():
 	
 func mesh_parameters(editor):
 	editor.add_tree_range('Radius', radius)
-	editor.add_tree_range('Segments', segments, 1, 3, 64)
-	editor.add_tree_range('Slice', slice, 1, 0, 359)
+	editor.add_tree_range('Segments', segments, 3, 64, 1)
+	editor.add_tree_range('Slice', slice, 0, 359, 1)
 	
 

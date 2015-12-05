@@ -70,7 +70,7 @@ class DirectoryUtilities extends Directory:
 
 class AddPrimitives extends HBoxContainer:
 	
-	var last_module = ""
+	var current_module = ""
 	
 	var undo_redo
 	
@@ -197,11 +197,11 @@ class AddPrimitives extends HBoxContainer:
 		
 		var path = Dir.get_data_dir()
 		
-		var scripts = Dir.get_file_list(path.plus_file('meshes'), 'gd')
+		var scripts = Dir.get_file_list(path.plus_file('primitives'), 'gd')
 		scripts.sort()
 		
 		for f_name in scripts:
-			var p = path.plus_file('meshes'.plus_file(f_name))
+			var p = path.plus_file('primitives'.plus_file(f_name))
 			
 			var script = load(p)
 			var name = script.get_name()
@@ -273,7 +273,7 @@ class AddPrimitives extends HBoxContainer:
 		undo_redo.commit_action()
 		
 		if modules.has(name):
-			last_module = name
+			current_module = name
 			
 			module_call(modules[name], "create", [mesh_instance])
 			
@@ -281,10 +281,10 @@ class AddPrimitives extends HBoxContainer:
 			
 			return
 			
-		if last_module:
-			module_call(modules[last_module], "clear")
+		if current_module:
+			module_call(modules[current_module], "clear")
 			
-			last_module = ""
+			current_module = ""
 			
 		var start = OS.get_ticks_msec()
 		
@@ -305,9 +305,9 @@ class AddPrimitives extends HBoxContainer:
 			mesh_dialog.show_dialog()
 			
 	func _set_edit_disabled(disable):
-		var count = popup_menu.get_item_count()
-		
 		set_process_unhandled_key_input(not disable)
+		
+		var count = popup_menu.get_item_count()
 		
 		if not count:
 			return
@@ -318,8 +318,8 @@ class AddPrimitives extends HBoxContainer:
 		if not mesh_instance:
 			return
 			
-		if last_module:
-			module_call(modules[last_module], "edit_primitive")
+		if current_module:
+			module_call(modules[current_module], "edit_primitive")
 			
 			return
 			
@@ -340,10 +340,10 @@ class AddPrimitives extends HBoxContainer:
 		if node == mesh_instance:
 			_set_edit_disabled(true)
 			
-			if last_module:
-				module_call(modules[last_module], "node_removed")
+			if current_module:
+				module_call(modules[current_module], "node_removed")
 				
-				last_module = ""
+				current_module = ""
 				
 			if mesh_dialog.is_visible():
 				mesh_dialog.hide()
