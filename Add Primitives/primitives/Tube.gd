@@ -13,12 +13,11 @@ static func get_name():
 	return "Tube"
 	
 func update():
-	var sa = PI * 2 - deg2rad(slice)
-	
-	var ic = Utils.build_circle_verts(Vector3(), sides, inner_radius, sa)
-	var oc = Utils.build_circle_verts(Vector3(), sides, outer_radius, sa)
-	
 	var ofs = Vector3(0, height/2, 0)
+	var slice_angle = PI * 2 - deg2rad(slice)
+	
+	var ic = Utils.build_circle_verts(Vector3(), sides, inner_radius, slice_angle)
+	var oc = Utils.build_circle_verts(Vector3(), sides, outer_radius, slice_angle)
 	
 	begin()
 	

@@ -230,14 +230,13 @@ class AddPrimitives extends HBoxContainer:
 			for sub in submenus.keys():
 				var submenu = PopupMenu.new()
 				submenu.set_name(sub)
-				
 				popup_menu.add_child(submenu)
+				
+				submenu.connect("item_pressed", self, "_popup_signal", [submenu])
 				
 				var n = sub.replace('_', ' ').capitalize()
 				
 				popup_menu.add_submenu_item(n, sub)
-				
-				submenu.connect("item_pressed", self, "_popup_signal", [submenu])
 				
 				for name in submenus[sub]:
 					submenu.add_item(name)

@@ -12,23 +12,22 @@ static func get_container():
 	return "Extra Objects"
 	
 func update():
-	var c = Vector3()
-	var r = Vector2(width, length)
+	var center = Vector3()
+	var size = Vector2(width, length)
+	var slice_angle = PI * 2 - deg2rad(slice)
 	
-	var sa = PI * 2 - deg2rad(slice)
-	
-	var ellipse = Utils.build_ellipse_verts(c, segments, r, sa)
-	var ellipse_uv = Utils.build_ellipse_verts(Vector3(0.5, 0, 0.5), segments, r, sa)
+	var ellipse = Utils.build_ellipse_verts(center, segments, size, slice_angle)
+	var ellipse_uv = Utils.build_ellipse_verts(Vector3(0.5, 0, 0.5), segments, size, slice_angle)
 	
 	begin()
 	
 	add_smooth_group(smooth)
 	
 	for i in range(segments):
-		var uv = [Vector2(0.5,0.5), Vector2(ellipse_uv[i+1].x, ellipse_uv[i+1].z), 
+		var uv = [Vector2(0.5, 0.5), Vector2(ellipse_uv[i+1].x, ellipse_uv[i+1].z), 
 		          Vector2(ellipse_uv[i].x, ellipse_uv[i].z)]
 		
-		add_tri([c, ellipse[i+1], ellipse[i]], uv)
+		add_tri([center, ellipse[i+1], ellipse[i]], uv)
 		
 	commit()
 	

@@ -13,11 +13,11 @@ static func get_container():
 func update():
 	var ofs = Vector3(width/2, height/2, length/2)
 	
-	var base = Utils.build_plane_verts(Vector3(0, 0, length), Vector3(width, 0, 0), -ofs)
-	
-	var ch = Vector3(0, height, 0)
 	var hw = sqrt(pow(width/2, 2) + pow(height, 2))
 	var hl = sqrt(pow(length/2, 2) + pow(height, 2))
+	
+	var top = Vector3(0, height, 0)
+	var base = Utils.build_plane_verts(Vector3(0, 0, length), Vector3(width, 0, 0), -ofs)
 	
 	var uv = [Vector2(0, hw), Vector2(length/2, 0), Vector2(length, hw)]
 	
@@ -27,15 +27,15 @@ func update():
 	
 	add_plane(Vector3(0, 0, length), Vector3(width, 0, 0), -ofs)
 	
-	add_tri([base[0], ch, base[1]], uv)
-	add_tri([base[2], ch, base[3]], uv)
+	add_tri([base[0], top, base[1]], uv)
+	add_tri([base[2], top, base[3]], uv)
 	
 	uv[0].y = hl
 	uv[1].x = width/2
 	uv[2] = Vector2(width, hl)
 	
-	add_tri([base[1], ch, base[2]], uv)
-	add_tri([base[3], ch, base[0]], uv)
+	add_tri([base[1], top, base[2]], uv)
+	add_tri([base[3], top, base[0]], uv)
 	
 	commit()
 	

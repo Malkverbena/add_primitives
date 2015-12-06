@@ -11,13 +11,12 @@ static func get_name():
 	return "Cone"
 	
 func update():
-	var center_top = Vector3(0, height/2, 0)
-	var min_pos = Vector3(0, -height/2, 0)
+	var top = Vector3(0, height/2, 0)
+	var bottom = Vector3(0, -height/2, 0)
+	var slice_angle = PI * 2 - deg2rad(slice)
 	
-	var sa = PI * 2 - deg2rad(slice)
-	
-	var circle = Utils.build_circle_verts(min_pos, sides, radius, sa)
-	var circle_uv = Utils.build_circle_verts(Vector3(0.5, 0, 0.5), sides, radius, sa)
+	var circle = Utils.build_circle_verts(bottom, sides, radius, slice_angle)
+	var circle_uv = Utils.build_circle_verts(Vector3(0.5, 0, 0.5), sides, radius, slice_angle)
 	
 	var uv
 	
@@ -27,24 +26,24 @@ func update():
 	
 	for idx in range(sides):
 		uv = [Vector2(0.5, 0.5), Vector2(circle_uv[idx].x, circle_uv[idx].z),
-		      Vector2(circle_uv[idx + 1].x, circle_uv[idx + 1].z)]
+		      Vector2(circle_uv[idx+1].x, circle_uv[idx+1].z)]
 		
-		add_tri([center_top, circle[idx], circle[idx + 1]], uv)
+		add_tri([top, circle[idx], circle[idx+1]], uv)
 		
 	add_smooth_group(false)
 	
-	if generate_ends and slice:
+	if generate_ends and slice > 0:
 		uv = [Vector2(), Vector2(0, height), Vector2(radius, height)]
 		
-		add_tri([center_top, min_pos, circle[0]], uv)
-		add_tri([center_top, circle[sides], min_pos], [uv[0], uv[2], uv[1]])
+		add_tri([top, bottom, circle[0]], uv)
+		add_tri([top, circle[sides], bottom], [uv[0], uv[2], uv[1]])
 		
 	if generate_bottom:
 		for idx in range(sides):
-			uv = [Vector2(circle_uv[idx + 1].x, circle_uv[idx + 1].z),
-			      Vector2(circle_uv[idx].x, circle_uv[idx].z), Vector2(0.5, 0.5)]
+			uv = [Vector2(0.5, 0.5), Vector2(circle_uv[idx+1].x, circle_uv[idx+1].z),
+			      Vector2(circle_uv[idx].x, circle_uv[idx].z)]
 			
-			add_tri([circle[idx + 1], circle[idx], min_pos], uv)
+			add_tri([bottom, circle[idx+1], circle[idx]], uv)
 			
 	commit()
 	

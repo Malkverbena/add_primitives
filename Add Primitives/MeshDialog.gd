@@ -133,32 +133,6 @@ func _color_changed(color):
 		if mat:
 			mat.set_parameter(FixedMaterial.PARAM_DIFFUSE, color)
 			
-func _set(name, value):
-	if not name.find('/'):
-		return false
-		
-	var data = name.split('/')
-	
-	var editor = get_editor(data[0])
-	
-	if not editor:
-		return false
-		
-	return editor.set(data[1], value)
-	
-func _get(name):
-	if not name.find('/'):
-		return null
-		
-	var data = name.split('/')
-	
-	var editor = get_editor(data[0])
-	
-	if not editor:
-		return null
-		
-	return editor.get(data[1])
-	
 func _popup_hide():
 	if mesh_instance:
 		var mat = mesh_instance.get_material_override()

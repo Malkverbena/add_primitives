@@ -14,16 +14,12 @@ static func get_container():
 	return "Stair"
 	
 func update():
-	var angle = (PI * 2) / steps_per_spiral
 	var outer_radius = inner_radius + step_width
-	
-	var or_ = Vector3(outer_radius, 1, outer_radius)
-	var ir = Vector3(inner_radius, 1, inner_radius)
 	
 	var c1 = Utils.build_circle_verts(Vector3(), steps_per_spiral, inner_radius)
 	var c2 = Utils.build_circle_verts(Vector3(), steps_per_spiral, outer_radius)
 	
-	var s = spiral_height/steps_per_spiral
+	var height_inc = spiral_height/steps_per_spiral
 	
 	begin()
 	
@@ -33,7 +29,7 @@ func update():
 		var ofs = Vector3(0, spiral_height * sp, 0)
 		
 		for i in range(steps_per_spiral):
-			var h = Vector3(0, i * s, 0) + ofs
+			var h = Vector3(0, i * height_inc, 0) + ofs
 			
 			var uv = [Vector2(c1[i+1].x, c1[i+1].z),
 			          Vector2(c2[i+1].x, c2[i+1].z),
@@ -42,7 +38,7 @@ func update():
 			
 			add_quad([c1[i+1] + h, c2[i+1] + h, c2[i] + h, c1[i] + h], uv)
 			
-			var sh = Vector3(0, h.y + s + extra_step_height, 0)
+			var sh = Vector3(0, h.y + height_inc + extra_step_height, 0)
 			
 			uv.invert()
 			
@@ -52,12 +48,11 @@ func update():
 			
 			var t = Vector2(0, h.y)
 			var b = Vector2(0, sh.y)
-			var w = Vector2()
 			
 			for i in range(sides.size() - 1):
-				w.x = sides[i].distance_to(sides[i+1])
+				var w = Vector2(sides[i].distance_to(sides[i+1]), 0)
 				
-				add_quad([sides[i] + sh, sides[i] + h, sides[i+1] + h, sides[i+1] + sh], [t, b, b+w, t+w])
+				add_quad([sides[i] + sh, sides[i] + h, sides[i+1] + h, sides[i+1] + sh], [t, b, b + w, t + w])
 				
 				t.x += w.x
 				b.x += w.x

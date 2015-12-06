@@ -13,7 +13,7 @@ static func get_name():
 static func get_container():
 	return "Extra Objects"
 	
-static func m3_from_dir(dir):
+static func compute_vector(dir):
 	var z = dir.normalized()
 	
 	var x = Vector3(0, 1, 0).cross(z)
@@ -53,7 +53,7 @@ func update():
 		
 		var dir = (v2 - v1).normalized()
 		
-		var m3 = m3_from_dir(dir)
+		var m3 = compute_vector(dir)
 		
 		for j in range(section_segments):
 			var alpha = (PI * 2) * j / section_segments

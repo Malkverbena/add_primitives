@@ -14,14 +14,14 @@ func update():
 	             Vector3(width/2, start_height, length/2),
 	             Vector3(-width/2, start_height, length/2)]
 	
-	var w = verts[0].distance_to(verts[1])
-	var l = verts[0].distance_to(verts[3])
+	var uv_width = verts[0].distance_to(verts[1])
+	var uv_length = verts[0].distance_to(verts[3])
 	
 	begin()
 	
 	add_smooth_group(smooth)
 	
-	add_quad(verts, Utils.plane_uv(w, l))
+	add_quad(verts, Utils.plane_uv(uv_width, uv_length))
 	
 	commit()
 	

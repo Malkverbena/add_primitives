@@ -1,9 +1,9 @@
 extends "../Primitive.gd"
 
-var steps = 10
 var width = 1.0
 var height = 2.0
 var length = 2.0
+var steps = 10
 var generate_sides = true
 var generate_bottom = true
 var generate_end = true
@@ -17,40 +17,44 @@ static func get_container():
 func update():
 	var ofs_x = -width/2
 	
-	var sh = height/steps
-	var sl = length/steps
-	
-	var d = [Vector3(width, 0, 0),
-	         Vector3(0, 0, sl),
-	         Vector3(0, sh, 0)]
+	var height_inc = height/steps
+	var length_inc = length/steps
 	
 	var pz = Vector2()
 	var py = Vector2()
 	
 	var w = Vector2(0, width)
-	var l = Vector2(sl, 0)
-	var h = Vector2(sh, 0)
+	var l = Vector2(length_inc, 0)
+	var h = Vector2(height_inc, 0)
+	
+	var d = [Vector3(width, 0, 0),
+	         Vector3(0, 0, length_inc),
+	         Vector3(0, height_inc, 0)]
 	
 	begin()
 	
 	add_smooth_group(smooth)
 	
 	for i in range(steps):
-		add_quad(Utils.build_plane_verts(d[0], d[1], Vector3(ofs_x, (i+1) * sh, i * sl)),\
-		         [py, py+w, py+w+l, py+l])
-		add_quad(Utils.build_plane_verts(d[0], d[2], Vector3(ofs_x, i * sh, i * sl)),\
-		         [pz, pz+w, pz+w+h, pz+h])
+		var sh = height_inc * i
+		var bh = sh + height_inc
+		var sl = length_inc * i
+		
+		add_quad(Utils.build_plane_verts(d[0], d[1], Vector3(ofs_x, bh, sl)),\
+		         [py, py + w, py + w + l, py + l])
+		add_quad(Utils.build_plane_verts(d[0], d[2], Vector3(ofs_x, sh, sl)),\
+		         [pz, pz + w, pz + w + h, pz + h])
 		
 		if generate_sides:
-			var ch = Vector2(0, sh * (i+1))
+			var ch = Vector2(0, bh)
 			
-			add_quad(Utils.build_plane_verts(Vector3(0, ch.y, 0), d[1], Vector3(ofs_x, 0, i * sl)),\
-			         [py, py+ch, py+ch+l, py+l])
-			add_quad(Utils.build_plane_verts(d[1], Vector3(0, ch.y, 0), Vector3(-ofs_x, 0, i * sl)),\
-			         [py, py+l, py+l+ch, py+ch])
+			add_quad(Utils.build_plane_verts(Vector3(0, bh, 0), d[1], Vector3(ofs_x, 0, sl)),\
+			         [py, py + ch, py + l + ch, py + l])
+			add_quad(Utils.build_plane_verts(d[1], Vector3(0, bh, 0), Vector3(-ofs_x, 0, sl)),\
+			         [py, py + l, py + l + ch, py + ch])
 			
-		py.x += sl
-		pz.x += sh
+		py.x += length_inc
+		pz.x += height_inc
 		
 	if generate_end:
 		add_plane(Vector3(0, height, 0), d[0], Vector3(ofs_x, 0, length))

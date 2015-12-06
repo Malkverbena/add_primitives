@@ -87,14 +87,14 @@ static func create_icosahedron(verts, radius):
 	return faces
 	
 func update():
-	var v = []
+	var verts = []
 	var faces
 	
 	if solid == Solid.OCTAHEDRON:
-		faces = create_octahedron(v, radius)
+		faces = create_octahedron(verts, radius)
 		
 	elif solid == Solid.ICOSAHEDRON:
-		faces = create_icosahedron(v, radius)
+		faces = create_icosahedron(verts, radius)
 		
 	var last = false
 	
@@ -108,15 +108,15 @@ func update():
 		var tri2 = []
 		
 		for idx in range(0, faces.size(), 3):
-			var a = get_middle_point(faces[idx], faces[idx+1], v, radius)
-			var b = get_middle_point(faces[idx+1], faces[idx+2], v, radius)
-			var c = get_middle_point(faces[idx+2], faces[idx], v, radius)
+			var a = get_middle_point(faces[idx], faces[idx+1], verts, radius)
+			var b = get_middle_point(faces[idx+1], faces[idx+2], verts, radius)
+			var c = get_middle_point(faces[idx+2], faces[idx], verts, radius)
 			
 			if last:
-				add_tri([v[faces[idx]], v[a], v[c]])
-				add_tri([v[faces[idx+1]], v[b], v[a]])
-				add_tri([v[faces[idx+2]], v[c], v[b]])
-				add_tri([v[a], v[b], v[c]])
+				add_tri([verts[faces[idx]], verts[a], verts[c]])
+				add_tri([verts[faces[idx+1]], verts[b], verts[a]])
+				add_tri([verts[faces[idx+2]], verts[c], verts[b]])
+				add_tri([verts[a], verts[b], verts[c]])
 				
 				continue
 				
@@ -133,7 +133,7 @@ func update():
 	# Subdivisions is 0
 	if not last:
 		for i in range(0, faces.size(), 3):
-			add_tri([v[faces[i]], v[faces[i+1]], v[faces[i+2]]])
+			add_tri([verts[faces[i]], verts[faces[i+1]], verts[faces[i+2]]])
 			
 	commit()
 	

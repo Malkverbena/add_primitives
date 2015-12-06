@@ -17,20 +17,16 @@ static func get_container():
 	return "Extra Objects"
 	
 func update():
-	var cc = Vector3(0,-height,0)
+	var angle = PI * (1 - hemisphere) / height_segments
+	
+	var pos = Vector3(0, -cos(angle) * height, 0)
+	var radius = Vector3(sin(angle), 0, sin(angle))
 	
 	var ellipse = Utils.build_ellipse_verts(Vector3(), segments, Vector2(width, length), deg2rad(360 - slice))
 	
-	var h_val = 1.0 - hemisphere
-	
-	var angle = PI * h_val / height_segments
-	
-	var pos = Vector3(0, -cos(angle) * height, 0)
-	var rd = Vector3(sin(angle), 0, sin(angle))
-	
 	begin()
 	
-	if slice and generate_ends:
+	if generate_ends and slice > 0:
 		add_smooth_group(false)
 		
 		var center = Vector3(0, cos(angle * height_segments) * height, 0)
@@ -48,17 +44,17 @@ func update():
 			add_tri([center, ellipse[0] * rp + p, ellipse[0] * rn + n])
 			add_tri([center, ellipse[segments] * rn + n, ellipse[segments] * rp + p])
 			
-	if hemisphere > 0.0:
+	if hemisphere > 0:
 		pos.y = cos(angle * height_segments) * height
-		rd.x = sin(angle * height_segments)
-		rd.z = rd.x
+		radius.x = sin(angle * height_segments)
+		radius.z = radius.x
 		
 		if generate_cap:
 			if not slice:
 				add_smooth_group(false)
 				
 			for idx in range(segments):
-				add_tri([pos, ellipse[idx] * rd + pos, ellipse[idx+1] * rd + pos])
+				add_tri([pos, ellipse[idx] * radius + pos, ellipse[idx+1] * radius + pos])
 				
 			add_smooth_group(smooth)
 			
@@ -66,25 +62,25 @@ func update():
 		add_smooth_group(smooth)
 		
 		for idx in range(segments):
-			add_tri([Vector3(0, -height, 0), ellipse[idx] * rd + pos, ellipse[idx+1] * rd + pos])
+			add_tri([Vector3(0, -height, 0), ellipse[idx] * radius + pos, ellipse[idx+1] * radius + pos])
 			
 	for i in range(height_segments, 1, -1):
 		var next_pos = Vector3(0, cos(angle * (i-1)) * height, 0)
 		var next_radius = Vector3(sin(angle * (i-1)), 0, sin(angle * (i-1)))
 		
 		for idx in range(segments):
-			add_quad([ellipse[idx] * rd + pos,
+			add_quad([ellipse[idx] * radius + pos,
 			          ellipse[idx] * next_radius + next_pos,
 			          ellipse[idx+1] * next_radius + next_pos,
-			          ellipse[idx+1] * rd + pos])
+			          ellipse[idx+1] * radius + pos])
 			
 		pos = next_pos
-		rd = next_radius
+		radius = next_radius
 		
 	pos = Vector3(0, cos(angle) * height, 0)
 	
 	for idx in range(segments):
-		add_tri([ellipse[idx+1] * rd + pos, ellipse[idx] * rd + pos, Vector3(0, height, 0)])
+		add_tri([ellipse[idx+1] * radius + pos, ellipse[idx] * radius + pos, Vector3(0, height, 0)])
 		
 	commit()
 	

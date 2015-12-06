@@ -12,14 +12,13 @@ static func get_name():
 	
 func update():
 	var angle = PI/height_segments
-	var sa = PI * 2 - deg2rad(slice)
+	var slice_angle = PI * 2 - deg2rad(slice)
 	
 	var cc = Vector3(0, radius + height, 0)
-	
-	var circle = Utils.build_circle_verts(Vector3(), sides, radius, sa)
-	
 	var r = Vector3(sin(angle), 0, sin(angle))
 	var p = -Vector3(0, cos(angle) * radius + height, 0)
+	
+	var circle = Utils.build_circle_verts(Vector3(), sides, radius, slice_angle)
 	
 	begin()
 	
@@ -45,13 +44,13 @@ func update():
 	for idx in range(sides):
 		add_quad([circle[idx+1] + h, circle[idx] + h, circle[idx] - h, circle[idx+1] - h])
 		
-	if generate_ends and slice:
+	if generate_ends and slice > 0:
 		add_smooth_group(false)
 		
 		add_quad([Vector3(radius, h.y, 0), Vector3(0, h.y, 0), Vector3(0, -h.y, 0), Vector3(radius, -h.y, 0)])
 		add_quad([Vector3(0, h.y, 0), circle[sides] + h, circle[sides] - h, Vector3(0, -h.y, 0)])
 		
-		var m3 = Matrix3(Vector3(0, 1, 0), sa)
+		var m3 = Matrix3(Vector3(0, 1, 0), slice_angle)
 		
 		var pos1 = Vector3(0, -(height + radius), 0)
 		

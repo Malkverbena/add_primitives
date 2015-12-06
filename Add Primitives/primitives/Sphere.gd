@@ -12,18 +12,16 @@ static func get_name():
 	return "Sphere"
 	
 func update():
-	var circle = Utils.build_circle_verts(Vector3(), segments, radius, deg2rad(360 - slice))
-	
-	var h_val = 1.0 - hemisphere
-	
-	var angle = PI * h_val / height_segments
+	var angle = PI * (1 - hemisphere) / height_segments
 	
 	var pos = Vector3(0, -cos(angle) * radius, 0)
 	var rd = Vector3(sin(angle), 0, sin(angle))
 	
+	var circle = Utils.build_circle_verts(Vector3(), segments, radius, deg2rad(360 - slice))
+	
 	begin()
 	
-	if slice and generate_ends:
+	if generate_ends and slice > 0:
 		add_smooth_group(false)
 		
 		var center = Vector3(0, cos(angle * height_segments) * radius, 0)
@@ -41,7 +39,7 @@ func update():
 			add_tri([center, circle[0] * rn + n, circle[0] * rp + p])
 			add_tri([center, circle[segments] * rp + p, circle[segments] * rn + n])
 			
-	if hemisphere > 0.0:
+	if hemisphere > 0:
 		pos.y = cos(angle * height_segments) * radius
 		rd.x = sin(angle * height_segments)
 		rd.z = rd.x
