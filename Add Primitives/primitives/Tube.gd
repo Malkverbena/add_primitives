@@ -44,14 +44,14 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Height', height)
-	editor.add_tree_range('Outer Radius', outer_radius)
-	editor.add_tree_range('Inner Radius', inner_radius)
-	editor.add_tree_range('Sides', sides, 3, 64, 1)
-	editor.add_tree_range('Slice', slice, 0, 359, 1)
-	editor.add_tree_empty()
-	editor.add_tree_check('Generate Top', generate_top)
-	editor.add_tree_check('Generate Bottom', generate_bottom)
-	editor.add_tree_check('Generate Ends', generate_ends)
+	editor.add_numeric_parameter('height', height)
+	editor.add_numeric_parameter('outer_radius', outer_radius)
+	editor.add_numeric_parameter('inner_radius', inner_radius)
+	editor.add_numeric_parameter('sides', sides, 3, 64, 1)
+	editor.add_numeric_parameter('slice', slice, 0, 359, 1)
+	editor.add_empty()
+	editor.add_bool_parameter('generate_top', generate_top)
+	editor.add_bool_parameter('generate_bottom', generate_bottom)
+	editor.add_bool_parameter('generate_ends', generate_ends)
 	
 

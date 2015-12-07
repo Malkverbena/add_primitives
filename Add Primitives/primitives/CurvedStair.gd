@@ -86,14 +86,14 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Angle', angle, 1, 360, 1)
-	editor.add_tree_range('Stair Height', stair_height)
-	editor.add_tree_range('Steps', steps, 3, 64, 1)
-	editor.add_tree_range('Inner Radius', inner_radius)
-	editor.add_tree_range('Step Width', step_width)
-	editor.add_tree_empty()
-	editor.add_tree_check('Generate Sides', generate_sides)
-	editor.add_tree_check('Generate Bottom', generate_bottom)
-	editor.add_tree_check('Generate End', generate_end)
+	editor.add_numeric_parameter('angle', angle, 1, 360, 1)
+	editor.add_numeric_parameter('stair_height', stair_height)
+	editor.add_numeric_parameter('steps', steps, 3, 64, 1)
+	editor.add_numeric_parameter('inner_radius', inner_radius)
+	editor.add_numeric_parameter('step_width', step_width)
+	editor.add_empty()
+	editor.add_bool_parameter('generate_sides', generate_sides)
+	editor.add_bool_parameter('generate_bottom', generate_bottom)
+	editor.add_bool_parameter('generate_end', generate_end)
 	
 

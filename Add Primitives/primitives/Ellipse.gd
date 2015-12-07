@@ -24,7 +24,7 @@ func update():
 	add_smooth_group(smooth)
 	
 	for i in range(segments):
-		var uv = [Vector2(0.5, 0.5), Vector2(ellipse_uv[i+1].x, ellipse_uv[i+1].z), 
+		var uv = [Vector2(0.5, 0.5), Vector2(ellipse_uv[i+1].x, ellipse_uv[i+1].z),
 		          Vector2(ellipse_uv[i].x, ellipse_uv[i].z)]
 		
 		add_tri([center, ellipse[i+1], ellipse[i]], uv)
@@ -32,9 +32,9 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Width', width)
-	editor.add_tree_range('Length', length)
-	editor.add_tree_range('Segments', segments, 3, 64, 1)
-	editor.add_tree_range('Slice', slice, 0, 359, 1)
+	editor.add_numeric_parameter('width', width)
+	editor.add_numeric_parameter('length', length)
+	editor.add_numeric_parameter('segments', segments, 3, 64, 1)
+	editor.add_numeric_parameter('slice', slice, 0, 359, 1)
 	
 

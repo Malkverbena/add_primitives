@@ -70,12 +70,12 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Radius', radius)
-	editor.add_tree_range('Height', height)
-	editor.add_tree_range('Sides', sides, 3, 64, 1)
-	editor.add_tree_range('Height Segments', height_segments, 2, 64, 2)
-	editor.add_tree_range('Slice', slice, 0, 359, 1)
-	editor.add_tree_empty()
-	editor.add_tree_check('Generate Ends', generate_ends)
+	editor.add_numeric_parameter('radius', radius)
+	editor.add_numeric_parameter('height', height)
+	editor.add_numeric_parameter('sides', sides, 3, 64, 1)
+	editor.add_numeric_parameter('height_segments', height_segments, 2, 64, 2)
+	editor.add_numeric_parameter('slice', slice, 0, 359, 1)
+	editor.add_empty()
+	editor.add_bool_parameter('generate_ends', generate_ends)
 	
 

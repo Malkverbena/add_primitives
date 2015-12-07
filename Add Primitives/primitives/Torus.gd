@@ -59,12 +59,12 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Major Radius', major_radius)
-	editor.add_tree_range('Minor Radius', minor_radius)
-	editor.add_tree_range('Torus Segments', torus_segments, 3, 64, 1)
-	editor.add_tree_range('Segments', segments, 3, 64, 1)
-	editor.add_tree_range('Slice', slice, 0, 359, 1)
-	editor.add_tree_empty()
-	editor.add_tree_check('Generate Ends', generate_ends)
+	editor.add_numeric_parameter('major_radius', major_radius)
+	editor.add_numeric_parameter('minor_radius', minor_radius)
+	editor.add_numeric_parameter('torus_segments', torus_segments, 3, 64, 1)
+	editor.add_numeric_parameter('segments', segments, 3, 64, 1)
+	editor.add_numeric_parameter('slice', slice, 0, 359, 1)
+	editor.add_empty()
+	editor.add_bool_parameter('generate_ends', generate_ends)
 	
 

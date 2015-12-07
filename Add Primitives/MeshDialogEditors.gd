@@ -23,7 +23,7 @@
 
 extends Reference
 
-#Base class for ParameterEditor and ModifierEditor
+# Base class for ParameterEditor and ModifierEditor
 class TreeEditor extends VBoxContainer:
 	
 	var current = null
@@ -76,16 +76,16 @@ class TreeEditor extends VBoxContainer:
 			
 		return iterable
 		
-	func add_tree_empty():
+	func add_empty():
 		var item = tree.create_item(current)
 		
 		item.set_selectable(0, false)
 		item.set_selectable(1, false)
 		
-	func add_tree_range(text, value, min_ = -100, max_ = 100, step = 0.001):
+	func add_numeric_parameter(text, value, min_ = -100, max_ = 100, step = 0.001):
 		var item = tree.create_item(current)
 		
-		item.set_text(0, text)
+		item.set_text(0, text.capitalize())
 		
 		if typeof(step) == TYPE_INT:
 			item.set_icon(0, get_icon('Integer', 'EditorIcons'))
@@ -100,10 +100,10 @@ class TreeEditor extends VBoxContainer:
 		item.set_range(1, value)
 		item.set_editable(1, true)
 		
-	func add_tree_enum(text, selected, items):
+	func add_enum_parameter(text, selected, items):
 		var item = tree.create_item(current)
 		
-		item.set_text(0, text)
+		item.set_text(0, text.capitalize())
 		item.set_icon(0, get_icon('Enum', 'EditorIcons'))
 		item.set_selectable(0, false)
 		
@@ -112,10 +112,10 @@ class TreeEditor extends VBoxContainer:
 		item.set_range(1, selected)
 		item.set_editable(1, true)
 		
-	func add_tree_check(text, checked = false):
+	func add_bool_parameter(text, checked = false):
 		var item = tree.create_item(current)
 		
-		item.set_text(0, text)
+		item.set_text(0, text.capitalize())
 		item.set_icon(0, get_icon('Bool', 'EditorIcons'))
 		item.set_selectable(0, false)
 		
@@ -124,10 +124,10 @@ class TreeEditor extends VBoxContainer:
 		item.set_text(1, 'On')
 		item.set_editable(1, true)
 		
-	func add_tree_entry(text, string = ''):
+	func add_string_parameter(text, string = ''):
 		var item = tree.create_item(current)
 		
-		item.set_text(0, text)
+		item.set_text(0, text.capitalize())
 		item.set_icon(0, get_icon('String', 'EditorIcons'))
 		item.set_selectable(0, false)
 		

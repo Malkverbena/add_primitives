@@ -85,15 +85,15 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Width', width)
-	editor.add_tree_range('Length', length)
-	editor.add_tree_range('Height', height)
-	editor.add_tree_range('Segments', segments, 3, 64, 1)
-	editor.add_tree_range('Height Segments', height_segments, 3, 64, 1)
-	editor.add_tree_range('Slice', slice, 0, 359, 1)
-	editor.add_tree_range('Hemisphere', hemisphere, 0, 0.999)
-	editor.add_tree_empty()
-	editor.add_tree_check('Generate Ends', generate_ends)
-	editor.add_tree_check('Generate Cap', generate_cap)
+	editor.add_numeric_parameter('width', width)
+	editor.add_numeric_parameter('length', length)
+	editor.add_numeric_parameter('height', height)
+	editor.add_numeric_parameter('segments', segments, 3, 64, 1)
+	editor.add_numeric_parameter('height_segments', height_segments, 3, 64, 1)
+	editor.add_numeric_parameter('slice', slice, 0, 359, 1)
+	editor.add_numeric_parameter('hemisphere', hemisphere, 0, 0.999)
+	editor.add_empty()
+	editor.add_bool_parameter('generate_ends', generate_ends)
+	editor.add_bool_parameter('generate_cap', generate_cap)
 	
 

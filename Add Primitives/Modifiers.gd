@@ -85,9 +85,9 @@ class TaperModifier extends Modifier:
 		return new_mesh
 		
 	func modifier_parameters(editor):
-		editor.add_tree_range('Value', value)
-		editor.add_tree_check('Lock X Axis', lock_x_axis)
-		editor.add_tree_check('Lock Z Axis', lock_z_axis)
+		editor.add_numeric_parameter('value', value)
+		editor.add_bool_parameter('lock_x_axis', lock_x_axis)
+		editor.add_bool_parameter('lock_z_axis', lock_z_axis)
 		
 # End TaperModifer
 
@@ -122,8 +122,8 @@ class ShearModifier extends Modifier:
 		return new_mesh
 		
 	func modifier_parameters(editor):
-		editor.add_tree_enum('Shear Axis', shear_axis, 'X,Y,Z')
-		editor.add_tree_range('Value', value)
+		editor.add_enum_parameter('shear_axis', shear_axis, 'X,Y,Z')
+		editor.add_numeric_parameter('value', value)
 		
 # End ShearModifier
 
@@ -156,7 +156,7 @@ class TwistModifier extends Modifier:
 		return new_mesh
 		
 	func modifier_parameters(editor):
-		editor.add_tree_range('Angle', angle, 1, -180, 180)
+		editor.add_numeric_parameter('angle', angle, -180, 180, 1)
 		
 # End TwistModifier
 
@@ -199,11 +199,11 @@ class ArrayModifier extends Modifier:
 		return new_mesh
 		
 	func modifier_parameters(editor):
-		editor.add_tree_range('Count', count, 1, 1, 100)
-		editor.add_tree_check('Relative', relative)
-		editor.add_tree_range('X', x)
-		editor.add_tree_range('Y', y)
-		editor.add_tree_range('Z', z)
+		editor.add_numeric_parameter('count', count, 1, 100, 1)
+		editor.add_bool_parameter('relative', relative)
+		editor.add_numeric_parameter('x', x)
+		editor.add_numeric_parameter('y', y)
+		editor.add_numeric_parameter('z', z)
 		
 # End ArrayModifier
 
@@ -242,10 +242,10 @@ class OffsetModifier extends Modifier:
 		return new_mesh
 		
 	func modifier_parameters(editor):
-		editor.add_tree_check('Relative', relative)
-		editor.add_tree_range('X', x)
-		editor.add_tree_range('Y', y)
-		editor.add_tree_range('Z', z)
+		editor.add_bool_parameter('relative', relative)
+		editor.add_numeric_parameter('x', x)
+		editor.add_numeric_parameter('y', y)
+		editor.add_numeric_parameter('z', z)
 		
 # End OffsetModifier
 
@@ -288,8 +288,8 @@ class RandomModifier extends Modifier:
 		return new_mesh
 		
 	func modifier_parameters(editor):
-		editor.add_tree_range('Amount', amount)
-		editor.add_tree_range('Random Seed', random_seed, 1, 0, 61)
+		editor.add_numeric_parameter('amount', amount)
+		editor.add_numeric_parameter('random_seed', random_seed, 0, 61, 1)
 		
 # End RandomModifier
 
@@ -332,11 +332,11 @@ class UVTransformModifier extends Modifier:
 		return new_mesh
 		
 	func modifier_parameters(editor):
-		editor.add_tree_range('Translation X', translation_x)
-		editor.add_tree_range('Translation Y', translation_y)
-		editor.add_tree_range('Rotation', rotation, 1, -360, 360)
-		editor.add_tree_range('Scale X', scale_x)
-		editor.add_tree_range('Scale Y', scale_y)
+		editor.add_numeric_parameter('translation_x', translation_x)
+		editor.add_numeric_parameter('translation_y', translation_y)
+		editor.add_numeric_parameter('rotation', rotation, -360, 360, 1)
+		editor.add_numeric_parameter('scale_x', scale_x)
+		editor.add_numeric_parameter('scale_y', scale_y)
 		
 # End UVTransformModifier 
 

@@ -46,7 +46,7 @@ const DIALOG_SIZE = Vector2(250, 275)
 static func create_display_material(instance):
 	var fixed_material = FixedMaterial.new()
 	fixed_material.set_name('__display_material__')
-	fixed_material.set_parameter(fixed_material.PARAM_DIFFUSE, Color(0,1,0))
+	fixed_material.set_parameter(fixed_material.PARAM_DIFFUSE, Color(0, 1, 0))
 	
 	instance.set_material_override(fixed_material)
 	
@@ -85,18 +85,18 @@ func connect_editor(name, obj, method):
 		
 	editor.connect(signal_, obj, method)
 	
-func edit(instance, builder = null):
+func edit(instance, builder):
 	mesh_instance = instance
 	
 	if not mesh_instance:
 		return
 		
-	if builder:
-		set_title("New " + builder.get_name())
-		
-		parameter_editor.edit(builder)
-		
+	set_title("New " + builder.get_name())
+	
+	parameter_editor.edit(builder)
 	modifier_editor.create_modifiers()
+	
+	set_current_editor(0)
 	
 func show_dialog():
 	if not mesh_instance:
@@ -113,8 +113,6 @@ func show_dialog():
 		if color_hb.is_hidden():
 			color_hb.show()
 			
-	set_current_editor(0)
-	
 	popup_centered(DIALOG_SIZE)
 	
 func display_text(text):

@@ -45,15 +45,15 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Width', width)
-	editor.add_tree_range('Length', length)
-	editor.add_tree_range('Height', height)
-	editor.add_tree_empty()
-	editor.add_tree_check('Right Face', right_face)
-	editor.add_tree_check('Left Face', left_face)
-	editor.add_tree_check('Top Face', top_face)
-	editor.add_tree_check('Bottom Face', bottom_face)
-	editor.add_tree_check('Front Face', front_face)
-	editor.add_tree_check('Back Face', back_face)
+	editor.add_numeric_parameter('width', width)
+	editor.add_numeric_parameter('length', length)
+	editor.add_numeric_parameter('height', height)
+	editor.add_empty()
+	editor.add_bool_parameter('right_face', right_face)
+	editor.add_bool_parameter('left_face', left_face)
+	editor.add_bool_parameter('top_face', top_face)
+	editor.add_bool_parameter('bottom_face', bottom_face)
+	editor.add_bool_parameter('front_face', front_face)
+	editor.add_bool_parameter('back_face', back_face)
 	
 

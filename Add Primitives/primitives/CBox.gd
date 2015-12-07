@@ -58,10 +58,10 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Center Length', center_length)
-	editor.add_tree_range('Center Width', center_width)
-	editor.add_tree_range('Side Length', side_length)
-	editor.add_tree_range('Side Width', side_width)
-	editor.add_tree_range('Height', height, 0, 100)
+	editor.add_numeric_parameter('center_length', center_length)
+	editor.add_numeric_parameter('center_width', center_width)
+	editor.add_numeric_parameter('side_length', side_length)
+	editor.add_numeric_parameter('side_width', side_width)
+	editor.add_numeric_parameter('height', height)
 	
 

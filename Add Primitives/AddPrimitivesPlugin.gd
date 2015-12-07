@@ -234,7 +234,7 @@ class AddPrimitives extends HBoxContainer:
 				
 				submenu.connect("item_pressed", self, "_popup_signal", [submenu])
 				
-				var n = sub.replace('_', ' ').capitalize()
+				var n = sub.capitalize()
 				
 				popup_menu.add_submenu_item(n, sub)
 				
@@ -333,9 +333,6 @@ class AddPrimitives extends HBoxContainer:
 				get_tree().set_input_as_handled()
 				
 	func _node_removed(node):
-		if not is_inside_tree():
-			return
-			
 		if node == mesh_instance:
 			_set_edit_disabled(true)
 			
@@ -372,6 +369,8 @@ class AddPrimitives extends HBoxContainer:
 		
 		primitives.clear()
 		modules.clear()
+		
+		get_tree().disconnect("node_removed", self, "_node_removed")
 		
 	func _init():
 		var separator = VSeparator.new()

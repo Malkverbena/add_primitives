@@ -65,13 +65,13 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Steps', steps, 2, 64, 1)
-	editor.add_tree_range('Width', width)
-	editor.add_tree_range('Height', height)
-	editor.add_tree_range('Length', length)
-	editor.add_tree_empty()
-	editor.add_tree_check('Generate Sides', generate_sides)
-	editor.add_tree_check('Generate Bottom', generate_bottom)
-	editor.add_tree_check('Generate End', generate_end)
+	editor.add_numeric_parameter('width', width)
+	editor.add_numeric_parameter('height', height)
+	editor.add_numeric_parameter('length', length)
+	editor.add_numeric_parameter('steps', steps, 2, 64, 1)
+	editor.add_empty()
+	editor.add_bool_parameter('generate_sides', generate_sides)
+	editor.add_bool_parameter('generate_bottom', generate_bottom)
+	editor.add_bool_parameter('generate_end', generate_end)
 	
 

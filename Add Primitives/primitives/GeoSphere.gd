@@ -138,8 +138,8 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_enum('Solid', solid, 'Octahedron,Icosahedron')
-	editor.add_tree_range('Radius', radius)
-	editor.add_tree_range('Subdivisions', subdivisions, 0, 4, 1)
+	editor.add_enum_parameter('solid', solid, 'Octahedron,Icosahedron')
+	editor.add_numeric_parameter('radius', radius)
+	editor.add_numeric_parameter('subdivisions', subdivisions, 0, 4, 1)
 	
 

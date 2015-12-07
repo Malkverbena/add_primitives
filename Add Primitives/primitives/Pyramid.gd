@@ -40,8 +40,8 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Width', width)
-	editor.add_tree_range('Length', length)
-	editor.add_tree_range('Height', height)
+	editor.add_numeric_parameter('width', width)
+	editor.add_numeric_parameter('length', length)
+	editor.add_numeric_parameter('height', height)
 	
 

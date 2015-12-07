@@ -27,8 +27,8 @@ func update():
 	commit()
 	
 func mesh_parameters(editor):
-	editor.add_tree_range('Radius', radius)
-	editor.add_tree_range('Segments', segments, 3, 64, 1)
-	editor.add_tree_range('Slice', slice, 0, 359, 1)
+	editor.add_numeric_parameter('radius', radius)
+	editor.add_numeric_parameter('segments', segments, 3, 64, 1)
+	editor.add_numeric_parameter('slice', slice, 0, 359, 1)
 	
 
