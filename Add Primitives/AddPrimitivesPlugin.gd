@@ -89,7 +89,7 @@ class AddPrimitives extends HBoxContainer:
 	# Utilites
 	var Dir = DirectoryUtilities.new()
 	
-	static func module_call(object, method, args = []):
+	static func safe_call(object, method, args = []):
 		if object and object.has_method(method):
 			return object.callv(method, args)
 			
@@ -152,8 +152,7 @@ class AddPrimitives extends HBoxContainer:
 				
 			triangle_count += surf_idx/3
 			
-		var text = "Verts: " + str(vertex_count) + " | Triangles: " + str(triangle_count) +\
-		           "\nGeneration time: " + str(exec_time) + " ms"
+		var text = "Verts: %d | Triangles: %d\nGeneration time: %d ms" % [vertex_count, triangle_count, exec_time]
 		
 		mesh_dialog.display_text(text)
 		
@@ -274,14 +273,14 @@ class AddPrimitives extends HBoxContainer:
 		if modules.has(name):
 			current_module = name
 			
-			module_call(modules[name], "create", [mesh_instance])
+			safe_call(modules[name], "create", [mesh_instance])
 			
 			_set_edit_disabled(mesh_instance == null)
 			
 			return
 			
 		if current_module:
-			module_call(modules[current_module], "clear")
+			safe_call(modules[current_module], "clear")
 			
 			current_module = ""
 			
@@ -318,7 +317,7 @@ class AddPrimitives extends HBoxContainer:
 			return
 			
 		if current_module:
-			module_call(modules[current_module], "edit_primitive")
+			safe_call(modules[current_module], "edit_primitive")
 			
 			return
 			
@@ -337,7 +336,7 @@ class AddPrimitives extends HBoxContainer:
 			_set_edit_disabled(true)
 			
 			if current_module:
-				module_call(modules[current_module], "node_removed")
+				safe_call(modules[current_module], "node_removed")
 				
 				current_module = ""
 				

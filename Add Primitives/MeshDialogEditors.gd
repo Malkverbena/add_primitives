@@ -208,9 +208,8 @@ class ModifierEditor extends TreeEditor:
 		
 		current.set_metadata(0, obj.get_instance_ID())
 		
-		if obj.has_method('modifier_parameters'):
-			obj.modifier_parameters(self)
-			
+		obj.modifier_parameters(self)
+		
 		items.push_back(obj)
 		
 	func generate_state():
