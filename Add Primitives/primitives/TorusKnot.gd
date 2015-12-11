@@ -28,6 +28,8 @@ static func compute_vector(dir):
 	
 func update():
 	var v = []
+	v.resize(segments * p * section_segments)
+	
 	var index = 0
 	
 	begin()
@@ -59,7 +61,7 @@ func update():
 			var alpha = (PI * 2) * j / section_segments
 			var vp = section_radius * m3.xform(Vector3(cos(alpha), sin(alpha), 0))
 			
-			v.push_back(v1 + vp)
+			v[index] = v1 + vp
 			
 			if i != segments * p and (i > 0 and j > 0):
 				var idx = index - 1
