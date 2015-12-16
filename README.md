@@ -37,14 +37,14 @@
 
 ###Install
 
-####install.py (Linux and OSX)
+#####Using install.py (Linux and OSX)
 ```
 git clone https://github.com/TheHX/add_primitives.git
 cd add_primitives
 python install.py
 ```
 
-####Manual Install
+#####Manual Install
 Just copy and paste the 'Add Primitives' folder into godot plugins folder:
 
 * Windows: **%APPDATA%\Godot\plugins**
