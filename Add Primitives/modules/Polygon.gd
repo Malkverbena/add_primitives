@@ -117,6 +117,9 @@ class PolygonDialog extends AcceptDialog:
 		return config
 		
 	static func knife_polygon(polygon, start, end):
+		if start == end:
+			return
+			
 		var intersections = {}
 		
 		for i in range(polygon.size()):
@@ -153,14 +156,16 @@ class PolygonDialog extends AcceptDialog:
 	func edit(node):
 		mesh_instance = node
 		
+		if mesh_instance == null:
+			clear()
+			
+			return
+			
 		mesh = Mesh.new()
 		mesh.set_name("polygon")
 		
 		mesh_instance.set_mesh(mesh)
 		
-		if node == null:
-			clear()
-			
 	func set_mode(mode):
 		self.mode = mode 
 		
@@ -431,6 +436,7 @@ class PolygonDialog extends AcceptDialog:
 						var pos = snap_point(ev.pos)
 						
 						knife_start = pos
+						knife_end = knife_start
 						
 						set_mode(Mode.KNIFE)
 						
@@ -500,11 +506,9 @@ class PolygonDialog extends AcceptDialog:
 			canvas.draw_style_box(get_stylebox("EditorFocus","EditorStyles"), r)
 			
 		if polygon.size() >= 3:
-			canvas.draw_colored_polygon(polygon, Color(0.9,0.9,0.9))
+			canvas.draw_colored_polygon(polygon, Color(0.9, 0.9, 0.9))
 			
 		if show_grid:
-			print(s.x/grid_step.x)
-			
 			for i in range(1, s.x/grid_step.x):
 				canvas.draw_line(Vector2(i * grid_step.x, 0), Vector2(i * grid_step.x, s.y), Color(0.2, 0.5, 0.8, 0.5), 1)
 				
@@ -526,7 +530,7 @@ class PolygonDialog extends AcceptDialog:
 			canvas.draw_rect(Rect2(knife_end - s/2, s), Color(0, 1, 0))
 			
 		for i in range(polygon.size()):
-			canvas.draw_texture(handle, polygon[i] - handle_offset)
+			canvas.draw_texture(handle, polygon[i] - handle_offset, Color(1, 1, 1));
 			
 		var ac = [Color(1.0, 0.4, 0.4), Color(0.4, 1.0, 0.4), Color(0.4, 0.4, 1.0)]
 		
@@ -567,8 +571,8 @@ class PolygonDialog extends AcceptDialog:
 		
 		var d_spin = SpinBox.new()
 		d_spin.set_min(0)
-		d_spin.set_max(50)
-		d_spin.set_step(0.01)
+		d_spin.set_max(100)
+		d_spin.set_step(0.001)
 		hb.add_child(d_spin)
 		
 		d_spin.connect("value_changed", self, "set_depth")
@@ -578,9 +582,9 @@ class PolygonDialog extends AcceptDialog:
 		hb.add_child(l)
 		
 		var r_spin = SpinBox.new()
-		r_spin.set_min(0)
-		r_spin.set_max(50)
-		r_spin.set_step(0.01)
+		r_spin.set_min(0.001)
+		r_spin.set_max(100)
+		r_spin.set_step(0.001)
 		hb.add_child(r_spin)
 		
 		r_spin.connect("value_changed", self, "set_radius")
@@ -588,15 +592,15 @@ class PolygonDialog extends AcceptDialog:
 		tools = [ob, d_spin, r_spin]
 		
 		var panel = PanelContainer.new()
-		main_vbox.add_child(panel)
 		panel.set_v_size_flags(SIZE_EXPAND_FILL)
+		main_vbox.add_child(panel)
 		
 		var vb = VBoxContainer.new()
 		panel.add_child(vb)
 		
 		toolbar_top = HBoxContainer.new()
-		vb.add_child(toolbar_top)
 		toolbar_top.set_h_size_flags(SIZE_EXPAND_FILL)
+		vb.add_child(toolbar_top)
 		
 		var m_button = MenuButton.new()
 		m_button.set_flat(true)
@@ -620,8 +624,8 @@ class PolygonDialog extends AcceptDialog:
 		
 		# Spacer
 		var s = Control.new()
-		toolbar_top.add_child(s)
 		s.set_h_size_flags(SIZE_EXPAND_FILL)
+		toolbar_top.add_child(s)
 		
 		var clear = Button.new()
 		clear.set_flat(true)
@@ -638,16 +642,16 @@ class PolygonDialog extends AcceptDialog:
 		canvas.connect("draw", self, "_canvas_draw")
 		
 		toolbar_bottom = HBoxContainer.new()
-		vb.add_child(toolbar_bottom)
 		toolbar_bottom.set_h_size_flags(SIZE_EXPAND_FILL)
+		vb.add_child(toolbar_bottom)
 		
 		mode_display = Label.new()
 		toolbar_bottom.add_child(mode_display)
 		
 		# Spacer
 		s = Control.new()
-		toolbar_bottom.add_child(s)
 		s.set_h_size_flags(SIZE_EXPAND_FILL)
+		toolbar_bottom.add_child(s)
 		
 		var help = TextureButton.new()
 		help.set_normal_texture(base.get_icon("Help", "EditorIcons"))
@@ -678,6 +682,7 @@ class PolygonDialog extends AcceptDialog:
 		x.set_min(1)
 		x.set_max(100)
 		x.set_suffix('px')
+		x.set_h_size_flags(SIZE_EXPAND_FILL)
 		
 		hb.add_child(l)
 		hb.add_child(x)
@@ -692,12 +697,10 @@ class PolygonDialog extends AcceptDialog:
 		y.set_min(1)
 		y.set_max(100)
 		y.set_suffix('px')
+		y.set_h_size_flags(SIZE_EXPAND_FILL)
 		
 		hb.add_child(l)
 		hb.add_child(y)
-		
-		x.set_h_size_flags(SIZE_EXPAND_FILL)
-		y.set_h_size_flags(SIZE_EXPAND_FILL)
 		
 		x.connect("value_changed", self, "set_grid_step", [Vector3.AXIS_X])
 		y.connect("value_changed", self, "set_grid_step", [Vector3.AXIS_Y])

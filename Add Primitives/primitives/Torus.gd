@@ -4,57 +4,69 @@ var major_radius = 0.8
 var minor_radius = 0.2
 var torus_segments = 16
 var segments = 8
-var slice = 0
+var slice_from = 0
+var slice_to = 0
 var generate_ends = true
 
 static func get_name():
 	return "Torus"
 	
+static func build_circle_rot(pos, segments, radius = 1, rotation = 0):
+	var circle = []
+	circle.resize(segments + 1)
+	
+	var s_angle = PI * 2/segments
+	
+	var matrix = Matrix3(Vector3(0, 1, 0), rotation)
+	
+	for i in range(segments):
+		var a = s_angle * i
+		
+		var vector = Vector3(cos(a), sin(a), 0) * radius
+		vector = matrix.xform(vector) + pos
+		
+		circle[i] = vector
+		
+	circle[segments] = circle[0]
+	
+	return circle
+	
 func update():
-	var sa = PI * 2 - deg2rad(slice)
-	var bend_radius = major_radius/sa
+	var slice_angle = PI * 2 - deg2rad(slice_to)
+	var start = deg2rad(slice_from)
+	var angle = slice_angle/torus_segments
 	
-	var angle = sa/torus_segments
-	
-	var s = Utils.build_circle_verts(Vector3(), torus_segments, major_radius, sa)
+	var torus_start = Vector3(major_radius, 0, 0).rotated(Vector3(0, 1, 0), start)
 	
 	begin()
 	
 	add_smooth_group(smooth)
 	
-	var temp_circle
+	var c = build_circle_rot(torus_start, segments, minor_radius, start)
 	
-	var c1 = Utils.build_circle_verts_rot(s[0], segments, minor_radius, Matrix3(Vector3(1,0,0), PI/2))
-	var c2 = []
-	
-	if not slice:
-		c2.resize(segments + 1)
+	for i in range(torus_segments):
+		var m1 = Matrix3(Vector3(0, 1, 0), angle * i)
 		
-	for i in range(s.size() - 1):
-		var m1 = Matrix3(Vector3(0,1,0), angle * i)
-		
-		if i < s.size() - 2 or slice:
-			var m2 = Matrix3(Vector3(0,1,0), angle * (i+1))
+		if i < torus_segments - 1 or slice_to:
+			var m2 = Matrix3(Vector3(0, 1, 0), angle * (i + 1))
 			
 			for idx in range(segments):
-				add_quad([m1.xform(c1[idx]), m2.xform(c1[idx]), m2.xform(c1[idx + 1]), m1.xform(c1[idx + 1])])
+				add_quad([m1.xform(c[idx]), m2.xform(c[idx]),
+				          m2.xform(c[idx + 1]), m1.xform(c[idx + 1])])
 				
 		else:
-			for idx in range(segments + 1):
-				c2[idx] = m1.xform(c1[idx])
+			for idx in range(segments):
+				add_quad([m1.xform(c[idx]), c[idx],
+				          c[idx + 1], m1.xform(c[idx + 1])])
 				
-	if not slice:
-		for idx in range(segments):
-			add_quad([c2[idx], c1[idx], c1[idx + 1], c2[idx + 1]])
-			
-	elif generate_ends:
-		var m = Matrix3(Vector3(0,1,0), sa)
+	if generate_ends and slice_to > 0:
+		var m = Matrix3(Vector3(0, 1, 0), slice_angle)
 		
 		add_smooth_group(false)
 		
 		for idx in range(segments):
-			add_tri([s[0], c1[idx], c1[idx+1]])
-			add_tri([m.xform(c1[idx+1]), m.xform(c1[idx]), s[torus_segments]])
+			add_tri([torus_start, c[idx], c[idx + 1]])
+			add_tri([m.xform(c[idx + 1]), m.xform(c[idx]), m.xform(torus_start)])
 			
 	commit()
 	
@@ -63,7 +75,8 @@ func mesh_parameters(editor):
 	editor.add_numeric_parameter('minor_radius', minor_radius)
 	editor.add_numeric_parameter('torus_segments', torus_segments, 3, 64, 1)
 	editor.add_numeric_parameter('segments', segments, 3, 64, 1)
-	editor.add_numeric_parameter('slice', slice, 0, 359, 1)
+	editor.add_numeric_parameter('slice_from', slice_from, 0, 360, 1)
+	editor.add_numeric_parameter('slice_to', slice_to, 0, 359, 1)
 	editor.add_empty()
 	editor.add_bool_parameter('generate_ends', generate_ends)
 	

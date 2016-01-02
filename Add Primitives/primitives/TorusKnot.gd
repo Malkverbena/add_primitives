@@ -15,20 +15,18 @@ static func get_container():
 	
 static func compute_vector(dir):
 	var z = dir.normalized()
-	
-	var x = Vector3(0, 1, 0).cross(z)
-	x = x.normalized()
-	
-	var y = z.cross(x)
-	y = y.normalized()
+	var x = Vector3(0, 1, 0).cross(z).normalized()
+	var y = z.cross(x).normalized()
 	
 	var m3 = Matrix3(x, y, z)
 	
 	return m3
 	
 func update():
+	var segs = segments * p
+	
 	var v = []
-	v.resize(segments * p * section_segments)
+	v.resize(segs * section_segments)
 	
 	var index = 0
 	
@@ -36,20 +34,20 @@ func update():
 	
 	add_smooth_group(smooth)
 	
-	for i in range(segments * p):
-		var phi = (PI * 2) * i / segments
+	for i in range(segs):
+		var phi = (PI * 2) * i/segments
 		
-		var x = radius * (2 + cos(q * phi / p)) * cos(phi) / 3
-		var y = radius * sin(q * phi / p) / 3
-		var z = radius * (2 + cos(q * phi / p)) * sin(phi) / 3
+		var x = (2 + cos(q * phi/p)) * cos(phi)/3
+		var y = sin(q * phi/p)/3
+		var z = (2 + cos(q * phi/p)) * sin(phi)/3
 		
 		var v1 = Vector3(x, y, z)
 		
-		phi = (PI * 2) * (i + 1) / segments
+		phi = (PI * 2) * (i + 1)/segments
 		
-		x = radius * (2 + cos(q * phi / p)) * cos(phi) / 3
-		y = radius * sin(q * phi / p) / 3
-		z = radius * (2 + cos(q * phi / p)) * sin(phi) / 3
+		x = (2 + cos(q * phi/p)) * cos(phi)/3
+		y = sin(q * phi/p)/3
+		z = (2 + cos(q * phi/p)) * sin(phi)/3
 		
 		var v2 = Vector3(x, y, z)
 		
@@ -58,12 +56,12 @@ func update():
 		var m3 = compute_vector(dir)
 		
 		for j in range(section_segments):
-			var alpha = (PI * 2) * j / section_segments
+			var alpha = (PI * 2) * j/section_segments
 			var vp = section_radius * m3.xform(Vector3(cos(alpha), sin(alpha), 0))
 			
-			v[index] = v1 + vp
+			v[index] = (v1 * radius) + vp
 			
-			if i != segments * p and (i > 0 and j > 0):
+			if i != segs and i > 0 and j > 0:
 				var idx = index - 1
 				
 				add_quad([v[idx], v[idx + 1], v[idx - section_segments + 1], v[idx - section_segments]])
@@ -74,7 +72,7 @@ func update():
 			var idx = index - 1
 			
 			add_quad([v[idx], v[idx - section_segments + 1],\
-			          v[idx + 1 - (section_segments * 2)], v[idx - section_segments]])
+			          v[idx - (section_segments * 2) + 1], v[idx - section_segments]])
 			
 	var b = v.size() - section_segments
 	
@@ -90,8 +88,8 @@ func update():
 func mesh_parameters(editor):
 	editor.add_numeric_parameter('segments', segments, 3, 64, 1)
 	editor.add_numeric_parameter('section_segments', section_segments, 3, 64, 1)
-	editor.add_numeric_parameter('radius', radius, 0.001, 100)
-	editor.add_numeric_parameter('section_radius', section_radius, 0.001, 100)
+	editor.add_numeric_parameter('radius', radius)
+	editor.add_numeric_parameter('section_radius', section_radius)
 	editor.add_numeric_parameter('p', p, 1, 8, 1)
 	editor.add_numeric_parameter('q', q, 1, 8, 1)
 	

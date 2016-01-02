@@ -18,7 +18,7 @@ func update():
 	var rd = Vector3(0, 0, length)
 	var ud = Vector3(0, height, 0)
 	
-	var ofs = Vector3(width/2,height/2,length/2)
+	var ofs = Vector3(width/2, height/2, length/2)
 	
 	begin()
 	

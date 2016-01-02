@@ -23,13 +23,15 @@ func update():
 	var pz = Vector2()
 	var py = Vector2()
 	
-	var w = Vector2(0, width)
-	var l = Vector2(length_inc, 0)
-	var h = Vector2(height_inc, 0)
+	var uv_w = Vector2(0, width)
+	var uv_l = Vector2(length_inc, 0)
+	var uv_h = Vector2(height_inc, 0)
 	
-	var d = [Vector3(width, 0, 0),
-	         Vector3(0, 0, length_inc),
-	         Vector3(0, height_inc, 0)]
+	var d = [
+	    Vector3(width, 0, 0),
+	    Vector3(0, 0, length_inc),
+	    Vector3(0, height_inc, 0)
+	]
 	
 	begin()
 	
@@ -37,21 +39,21 @@ func update():
 	
 	for i in range(steps):
 		var sh = height_inc * i
-		var bh = sh + height_inc
 		var sl = length_inc * i
+		var bh = sh + height_inc
 		
-		add_quad(Utils.build_plane_verts(d[0], d[1], Vector3(ofs_x, bh, sl)),\
-		         [py, py + w, py + w + l, py + l])
-		add_quad(Utils.build_plane_verts(d[0], d[2], Vector3(ofs_x, sh, sl)),\
-		         [pz, pz + w, pz + w + h, pz + h])
+		add_quad(Utils.build_plane(d[0], d[1], Vector3(ofs_x, bh, sl)),\
+		         [py, py + uv_w, py + uv_w + uv_l, py + uv_l])
+		add_quad(Utils.build_plane(d[0], d[2], Vector3(ofs_x, sh, sl)),\
+		         [pz, pz + uv_w, pz + uv_w + uv_h, pz + uv_h])
 		
 		if generate_sides:
 			var ch = Vector2(0, bh)
 			
-			add_quad(Utils.build_plane_verts(Vector3(0, bh, 0), d[1], Vector3(ofs_x, 0, sl)),\
-			         [py, py + ch, py + l + ch, py + l])
-			add_quad(Utils.build_plane_verts(d[1], Vector3(0, bh, 0), Vector3(-ofs_x, 0, sl)),\
-			         [py, py + l, py + l + ch, py + ch])
+			add_quad(Utils.build_plane(Vector3(0, bh, 0), d[1], Vector3(ofs_x, 0, sl)),\
+			         [py, py + ch, py + uv_l + ch, py + uv_l])
+			add_quad(Utils.build_plane(d[1], Vector3(0, bh, 0), Vector3(-ofs_x, 0, sl)),\
+			         [py, py + uv_l, py + uv_l + ch, py + ch])
 			
 		py.x += length_inc
 		pz.x += height_inc

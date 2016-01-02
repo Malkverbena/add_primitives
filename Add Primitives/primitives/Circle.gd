@@ -2,33 +2,34 @@ extends "../Primitive.gd"
 
 var radius = 1
 var segments = 16
-var slice = 0
+var slice_from = 0
+var slice_to = 0
 
 static func get_name():
 	return "Circle"
 	
 func update():
-	var center = Vector3()
-	var slice_angle = PI * 2 - deg2rad(slice)
+	var slice_angle = PI * 2 - deg2rad(slice_to)
 	
-	var circle = Utils.build_circle_verts(center, segments, radius, slice_angle)
-	var circle_uv = Utils.build_circle_verts(Vector3(0.5, 0, 0.5), segments, radius, slice_angle)
+	var center = Vector3()
+	var center_uv = Vector2(0.5, 0.5)
+	
+	var circle = Utils.build_circle(center, segments, radius, deg2rad(slice_from), slice_angle)
+	var uv = Utils.ellipse_uv(center_uv, segments, Vector2(radius, radius), slice_angle)
 	
 	begin()
 	
 	add_smooth_group(smooth)
 	
 	for i in range(segments):
-		var uv = [Vector2(0.5, 0.5), Vector2(circle_uv[i].x, circle_uv[i].z), 
-		          Vector2(circle_uv[i+1].x, circle_uv[i+1].z)]
-		
-		add_tri([center, circle[i], circle[i+1]], uv)
+		add_tri([center, circle[i], circle[i + 1]], [center_uv, uv[i], uv[i + 1]])
 		
 	commit()
 	
 func mesh_parameters(editor):
 	editor.add_numeric_parameter('radius', radius)
 	editor.add_numeric_parameter('segments', segments, 3, 64, 1)
-	editor.add_numeric_parameter('slice', slice, 0, 359, 1)
+	editor.add_numeric_parameter('slice_from', slice_from, 0, 360, 1)
+	editor.add_numeric_parameter('slice_to', slice_to, 0, 359, 1)
 	
 

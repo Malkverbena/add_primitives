@@ -10,11 +10,12 @@ static func get_name():
 	return "Wedge"
 	
 func update():
-	var ofs = -Vector3(width/2, height/2, length/2)
 	var slope_length = sqrt(pow(length, 2) + pow(height, 2))
 	
-	var fd = Vector3(0, 0, length)
+	var ofs = -Vector3(width/2, height/2, length/2)
+	
 	var rd = Vector3(width, 0, 0)
+	var fd = Vector3(0, 0, length)
 	var ud = Vector3(0, height, 0)
 	
 	begin()
@@ -32,8 +33,10 @@ func update():
 	add_quad([ofs, ofs + rd, ofs + Vector3(width, -height, length), ofs + Vector3(0, -height, length)],\
 	         Utils.plane_uv(width, slope_length))
 	
-	add_tri([ofs + Vector3(0, -height, length), ofs - ud, ofs], Utils.plane_uv(length, height, false))
-	add_tri([ofs + rd, ofs + rd - ud, ofs + Vector3(width, -height, length)], Utils.plane_uv(height, length, false))
+	add_tri([ofs + Vector3(0, -height, length), ofs - ud, ofs],\
+	        Utils.plane_uv(length, height, false))
+	add_tri([ofs + rd, ofs + rd - ud, ofs + Vector3(width, -height, length)],\
+	        Utils.plane_uv(height, length, false))
 	
 	commit()
 	

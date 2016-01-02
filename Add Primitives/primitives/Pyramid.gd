@@ -2,7 +2,7 @@ extends "../Primitive.gd"
 
 var width = 2.0
 var length = 2.0
-var height = 1.0
+var height = 2.0
 
 static func get_name():
 	return "Pyramid"
@@ -11,13 +11,13 @@ static func get_container():
 	return "Extra Objects"
 	
 func update():
+	var hw = sqrt(pow(width/2, 2) + pow(height/2, 2))
+	var hl = sqrt(pow(length/2, 2) + pow(height/2, 2))
+	
 	var ofs = Vector3(width/2, height/2, length/2)
 	
-	var hw = sqrt(pow(width/2, 2) + pow(height, 2))
-	var hl = sqrt(pow(length/2, 2) + pow(height, 2))
-	
-	var top = Vector3(0, height, 0)
-	var base = Utils.build_plane_verts(Vector3(0, 0, length), Vector3(width, 0, 0), -ofs)
+	var top = Vector3(0, height/2, 0)
+	var base = Utils.build_plane(Vector3(0, 0, length), Vector3(width, 0, 0), -ofs)
 	
 	var uv = [Vector2(0, hw), Vector2(length/2, 0), Vector2(length, hw)]
 	

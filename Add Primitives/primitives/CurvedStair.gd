@@ -23,28 +23,30 @@ func update():
 	var uv_inner = radians * inner_radius
 	var uv_outer = radians * outer_radius
 	
-	var c = Utils.build_circle_verts(Vector3(), steps, inner_radius, radians)
-	var c2 = Utils.build_circle_verts(Vector3(), steps, outer_radius, radians)
+	var ic = Utils.build_circle(Vector3(), steps, inner_radius, 0, radians)
+	var oc = Utils.build_circle(Vector3(), steps, outer_radius, 0, radians)
 	
 	begin()
 	
 	add_smooth_group(smooth)
 	
 	for i in range(steps):
-		var sh = Vector3(0, (i+1) * height_inc, 0)
+		var sh = Vector3(0, (i + 1) * height_inc, 0)
 		
-		var uv = [Vector2(c[i].x, c[i].z),
-		          Vector2(c2[i].x, c2[i].z),
-		          Vector2(c2[i+1].x, c2[i+1].z),
-		          Vector2(c[i+1].x, c[i+1].z)]
+		var uv = [
+		    Vector2(ic[i].x, ic[i].z),
+		    Vector2(oc[i].x, oc[i].z),
+		    Vector2(oc[i + 1].x, oc[i + 1].z),
+		    Vector2(ic[i + 1].x, ic[i + 1].z)
+		]
 		
-		add_quad([c[i] + sh, c2[i] + sh, c2[i+1] + sh, c[i+1] + sh], uv)
+		add_quad([ic[i] + sh, oc[i] + sh, oc[i + 1] + sh, ic[i + 1] + sh], uv)
 		
 		if generate_bottom:
 			if not flip_normals:
 				uv.invert()
 				
-			add_quad([c[i+1], c2[i+1], c2[i], c[i]], uv)
+			add_quad([ic[i + 1], oc[i + 1], oc[i], ic[i]], uv)
 			
 		var base = Vector3(0, height_inc * i, 0)
 		
@@ -53,25 +55,25 @@ func update():
 		uv[2] = Vector2(step_width, sh.y)
 		uv[3] = Vector2(step_width, base.y)
 		
-		add_quad([c2[i] + base, c2[i] + sh, c[i] + sh, c[i] + base], uv)
+		add_quad([oc[i] + base, oc[i] + sh, ic[i] + sh, ic[i] + base], uv)
 		
 		if generate_sides:
-			var u1 = i/steps
-			var u2 = (i+1)/steps
+			var u1 = float(i)/steps
+			var u2 = float(i + 1)/steps
 			
 			uv[0] = Vector2(u1 * uv_outer, sh.y)
 			uv[1] = Vector2(u1 * uv_outer, 0)
 			uv[2] = Vector2(u2 * uv_outer, 0)
 			uv[3] = Vector2(u2 * uv_outer, sh.y)
 			
-			add_quad([c2[i] + sh, c2[i], c2[i+1], c2[i+1] + sh], uv)
+			add_quad([oc[i] + sh, oc[i], oc[i + 1], oc[i + 1] + sh], uv)
 			
 			uv[0] = Vector2(u2 * uv_inner, sh.y)
 			uv[1] = Vector2(u2 * uv_inner, 0)
 			uv[2] = Vector2(u1 * uv_inner, 0)
 			uv[3] = Vector2(u1 * uv_inner, sh.y)
 			
-			add_quad([c[i+1] + sh, c[i+1], c[i], c[i] + sh], uv)
+			add_quad([ic[i + 1] + sh, ic[i + 1], ic[i], ic[i] + sh], uv)
 			
 	if generate_end:
 		var sh = Vector3(0, stair_height, 0)
@@ -81,7 +83,7 @@ func update():
 		          Vector2(step_width, sh.y),
 		          Vector2(step_width, 0)]
 		
-		add_quad([c[steps], c[steps] + sh, c2[steps] + sh, c2[steps]], uv)
+		add_quad([ic[steps], ic[steps] + sh, oc[steps] + sh, oc[steps]], uv)
 		
 	commit()
 	

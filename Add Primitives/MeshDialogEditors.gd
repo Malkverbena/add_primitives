@@ -82,12 +82,12 @@ class TreeEditor extends VBoxContainer:
 		item.set_selectable(0, false)
 		item.set_selectable(1, false)
 		
-	func add_numeric_parameter(text, value, min_ = -100, max_ = 100, step = 0.001):
+	func add_numeric_parameter(text, value, min_ = 0.001, max_ = 100, step = 0.001):
 		var item = tree.create_item(current)
 		
 		item.set_text(0, text.capitalize())
 		
-		if typeof(step) == TYPE_INT:
+		if typeof(value) == TYPE_INT:
 			item.set_icon(0, get_icon('Integer', 'EditorIcons'))
 			
 		else:
@@ -185,7 +185,6 @@ class ModifierEditor extends TreeEditor:
 		for k in keys:
 			menu.add_item(k)
 			
-		tree.clear()
 		tree.create_item()
 		
 	func create_modifier(script):
@@ -204,13 +203,13 @@ class ModifierEditor extends TreeEditor:
 		current.set_custom_bg_color(0, get_color('prop_category', 'Editor'))
 		current.set_custom_bg_color(1, get_color('prop_category', 'Editor'))
 		
-		var obj = script.new()
+		var mod = script.new()
 		
-		current.set_metadata(0, obj.get_instance_ID())
+		current.set_metadata(0, mod.get_instance_ID())
 		
-		obj.modifier_parameters(self)
+		mod.modifier_parameters(self)
 		
-		items.push_back(obj)
+		items.push_back(mod)
 		
 	func generate_state():
 		var state = []
@@ -258,16 +257,16 @@ class ModifierEditor extends TreeEditor:
 			move_down.set_disabled(true)
 			
 		if what == Tool.MOVE_UP or what == Tool.MOVE_DOWN:
-			var obj = instance_from_id(item.get_metadata(0))
+			var mod = instance_from_id(item.get_metadata(0))
 			
-			var first = items.find(obj)
-			var second
+			var first = items.find(mod)
+			var second = first
 			
 			if what == Tool.MOVE_UP:
-				second = first - 1
+				second -= 1
 				
 			elif what == Tool.MOVE_DOWN:
-				second = first + 1
+				second += 1
 				
 			var temp = items[first]
 			items[first] = items[second]
@@ -288,8 +287,8 @@ class ModifierEditor extends TreeEditor:
 		
 		emit_signal("modifier_edited")
 		
-	func _add_modifier(id):
-		var mod = menu.get_item_text(menu.get_item_index(id))
+	func _add_modifier(index):
+		var mod = menu.get_item_text(index)
 		
 		create_modifier(modifiers[mod])
 		
@@ -341,10 +340,10 @@ class ModifierEditor extends TreeEditor:
 		var name = get_parameter_name(item)
 		var value = get_parameter_value(item)
 		
-		var obj = instance_from_id(edited_modifier)
+		var mod = instance_from_id(edited_modifier)
 		
-		if obj:
-			obj.set(name, value)
+		if mod:
+			mod.set(name, value)
 			
 		emit_signal("modifier_edited")
 		
@@ -369,8 +368,40 @@ class ModifierEditor extends TreeEditor:
 		modifiers = temp.get_modifiers()
 		
 		var hbox_tools = HBoxContainer.new()
-		add_child(hbox_tools)
 		hbox_tools.set_h_size_flags(SIZE_EXPAND_FILL)
+		add_child(hbox_tools)
+		
+		var add = MenuButton.new()
+		add.set_button_icon(base.get_icon('Add', 'EditorIcons'))
+		add.set_tooltip("Add New Modifier")
+		hbox_tools.add_child(add)
+		
+		menu = add.get_popup()
+		menu.connect("item_pressed", self, "_add_modifier")
+		
+		remove = ToolButton.new()
+		remove.set_button_icon(base.get_icon('Remove', 'EditorIcons'))
+		remove.set_tooltip("Remove Modifier")
+		remove.set_disabled(true)
+		hbox_tools.add_child(remove)
+		remove.connect("pressed", self, "_modifier_tools", [Tool.ERASE])
+		
+		# Spacer
+		var s = Control.new()
+		s.set_h_size_flags(SIZE_EXPAND_FILL)
+		hbox_tools.add_child(s)
+		
+		move_up = ToolButton.new()
+		move_up.set_button_icon(base.get_icon('MoveUp', 'EditorIcons'))
+		move_up.set_disabled(true)
+		hbox_tools.add_child(move_up)
+		move_up.connect("pressed", self, "_modifier_tools", [Tool.MOVE_UP])
+		
+		move_down = ToolButton.new()
+		move_down.set_button_icon(base.get_icon('MoveDown', 'EditorIcons'))
+		move_down.set_disabled(true)
+		hbox_tools.add_child(move_down)
+		move_down.connect("pressed", self, "_modifier_tools", [Tool.MOVE_DOWN])
 		
 		tree.set_hide_root(true)
 		tree.set_columns(2)
@@ -379,41 +410,8 @@ class ModifierEditor extends TreeEditor:
 		tree.set_column_expand(1, true)
 		tree.set_column_min_width(1, 15)
 		
-		add_child(tree)
 		tree.set_v_size_flags(SIZE_EXPAND_FILL)
-		
-		var add = MenuButton.new()
-		add.set_button_icon(base.get_icon('Add', 'EditorIcons'))
-		add.set_tooltip("Add Modifier")
-		hbox_tools.add_child(add)
-		menu = add.get_popup()
-		
-		menu.connect("item_pressed", self, "_add_modifier")
-		
-		remove = ToolButton.new()
-		remove.set_button_icon(base.get_icon('Remove', 'EditorIcons'))
-		remove.set_tooltip("Remove Modifier")
-		remove.set_disabled(true)
-		hbox_tools.add_child(remove)
-		
-		# Spacer
-		var s = Control.new()
-		hbox_tools.add_child(s)
-		s.set_h_size_flags(SIZE_EXPAND_FILL)
-		
-		move_up = ToolButton.new()
-		move_up.set_button_icon(base.get_icon('MoveUp', 'EditorIcons'))
-		move_up.set_disabled(true)
-		hbox_tools.add_child(move_up)
-		
-		move_down = ToolButton.new()
-		move_down.set_button_icon(base.get_icon('MoveDown', 'EditorIcons'))
-		move_down.set_disabled(true)
-		hbox_tools.add_child(move_down)
-		
-		remove.connect("pressed", self, "_modifier_tools", [Tool.ERASE])
-		move_up.connect("pressed", self, "_modifier_tools", [Tool.MOVE_UP])
-		move_down.connect("pressed", self, "_modifier_tools", [Tool.MOVE_DOWN])
+		add_child(tree)
 		
 		tree.connect("item_edited", self, "_item_edited")
 		tree.connect("cell_selected", self, "_item_selected")
@@ -437,11 +435,17 @@ class ParameterEditor extends TreeEditor:
 		
 		tree.clear()
 		
-		if builder == null:
+		if not builder:
 			return
 			
 		current = tree.create_item()
 		
+		for child in tree.get_children():
+			if child extends VScrollBar:
+				child.set_value(0)
+				
+				break
+				
 		builder.mesh_parameters(self)
 		
 		smooth_button.set_pressed(false)
@@ -476,27 +480,27 @@ class ParameterEditor extends TreeEditor:
 		tree.set_column_expand(1, true)
 		tree.set_column_min_width(1, 15)
 		
-		add_child(tree)
 		tree.set_v_size_flags(SIZE_EXPAND_FILL)
+		add_child(tree)
+		
+		tree.connect("item_edited", self, "_item_edited")
 		
 		var hb = HBoxContainer.new()
-		add_child(hb)
 		hb.set_h_size_flags(SIZE_EXPAND_FILL)
+		add_child(hb)
 		
 		smooth_button = CheckBox.new()
 		smooth_button.set_text('Smooth')
-		hb.add_child(smooth_button)
 		smooth_button.set_h_size_flags(SIZE_EXPAND_FILL)
+		hb.add_child(smooth_button)
 		
 		flip_button = CheckBox.new()
 		flip_button.set_text('Flip Normals')
-		hb.add_child(flip_button)
 		flip_button.set_h_size_flags(SIZE_EXPAND_FILL)
+		hb.add_child(flip_button)
 		
 		smooth_button.connect("toggled", self, "_check_box_pressed", ['smooth'])
 		flip_button.connect("toggled", self, "_check_box_pressed", ['flip_normals'])
-		
-		tree.connect("item_edited", self, "_item_edited")
 		
 # End ParameterEditor
 

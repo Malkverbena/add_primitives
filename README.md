@@ -1,7 +1,7 @@
 #Add Primitives
 
 ###Features
-1. Primitives:
+**Primitives**:
   * Box
   * Capsule
   * Circle
@@ -22,11 +22,7 @@
   * Pyramid
   * Torus Knot
 
-2. Popup Window:
-  * Parameters tab
-  * Modifier tab
-
-3. Modifier System
+**Modifier System**:
   * Twist
   * Shear
   * Taper

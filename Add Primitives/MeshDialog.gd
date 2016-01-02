@@ -43,10 +43,10 @@ var modifier_editor
 
 const DIALOG_SIZE = Vector2(250, 275)
 
-static func create_display_material(instance):
+static func create_display_material(instance, color):
 	var fixed_material = FixedMaterial.new()
 	fixed_material.set_name('__display_material__')
-	fixed_material.set_parameter(fixed_material.PARAM_DIFFUSE, Color(0, 1, 0))
+	fixed_material.set_parameter(fixed_material.PARAM_DIFFUSE, color)
 	
 	instance.set_material_override(fixed_material)
 	
@@ -96,23 +96,22 @@ func edit(instance, builder):
 	parameter_editor.edit(builder)
 	modifier_editor.create_modifiers()
 	
+	color_picker.set_color(Color(0, 1, 0))
+	
 	set_current_editor(0)
 	
 func show_dialog():
 	if not mesh_instance:
 		return
 		
-	color_picker.set_color(Color(0,1,0))
-	
 	if mesh_instance.get_material_override():
 		color_hb.hide()
 		
 	else:
-		create_display_material(mesh_instance)
+		create_display_material(mesh_instance, color_picker.get_color())
 		
-		if color_hb.is_hidden():
-			color_hb.show()
-			
+		color_hb.show()
+		
 	popup_centered(DIALOG_SIZE)
 	
 func display_text(text):
@@ -125,12 +124,14 @@ func clear():
 	modifier_editor.clear()
 	
 func _color_changed(color):
-	if mesh_instance extends MeshInstance:
-		var mat = mesh_instance.get_material_override()
+	if not mesh_instance:
+		return
 		
-		if mat:
-			mat.set_parameter(FixedMaterial.PARAM_DIFFUSE, color)
-			
+	var mat = mesh_instance.get_material_override()
+	
+	if mat:
+		mat.set_parameter(FixedMaterial.PARAM_DIFFUSE, color)
+		
 func _popup_hide():
 	if mesh_instance:
 		var mat = mesh_instance.get_material_override()
@@ -144,8 +145,8 @@ func _init(base):
 	main_vbox.set_area_as_parent_rect(get_constant('margin', 'Dialogs'))
 	
 	var hb = HBoxContainer.new()
-	main_vbox.add_child(hb)
 	hb.set_h_size_flags(SIZE_EXPAND_FILL)
+	main_vbox.add_child(hb)
 	
 	options = OptionButton.new()
 	options.set_custom_minimum_size(Vector2(120, 0))
@@ -153,8 +154,8 @@ func _init(base):
 	options.connect("item_selected", self, "set_current_editor")
 	
 	var s = Control.new()
-	hb.add_child(s)
 	s.set_h_size_flags(SIZE_EXPAND_FILL)
+	hb.add_child(s)
 	
 	color_hb = HBoxContainer.new()
 	hb.add_child(color_hb)
@@ -164,7 +165,7 @@ func _init(base):
 	color_hb.add_child(l)
 	
 	color_picker = ColorPickerButton.new()
-	color_picker.set_color(Color(0,1,0))
+	color_picker.set_color(Color(0, 1, 0))
 	color_picker.set_edit_alpha(false)
 	color_hb.add_child(color_picker)
 	
@@ -174,8 +175,8 @@ func _init(base):
 	color_picker.connect("color_changed", self, "_color_changed")
 	
 	main_panel = PanelContainer.new()
-	main_vbox.add_child(main_panel)
 	main_panel.set_v_size_flags(SIZE_EXPAND_FILL)
+	main_vbox.add_child(main_panel)
 	
 	var editors = preload("MeshDialogEditors.gd")
 	
@@ -185,11 +186,9 @@ func _init(base):
 	modifier_editor = editors.ModifierEditor.new(base)
 	main_panel.add_child(modifier_editor)
 	
-	for editor in main_panel.get_children():
-		var name = editor.get_name().capitalize()
-		
-		options.add_item(name)
-		
+	options.add_item(parameter_editor.get_name().capitalize())
+	options.add_item(modifier_editor.get_name().capitalize())
+	
 	text_display = Label.new()
 	text_display.set_align(text_display.ALIGN_CENTER)
 	main_vbox.add_child(text_display)

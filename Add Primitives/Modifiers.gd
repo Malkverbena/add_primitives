@@ -25,11 +25,68 @@ extends Reference
 
 class Modifier extends MeshDataTool:
 	
+	var mesh = null
+	var aabb = AABB()
+	
+	var remove_surface = false
+	var current_surface = -1
+	var surface_count = 0
+	
 	static func get_name():
 		return ""
 		
-	func modify(mesh, aabb):
-		return mesh
+	func set_mesh(mesh):
+		self.mesh = mesh
+		
+		if mesh:
+			surface_count = mesh.get_surface_count()
+			
+		else:
+			surface_count = 0
+			
+	func set_aabb(aabb):
+		self.aabb = aabb
+		
+	func modify():
+		pass
+		
+	func create_data():
+		if surface_count == 0:
+			return
+			
+		create_from_surface(mesh, 0)
+		
+		remove_surface = true
+		
+		if current_surface >= 0:
+			current_surface += 1
+			
+		else:
+			current_surface = 0
+			
+	func commit():
+		if surface_count == 0:
+			return
+			
+		commit_to_surface(mesh)
+		
+		if not remove_surface:
+			return
+			
+		if current_surface >= 0 and current_surface < surface_count:
+			mesh.surface_remove(0)
+			
+			remove_surface = false
+			
+	func clear():
+		mesh = null
+		aabb = AABB()
+		
+		remove_surface = false
+		current_surface = -1
+		surface_count = 0
+		
+		.clear()
 		
 	func modifier_parameters(editor):
 		pass
@@ -49,14 +106,12 @@ class TaperModifier extends Modifier:
 		var vec = Vector3(1, 1, 1)
 		
 		for i in axis:
-			vec[i] += vector.y / height * value
+			vec[i] += lerp(0, value, vector.y/height)
 			
 		return vec
 		
-	func modify(mesh, aabb):
-		var new_mesh = Mesh.new()
-		
-		var c = aabb.size.y/2 
+	func modify():
+		var c = aabb.size.y/2
 		
 		var m3 = Matrix3()
 		
@@ -68,8 +123,8 @@ class TaperModifier extends Modifier:
 		if not lock_z_axis:
 			axis.push_back(Vector3.AXIS_Z)
 			
-		for surf in range(mesh.get_surface_count()):
-			create_from_surface(mesh, surf)
+		for surf in range(surface_count):
+			create_data()
 			
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
@@ -78,14 +133,10 @@ class TaperModifier extends Modifier:
 				
 				set_vertex(i, v)
 				
-			commit_to_surface(new_mesh)
+			commit()
 			
-		clear()
-		
-		return new_mesh
-		
 	func modifier_parameters(editor):
-		editor.add_numeric_parameter('value', value)
+		editor.add_numeric_parameter('value', value, -100, 100, 0.001)
 		editor.add_bool_parameter('lock_x_axis', lock_x_axis)
 		editor.add_bool_parameter('lock_z_axis', lock_z_axis)
 		
@@ -94,68 +145,63 @@ class TaperModifier extends Modifier:
 class ShearModifier extends Modifier:
 	
 	var shear_axis = Vector3.AXIS_X
+	var axis = Vector3.AXIS_Y
 	var value = 1
 	
 	static func get_name():
 		return "Shear"
 		
-	func modify(mesh, aabb):
-		var new_mesh = Mesh.new()
+	func modify():
+		var c = aabb.size[axis]/2
 		
-		var h_axis = int(shear_axis != Vector3.AXIS_Y)
-		var c = aabb.size[h_axis]/2
-		
-		for surf in range(mesh.get_surface_count()):
-			create_from_surface(mesh, surf)
+		for surf in range(surface_count):
+			create_data()
 			
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v[shear_axis] += v[h_axis] / c * value
+				v[shear_axis] += lerp(0, value, v[axis]/c)
 				
 				set_vertex(i, v)
 				
-			commit_to_surface(new_mesh)
+			commit()
 			
-		clear()
-		
-		return new_mesh
-		
 	func modifier_parameters(editor):
 		editor.add_enum_parameter('shear_axis', shear_axis, 'X,Y,Z')
-		editor.add_numeric_parameter('value', value)
+		editor.add_enum_parameter('axis', axis, 'X,Y,Z')
+		editor.add_numeric_parameter('value', value, -100, 100, 0.001)
 		
 # End ShearModifier
 
 class TwistModifier extends Modifier:
 	
+	var axis = Vector3.AXIS_Y
 	var angle = 30
 	
 	static func get_name():
 		return "Twist"
 		
-	func modify(mesh, aabb):
-		var new_mesh = Mesh.new()
+	func modify():
+		var a = deg2rad(angle)
+		var c = aabb.size[axis]/2
 		
-		var c = aabb.size.y/2
+		var r_axis = Vector3()
+		r_axis[axis] = 1
 		
-		for surf in range(mesh.get_surface_count()):
-			create_from_surface(mesh, surf)
+		for surf in range(surface_count):
+			create_data()
 			
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v = v.rotated(Vector3(0, 1, 0), deg2rad(v.y / c * angle))
+				v = v.rotated(r_axis, lerp(0, a, v[axis]/c))
 				
 				set_vertex(i, v)
 				
-			commit_to_surface(new_mesh)
+			commit()
 			
-		clear()
-		
-		return new_mesh
-		
 	func modifier_parameters(editor):
+		editor.add_enum_parameter('axis', axis, 'X,Y,Z')
 		editor.add_numeric_parameter('angle', angle, -180, 180, 1)
 		
 # End TwistModifier
@@ -171,39 +217,29 @@ class ArrayModifier extends Modifier:
 	static func get_name():
 		return "Array"
 		
-	func modify(mesh, aabb):
-		var new_mesh = Mesh.new()
-		
+	func modify():
 		var ofs = Vector3(x, y, z)
 		
 		if relative:
 			ofs *= aabb.size
 			
-		for surf in range(mesh.get_surface_count()):
-			create_from_surface(mesh, surf)
+		for surf in range(surface_count):
+			create_data()
 			
-			commit_to_surface(new_mesh)
+			commit()
 			
 			for c in range(count - 1):
 				for i in range(get_vertex_count()):
-					var v = get_vertex(i)
+					set_vertex(i, get_vertex(i) + ofs)
 					
-					v += ofs
-					
-					set_vertex(i, v)
-					
-				commit_to_surface(new_mesh)
+				commit()
 				
-		clear()
-		
-		return new_mesh
-		
 	func modifier_parameters(editor):
 		editor.add_numeric_parameter('count', count, 1, 100, 1)
 		editor.add_bool_parameter('relative', relative)
-		editor.add_numeric_parameter('x', x)
-		editor.add_numeric_parameter('y', y)
-		editor.add_numeric_parameter('z', z)
+		editor.add_numeric_parameter('x', x, -100, 100, 0.001)
+		editor.add_numeric_parameter('y', y, -100, 100, 0.001)
+		editor.add_numeric_parameter('z', z, -100, 100, 0.001)
 		
 # End ArrayModifier
 
@@ -217,79 +253,72 @@ class OffsetModifier extends Modifier:
 	static func get_name():
 		return "Offset"
 		
-	func modify(mesh, aabb):
-		var new_mesh = Mesh.new()
-		
+	func modify():
 		var ofs = Vector3(x, y, z)
 		
 		if relative:
 			ofs *= aabb.size
 			
-		for surf in range(mesh.get_surface_count()):
-			create_from_surface(mesh, surf)
+		for surf in range(surface_count):
+			create_data()
 			
 			for i in range(get_vertex_count()):
-				var v = get_vertex(i)
+				set_vertex(i, get_vertex(i) + ofs)
 				
-				v += ofs
-				
-				set_vertex(i, v)
-				
-			commit_to_surface(new_mesh)
+			commit()
 			
-		clear()
-		
-		return new_mesh
-		
 	func modifier_parameters(editor):
 		editor.add_bool_parameter('relative', relative)
-		editor.add_numeric_parameter('x', x)
-		editor.add_numeric_parameter('y', y)
-		editor.add_numeric_parameter('z', z)
+		editor.add_numeric_parameter('x', x, -100, 100, 0.001)
+		editor.add_numeric_parameter('y', y, -100, 100, 0.001)
+		editor.add_numeric_parameter('z', z, -100, 100, 0.001)
 		
 # End OffsetModifier
 
 class RandomModifier extends Modifier:
 	
 	var random_seed = 0
-	var amount = 1
+	var amount = 0.1
 	
 	static func get_name():
 		return "Random"
 		
-	func modify(mesh, aabb):
-		var new_mesh = Mesh.new()
+	func modify():
+		var idx = str(random_seed)
 		
-		seed(random_seed + 1)
-		
+		if has_meta(idx):
+			seed(get_meta(idx))
+			
+		else:
+			randomize()
+			
+			var r = randi() % 0xFFFFFF
+			set_meta(idx, r)
+			
+			seed(r)
+			
 		var cache = {}
 		
-		for surf in range(mesh.get_surface_count()):
-			create_from_surface(mesh, surf)
+		for surf in range(surface_count):
+			create_data()
 			
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
 				if not cache.has(v):
-					cache[v] = Vector3(rand_range(-1,1) ,\
-					                   rand_range(-1,1) ,\
-					                   rand_range(-1,1)) * amount
+					cache[v] = Vector3(rand_range(-1, 1),\
+					                   rand_range(-1, 1),\
+					                   rand_range(-1, 1)) * amount
 					
-				v += cache[v]
+				set_vertex(i, v + cache[v])
 				
-				set_vertex(i, v)
-				
-			commit_to_surface(new_mesh)
+			commit()
 			
 		cache.clear()
 		
-		clear()
-		
-		return new_mesh
-		
 	func modifier_parameters(editor):
 		editor.add_numeric_parameter('amount', amount)
-		editor.add_numeric_parameter('random_seed', random_seed, 0, 61, 1)
+		editor.add_numeric_parameter('random_seed', random_seed, 0, 50, 1)
 		
 # End RandomModifier
 
@@ -304,36 +333,25 @@ class UVTransformModifier extends Modifier:
 	static func get_name():
 		return "UV Transform"
 		
-	func modify(mesh, aabb):
-		var new_mesh = Mesh.new()
-		
+	func modify():
 		var t = Matrix32(deg2rad(rotation), Vector2(translation_x, translation_y)).scaled(Vector2(scale_x, scale_y))
 		
-		for surf in range(mesh.get_surface_count()):
-			if not mesh.surface_get_format(surf) & Mesh.ARRAY_FORMAT_TEX_UV:
+		for surf in range(surface_count):
+			create_data()
+			
+			if not get_format() & Mesh.ARRAY_FORMAT_TEX_UV:
+				commit()
+				
 				continue
 				
-			create_from_surface(mesh, surf)
-			
 			for i in range(get_vertex_count()):
-				var uv = get_vertex_uv(i)
+				set_vertex_uv(i, t.xform(get_vertex_uv(i)))
 				
-				uv = t.xform(uv)
-				
-				set_vertex_uv(i, uv)
-				
-			commit_to_surface(new_mesh)
+			commit()
 			
-		clear()
-		
-		if not new_mesh.get_surface_count():
-			return mesh
-			
-		return new_mesh
-		
 	func modifier_parameters(editor):
-		editor.add_numeric_parameter('translation_x', translation_x)
-		editor.add_numeric_parameter('translation_y', translation_y)
+		editor.add_numeric_parameter('translation_x', translation_x, -100, 100, 0.001)
+		editor.add_numeric_parameter('translation_y', translation_y, -100, 100, 0.001)
 		editor.add_numeric_parameter('rotation', rotation, -360, 360, 1)
 		editor.add_numeric_parameter('scale_x', scale_x)
 		editor.add_numeric_parameter('scale_y', scale_y)
@@ -346,10 +364,10 @@ class UVTransformModifier extends Modifier:
 
 static func get_modifiers():
 	var modifiers = {
-		"Taper"  : TaperModifier,
-		"Shear"  : ShearModifier,
-		"Twist"  : TwistModifier,
-		"Array"  : ArrayModifier, 
+		"Taper" : TaperModifier,
+		"Shear" : ShearModifier,
+		"Twist" : TwistModifier,
+		"Array" : ArrayModifier, 
 		"Offset" : OffsetModifier,
 		"Random" : RandomModifier,
 		"UV Transform" : UVTransformModifier 

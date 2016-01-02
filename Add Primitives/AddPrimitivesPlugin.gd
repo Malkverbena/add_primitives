@@ -108,23 +108,24 @@ class AddPrimitives extends HBoxContainer:
 	func modify_mesh():
 		var modifier = mesh_dialog.get_editor("modifiers")
 		
-		if mesh_instance.get_mesh() != base_mesh:
-			mesh_instance.set_mesh(base_mesh)
-			
-		var mesh = base_mesh.duplicate()
+		var new_mesh = base_mesh.duplicate()
+		
+		mesh_instance.set_mesh(new_mesh)
 		
 		for item in modifier.tree_items():
 			if not item.is_checked(1):
 				continue
 				
-			var obj = instance_from_id(item.get_metadata(0))
+			var mod = instance_from_id(item.get_metadata(0))
 			
-			var aabb = mesh_instance.get_aabb()
+			mod.set_mesh(new_mesh)
+			mod.set_aabb(mesh_instance.get_aabb())
 			
-			mesh = obj.modify(mesh, aabb)
-			mesh_instance.set_mesh(mesh)
+			mod.modify()
 			
-		return mesh
+			mod.clear()
+			
+		return new_mesh
 		
 	func _update_mesh():
 		var start = OS.get_ticks_msec()
@@ -156,13 +157,10 @@ class AddPrimitives extends HBoxContainer:
 		
 		mesh_dialog.display_text(text)
 		
-	func _popup_signal(id, menu):
-		var command = menu.get_item_text(menu.get_item_index(id))
+	func _popup_signal(index, menu):
+		var command = menu.get_item_text(index)
 		
-		if command == 'Reload':
-			_update_menu()
-			
-		elif command == 'Edit Primitive':
+		if command == 'Edit Primitive':
 			_edit_primitive()
 			
 		else:
@@ -177,11 +175,8 @@ class AddPrimitives extends HBoxContainer:
 		for m in mods:
 			var module = load(path.plus_file(m))
 			
-			if module.can_instance():
-				module = module.new(self)
-				
-				modules[module.get_name()] = module
-				
+			modules[module.get_name()] = module.new(self)
+			
 	func _update_menu():
 		builder = null
 		
@@ -249,7 +244,6 @@ class AddPrimitives extends HBoxContainer:
 		popup_menu.add_separator()
 		
 		popup_menu.add_icon_item(get_icon('Edit', 'EditorIcons'), 'Edit Primitive', -1, KEY_MASK_SHIFT + KEY_E)
-		popup_menu.add_icon_item(get_icon('Reload', 'EditorIcons'), 'Reload')
 		
 		_set_edit_disabled(true)
 		
@@ -258,6 +252,7 @@ class AddPrimitives extends HBoxContainer:
 			
 	func _create_primitive(name):
 		mesh_instance = MeshInstance.new()
+		
 		var edited_scene = get_tree().get_edited_scene_root()
 		
 		undo_redo.create_action("Create " + name)
@@ -284,12 +279,13 @@ class AddPrimitives extends HBoxContainer:
 			
 			current_module = ""
 			
+		mesh_instance.set_name(name)
+		
 		var start = OS.get_ticks_msec()
 		
 		builder = primitives[name].new()
-		mesh_instance.set_name(name)
-		
 		builder.update()
+		
 		base_mesh = builder.get_mesh()
 		
 		mesh_instance.set_mesh(base_mesh)
@@ -310,7 +306,7 @@ class AddPrimitives extends HBoxContainer:
 		if not count:
 			return
 			
-		popup_menu.set_item_disabled(count - 2, disable)
+		popup_menu.set_item_disabled(count - 1, disable)
 		
 	func _edit_primitive():
 		if not mesh_instance:
@@ -378,10 +374,9 @@ class AddPrimitives extends HBoxContainer:
 		var spatial_menu = MenuButton.new()
 		spatial_menu.set_button_icon(preload('icon_mesh_instance_add.png'))
 		spatial_menu.set_tooltip("Add New Primitive")
+		add_child(spatial_menu)
 		
 		popup_menu = spatial_menu.get_popup()
-		
-		add_child(spatial_menu)
 		
 # End AddPrimitives
 

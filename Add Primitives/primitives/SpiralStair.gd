@@ -16,8 +16,8 @@ static func get_container():
 func update():
 	var outer_radius = inner_radius + step_width
 	
-	var c1 = Utils.build_circle_verts(Vector3(), steps_per_spiral, inner_radius)
-	var c2 = Utils.build_circle_verts(Vector3(), steps_per_spiral, outer_radius)
+	var ic = Utils.build_circle(Vector3(), steps_per_spiral, inner_radius)
+	var oc = Utils.build_circle(Vector3(), steps_per_spiral, outer_radius)
 	
 	var height_inc = spiral_height/steps_per_spiral
 	
@@ -26,33 +26,36 @@ func update():
 	add_smooth_group(smooth)
 	
 	for sp in range(spirals):
-		var ofs = Vector3(0, spiral_height * sp, 0)
+		var ofs_y = spiral_height * sp
 		
 		for i in range(steps_per_spiral):
-			var h = Vector3(0, i * height_inc, 0) + ofs
+			var h = Vector3(0, i * height_inc + ofs_y, 0)
 			
-			var uv = [Vector2(c1[i+1].x, c1[i+1].z),
-			          Vector2(c2[i+1].x, c2[i+1].z),
-			          Vector2(c2[i].x, c2[i].z),
-			          Vector2(c1[i].x, c1[i].z)]
+			var uv = [
+			    Vector2(ic[i + 1].x, ic[i + 1].z),
+			    Vector2(oc[i + 1].x, oc[i + 1].z),
+			    Vector2(oc[i].x, oc[i].z),
+			    Vector2(ic[i].x, ic[i].z)
+			]
 			
-			add_quad([c1[i+1] + h, c2[i+1] + h, c2[i] + h, c1[i] + h], uv)
+			add_quad([ic[i + 1] + h, oc[i + 1] + h, oc[i] + h, ic[i] + h], uv)
 			
 			var sh = Vector3(0, h.y + height_inc + extra_step_height, 0)
 			
 			uv.invert()
 			
-			add_quad([c1[i] + sh, c2[i] + sh, c2[i+1] + sh, c1[i+1] + sh], uv)
+			add_quad([ic[i] + sh, oc[i] + sh, oc[i + 1] + sh, ic[i + 1] + sh], uv)
 			
-			var sides = [c1[i], c2[i], c2[i+1], c1[i+1], c1[i]]
+			var sides = [ic[i], oc[i], oc[i + 1], ic[i + 1], ic[i]]
 			
 			var t = Vector2(0, h.y)
 			var b = Vector2(0, sh.y)
 			
 			for i in range(sides.size() - 1):
-				var w = Vector2(sides[i].distance_to(sides[i+1]), 0)
+				var w = Vector2(sides[i].distance_to(sides[i + 1]), 0)
 				
-				add_quad([sides[i] + sh, sides[i] + h, sides[i+1] + h, sides[i+1] + sh], [t, b, b + w, t + w])
+				add_quad([sides[i] + sh, sides[i] + h, sides[i + 1] + h, sides[i + 1] + sh],\
+				         [t, b, b + w, t + w])
 				
 				t.x += w.x
 				b.x += w.x
@@ -65,6 +68,6 @@ func mesh_parameters(editor):
 	editor.add_numeric_parameter('steps_per_spiral', steps_per_spiral, 3, 64, 1)
 	editor.add_numeric_parameter('inner_radius', inner_radius)
 	editor.add_numeric_parameter('step_width', step_width)
-	editor.add_numeric_parameter('extra_step_height', extra_step_height)
+	editor.add_numeric_parameter('extra_step_height', extra_step_height, -100, 100, 0.001)
 	
 

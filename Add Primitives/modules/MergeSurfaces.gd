@@ -33,9 +33,6 @@ class MergeDialog extends AcceptDialog:
 	func create_merge_options(surfaces):
 		tree.clear()
 		
-		tree.set_hide_root(true)
-		tree.set_columns(1)
-		
 		var root = tree.create_item()
 		
 		var icon = get_icon("MeshInstance", "EditorIcons")
@@ -53,16 +50,16 @@ class MergeDialog extends AcceptDialog:
 	func edit(instance, instances = []):
 		mesh_instance = instance
 		
+		if instance == null:
+			clear()
+			
+			return
+			
 		mesh = Mesh.new()
 		mesh.set_name("surfaces")
 		
 		mesh_instance.set_mesh(mesh)
 		
-		if mesh_instance == null:
-			clear()
-			
-			return
-			
 		create_merge_options(instances)
 		
 		_merge_surfaces()
@@ -77,7 +74,6 @@ class MergeDialog extends AcceptDialog:
 		var surfaces = []
 		
 		var root = tree.get_root()
-		
 		var item = root.get_children()
 		
 		while item:
@@ -102,7 +98,7 @@ class MergeDialog extends AcceptDialog:
 		while mesh.get_surface_count():
 			mesh.surface_remove(0)
 			
-		if not surfaces.size():
+		if surfaces.empty():
 			return
 			
 		var data = MeshDataTool.new()
@@ -110,6 +106,7 @@ class MergeDialog extends AcceptDialog:
 		for s in surfaces:
 			var gt = s.get_global_transform()
 			var basis = gt.basis.orthonormalized()
+			
 			var m = s.get_mesh()
 			
 			if m == null:
@@ -152,24 +149,24 @@ class MergeDialog extends AcceptDialog:
 		vb.set_margin(MARGIN_BOTTOM, get_constant("button_margin", "Dialogs")+10)
 		
 		var hb = HBoxContainer.new()
-		vb.add_child(hb)
 		hb.set_h_size_flags(SIZE_EXPAND_FILL)
+		vb.add_child(hb)
 		
 		var l = Label.new()
 		l.set_text("Select Instances:")
 		hb.add_child(l)
 		
 		var s = Control.new()
-		hb.add_child(s)
 		s.set_h_size_flags(SIZE_EXPAND_FILL)
+		hb.add_child(s)
 		
 		tree = Tree.new()
-		vb.add_child(tree)
+		tree.set_hide_root(true)
+		tree.set_columns(1)
 		tree.set_v_size_flags(SIZE_EXPAND_FILL)
+		vb.add_child(tree)
 		
 		tree.connect("item_edited", self, "_merge_surfaces")
-		
-		connect("confirmed", self, "_merge_surfaces")
 		
 var merge_dialog
 
