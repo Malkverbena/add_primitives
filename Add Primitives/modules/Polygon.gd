@@ -297,8 +297,6 @@ class PolygonDialog extends AcceptDialog:
 					st.add_vertex(v2 + ofs)
 					st.add_uv(u2)
 					st.add_vertex(v2 - ofs)
-					
-					st.add_uv(u2)
 					st.add_vertex(v2 - ofs)
 					st.add_uv(u1)
 					st.add_vertex(v1 - ofs)

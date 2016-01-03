@@ -127,14 +127,8 @@ class MergeDialog extends AcceptDialog:
 						data.set_material(mat)
 						
 				for i in range(data.get_vertex_count()):
-					var v = data.get_vertex(i)
-					var n = data.get_vertex_normal(i)
-					
-					v = gt.xform(v)
-					n = basis.xform(n)
-					
-					data.set_vertex(i, v)
-					data.set_vertex_normal(i, n)
+					data.set_vertex(i, gt.xform(data.get_vertex(i)))
+					data.set_vertex_normal(i, basis.xform(data.get_vertex_normal(i)))
 					
 				data.commit_to_surface(mesh)
 				
@@ -168,6 +162,8 @@ class MergeDialog extends AcceptDialog:
 		
 		tree.connect("item_edited", self, "_merge_surfaces")
 		
+# End MergeDialog
+
 var merge_dialog
 
 static func get_name():

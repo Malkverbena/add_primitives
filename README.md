@@ -14,6 +14,7 @@
   * Tube
   * Wedge
   * Stair(Linear, Curved, Spiral)
+  * Arch
   * C Box
   * Disc
   * Ellipse
