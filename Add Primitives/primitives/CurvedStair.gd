@@ -1,6 +1,7 @@
 extends "../Primitive.gd"
 
 var angle = 90
+var counter_clockwise = false
 var stair_height = 2.0
 var steps = 8
 var inner_radius = 1.0
@@ -17,21 +18,33 @@ static func get_container():
 	
 func update():
 	var radians = deg2rad(angle)
+	
+	var inner = inner_radius
+	var outer = inner + step_width
+	
+	if counter_clockwise:
+		radians = -radians
+		
+		var temp = inner
+		inner = outer
+		outer = temp
+		
 	var height_inc = stair_height/steps
-	var outer_radius = inner_radius + step_width
 	
-	var uv_inner = radians * inner_radius
-	var uv_outer = radians * outer_radius
+	var uv_inner = radians * inner
+	var uv_outer = radians * outer
 	
-	var ic = Utils.build_circle(Vector3(), steps, inner_radius, 0, radians)
-	var oc = Utils.build_circle(Vector3(), steps, outer_radius, 0, radians)
+	var ic = Utils.build_circle(Vector3(), steps, inner, 0, radians)
+	var oc = Utils.build_circle(Vector3(), steps, outer, 0, radians)
 	
 	begin()
 	
 	add_smooth_group(smooth)
 	
+	var base = Vector3()
+	
 	for i in range(steps):
-		var sh = Vector3(0, (i + 1) * height_inc, 0)
+		var sh = Vector3(0, base.y + height_inc, 0)
 		
 		var uv = [
 		    Vector2(ic[i].x, ic[i].z),
@@ -48,8 +61,6 @@ func update():
 				
 			add_quad([ic[i + 1], oc[i + 1], oc[i], ic[i]], uv)
 			
-		var base = Vector3(0, height_inc * i, 0)
-		
 		uv[0] = Vector2(0, base.y)
 		uv[1] = Vector2(0, sh.y)
 		uv[2] = Vector2(step_width, sh.y)
@@ -75,20 +86,23 @@ func update():
 			
 			add_quad([ic[i + 1] + sh, ic[i + 1], ic[i], ic[i] + sh], uv)
 			
+		base = sh
+		
 	if generate_end:
-		var sh = Vector3(0, stair_height, 0)
+		var uv = [
+		    Vector2(),
+		    Vector2(0, stair_height),
+		    Vector2(step_width, stair_height),
+		    Vector2(step_width, 0)
+		]
 		
-		var uv = [Vector2(),
-		          Vector2(0, sh.y),
-		          Vector2(step_width, sh.y),
-		          Vector2(step_width, 0)]
-		
-		add_quad([ic[steps], ic[steps] + sh, oc[steps] + sh, oc[steps]], uv)
+		add_quad([ic[steps], ic[steps] + base, oc[steps] + base, oc[steps]], uv)
 		
 	commit()
 	
 func mesh_parameters(editor):
 	editor.add_numeric_parameter('angle', angle, 1, 360, 1)
+	editor.add_bool_parameter('counter_clockwise', counter_clockwise)
 	editor.add_numeric_parameter('stair_height', stair_height)
 	editor.add_numeric_parameter('steps', steps, 3, 64, 1)
 	editor.add_numeric_parameter('inner_radius', inner_radius)

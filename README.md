@@ -7,8 +7,8 @@
   * Circle
   * Cone
   * Cylinder
-  * GeoSphere
   * Plane
+  * Solid
   * Sphere
   * Torus
   * Tube

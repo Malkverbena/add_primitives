@@ -29,13 +29,14 @@ func update():
 	v.resize(segs * section_segments)
 	
 	var index = 0
+	var two_pi = PI * 2
 	
 	begin()
 	
 	add_smooth_group(smooth)
 	
 	for i in range(segs):
-		var phi = (PI * 2) * i/segments
+		var phi = float(i)/segments * two_pi
 		
 		var x = (2 + cos(q * phi/p)) * cos(phi)/3
 		var y = sin(q * phi/p)/3
@@ -43,7 +44,7 @@ func update():
 		
 		var v1 = Vector3(x, y, z)
 		
-		phi = (PI * 2) * (i + 1)/segments
+		phi = float(i + 1)/segments * two_pi
 		
 		x = (2 + cos(q * phi/p)) * cos(phi)/3
 		y = sin(q * phi/p)/3
@@ -56,7 +57,7 @@ func update():
 		var m3 = compute_vector(dir)
 		
 		for j in range(section_segments):
-			var alpha = (PI * 2) * j/section_segments
+			var alpha = float(j)/section_segments * two_pi
 			var vp = section_radius * m3.xform(Vector3(cos(alpha), sin(alpha), 0))
 			
 			v[index] = (v1 * radius) + vp

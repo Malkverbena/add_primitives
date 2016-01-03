@@ -106,7 +106,7 @@ class TaperModifier extends Modifier:
 		var vec = Vector3(1, 1, 1)
 		
 		for i in axis:
-			vec[i] += lerp(0, value, vector.y/height)
+			vec[i] += vector.y/height * value
 			
 		return vec
 		
@@ -160,7 +160,7 @@ class ShearModifier extends Modifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v[shear_axis] += lerp(0, value, v[axis]/c)
+				v[shear_axis] += v[axis]/c * value
 				
 				set_vertex(i, v)
 				
@@ -194,7 +194,7 @@ class TwistModifier extends Modifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v = v.rotated(r_axis, lerp(0, a, v[axis]/c))
+				v = v.rotated(r_axis, v[axis]/c * a)
 				
 				set_vertex(i, v)
 				

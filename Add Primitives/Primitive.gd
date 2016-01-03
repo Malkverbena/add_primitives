@@ -42,54 +42,49 @@ func get_mesh():
 func begin():
 	.begin(Mesh.PRIMITIVE_TRIANGLES)
 	
-func add_tri(vertex = [], uv = []):
-	assert( vertex.size() == 3 )
-	
+func add_tri(verts, uv = []):
 	if flip_normals:
-		vertex.invert()
+		verts.invert()
 		uv.invert()
 		
-	if uv.size() == 3:
+	if uv.size():
 		add_uv(uv[0])
-		add_vertex(vertex[0])
+		add_vertex(verts[0])
 		add_uv(uv[1])
-		add_vertex(vertex[1])
+		add_vertex(verts[1])
 		add_uv(uv[2])
-		add_vertex(vertex[2])
+		add_vertex(verts[2])
 		
 	else:
-		add_vertex(vertex[0])
-		add_vertex(vertex[1])
-		add_vertex(vertex[2])
+		add_vertex(verts[0])
+		add_vertex(verts[1])
+		add_vertex(verts[2])
 		
-func add_quad(vertex = [], uv = []):
-	assert( vertex.size() == 4 )
-	
+func add_quad(verts, uv = []):
 	if flip_normals:
-		vertex.invert()
+		verts.invert()
 		uv.invert()
 		
-	if uv.size() == 4:
+	if uv.size():
 		add_uv(uv[0])
-		add_vertex(vertex[0])
+		add_vertex(verts[0])
 		add_uv(uv[1])
-		add_vertex(vertex[1])
+		add_vertex(verts[1])
 		add_uv(uv[2])
-		add_vertex(vertex[2])
-		add_uv(uv[2])
-		add_vertex(vertex[2])
+		add_vertex(verts[2])
+		add_vertex(verts[2])
 		add_uv(uv[3])
-		add_vertex(vertex[3])
+		add_vertex(verts[3])
 		add_uv(uv[0])
-		add_vertex(vertex[0])
+		add_vertex(verts[0])
 		
 	else:
-		add_vertex(vertex[0])
-		add_vertex(vertex[1])
-		add_vertex(vertex[2])
-		add_vertex(vertex[2])
-		add_vertex(vertex[3])
-		add_vertex(vertex[0])
+		add_vertex(verts[0])
+		add_vertex(verts[1])
+		add_vertex(verts[2])
+		add_vertex(verts[2])
+		add_vertex(verts[3])
+		add_vertex(verts[0])
 		
 func add_plane(dir1, dir2, offset = Vector3()):
 	var verts = Utils.build_plane(dir1, dir2, offset)

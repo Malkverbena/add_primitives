@@ -1,6 +1,7 @@
 extends "../Primitive.gd"
 
 var spirals = 1
+var counter_clockwise = false
 var spiral_height = 2.0
 var steps_per_spiral = 8
 var inner_radius = 1.0
@@ -14,10 +15,20 @@ static func get_container():
 	return "Stair"
 	
 func update():
-	var outer_radius = inner_radius + step_width
+	var angle = PI * 2
 	
-	var ic = Utils.build_circle(Vector3(), steps_per_spiral, inner_radius)
-	var oc = Utils.build_circle(Vector3(), steps_per_spiral, outer_radius)
+	var inner = inner_radius
+	var outer = inner + step_width
+	
+	if counter_clockwise:
+		angle = -angle
+		
+		var temp = inner
+		inner = outer
+		outer = temp
+		
+	var ic = Utils.build_circle(Vector3(), steps_per_spiral, inner, 0, angle)
+	var oc = Utils.build_circle(Vector3(), steps_per_spiral, outer, 0, angle)
 	
 	var height_inc = spiral_height/steps_per_spiral
 	
@@ -30,6 +41,7 @@ func update():
 		
 		for i in range(steps_per_spiral):
 			var h = Vector3(0, i * height_inc + ofs_y, 0)
+			var sh = Vector3(0, h.y + height_inc + extra_step_height, 0)
 			
 			var uv = [
 			    Vector2(ic[i + 1].x, ic[i + 1].z),
@@ -40,10 +52,9 @@ func update():
 			
 			add_quad([ic[i + 1] + h, oc[i + 1] + h, oc[i] + h, ic[i] + h], uv)
 			
-			var sh = Vector3(0, h.y + height_inc + extra_step_height, 0)
-			
-			uv.invert()
-			
+			if not flip_normals:
+				uv.invert()
+				
 			add_quad([ic[i] + sh, oc[i] + sh, oc[i + 1] + sh, ic[i + 1] + sh], uv)
 			
 			var sides = [ic[i], oc[i], oc[i + 1], ic[i + 1], ic[i]]
@@ -64,6 +75,7 @@ func update():
 	
 func mesh_parameters(editor):
 	editor.add_numeric_parameter('spirals', spirals, 1, 64, 1)
+	editor.add_bool_parameter('counter_clockwise', counter_clockwise)
 	editor.add_numeric_parameter('spiral_height', spiral_height)
 	editor.add_numeric_parameter('steps_per_spiral', steps_per_spiral, 3, 64, 1)
 	editor.add_numeric_parameter('inner_radius', inner_radius)

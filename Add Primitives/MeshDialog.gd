@@ -41,7 +41,7 @@ var text_display
 var parameter_editor
 var modifier_editor
 
-const DIALOG_SIZE = Vector2(250, 275)
+const DIALOG_SIZE = Vector2(260, 275)
 
 static func create_display_material(instance, color):
 	var fixed_material = FixedMaterial.new()
