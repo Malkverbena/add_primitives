@@ -47,7 +47,7 @@ func update():
 	for i in range(torus_segments):
 		var m1 = Matrix3(Vector3(0, 1, 0), angle * i)
 		
-		if i < torus_segments - 1 or slice_to:
+		if slice_to or i < torus_segments - 1:
 			var m2 = Matrix3(Vector3(0, 1, 0), angle * (i + 1))
 			
 			for idx in range(segments):
@@ -62,11 +62,13 @@ func update():
 	if generate_ends and slice_to > 0:
 		var m = Matrix3(Vector3(0, 1, 0), slice_angle)
 		
+		var torus_end = m.xform(c[0])
+		
 		add_smooth_group(false)
 		
 		for idx in range(segments):
-			add_tri([torus_start, c[idx], c[idx + 1]])
-			add_tri([m.xform(c[idx + 1]), m.xform(c[idx]), m.xform(torus_start)])
+			add_tri([c[0], c[idx], c[idx + 1]])
+			add_tri([m.xform(c[idx + 1]), m.xform(c[idx]), torus_end])
 			
 	commit()
 	

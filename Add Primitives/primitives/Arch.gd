@@ -1,15 +1,15 @@
 extends "../Primitive.gd"
 
 var inner_width = 0.8
-var inner_height = 1.0
+var inner_height = 0.8
 var base_width = 0.2
 var top_height = 0.2
-var depth = 2.0
-var radial_segments = 16
+var length = 2.0
+var sides = 16
 var generate_front = true
 var generate_back = true
 var generate_outer = true
-var generate_bottom = true
+var generate_base = true
 
 static func get_name():
 	return "Arch"
@@ -35,22 +35,22 @@ func update():
 	var outer_width = inner_width + base_width
 	var outer_height = inner_height + top_height
 	
-	var inner_inc = (pow(PI, 2) * inner_width)/PI/radial_segments
-	var outer_inc = (pow(PI, 2) * outer_width)/PI/radial_segments
+	var inner_inc = (PI * inner_width)/sides
+	var outer_inc = (PI * outer_width)/sides
 	
-	var ofs = Vector3(0, 0, -depth)
+	var ofs = Vector3(0, 0, -length)
 	
 	var ic = []
 	var oc = []
 	
-	build_arch(depth/2, radial_segments, Vector2(inner_width, inner_height), Vector2(outer_width, outer_height), ic, oc)
+	build_arch(length/2, sides, Vector2(inner_width, inner_height), Vector2(outer_width, outer_height), ic, oc)
 	
 	begin()
 	
 	add_smooth_group(false)
 	
 	if generate_front or generate_back:
-		for i in range(radial_segments):
+		for i in range(sides):
 			var uv = [
 				Vector2(ic[i].x, ic[i].y),
 				Vector2(oc[i].x, oc[i].y),
@@ -67,7 +67,7 @@ func update():
 					
 				add_quad([ic[i + 1] + ofs, oc[i + 1] + ofs, oc[i] + ofs, ic[i] + ofs], uv)
 				
-	if generate_bottom:
+	if generate_base:
 		var uv = [
 			Vector2(),
 			Vector2(0, ofs.z),
@@ -80,28 +80,27 @@ func update():
 		if not flip_normals:
 			uv.invert()
 			
-		add_quad([oc[radial_segments], oc[radial_segments] + ofs,
-		          ic[radial_segments] + ofs, ic[radial_segments]], uv)
+		add_quad([oc[sides], oc[sides] + ofs, ic[sides] + ofs, ic[sides]], uv)
 		
 	add_smooth_group(smooth)
 	
-	for i in range(radial_segments):
+	for i in range(sides):
 		var uv = [
-			Vector2(inner_inc * i, 0),
 			Vector2(inner_inc * (i + 1), 0),
 			Vector2(inner_inc * (i + 1), ofs.z),
-			Vector2(inner_inc * i, ofs.z)
+			Vector2(inner_inc * i, ofs.z),
+			Vector2(inner_inc * i, 0)
 		]
 		
-		add_quad([ic[i], ic[i + 1], ic[i + 1] + ofs, ic[i] + ofs], uv)
+		add_quad([ic[i + 1], ic[i + 1] + ofs, ic[i] + ofs, ic[i]], uv)
 		
 		if generate_outer:
-			uv[0].x = outer_inc * (i + 1)
+			uv[0].x = outer_inc * i
 			uv[1].x = outer_inc * i
-			uv[2].x = outer_inc * i
+			uv[2].x = outer_inc * (i + 1)
 			uv[3].x = outer_inc * (i + 1)
 			
-			add_quad([oc[i + 1], oc[i], oc[i] + ofs, oc[i + 1] + ofs], uv)
+			add_quad([oc[i], oc[i] + ofs, oc[i + 1] + ofs, oc[i + 1]], uv)
 			
 	commit()
 	
@@ -110,13 +109,13 @@ func mesh_parameters(editor):
 	editor.add_numeric_parameter('inner_height', inner_height)
 	editor.add_numeric_parameter('base_width', base_width)
 	editor.add_numeric_parameter('top_height', top_height)
-	editor.add_numeric_parameter('depth', depth)
-	editor.add_numeric_parameter('radial_segments', radial_segments, 3, 64, 1)
+	editor.add_numeric_parameter('length', length)
+	editor.add_numeric_parameter('sides', sides, 3, 64, 1)
 	editor.add_empty()
 	editor.add_bool_parameter('generate_front', generate_front)
 	editor.add_bool_parameter('generate_back', generate_back)
 	editor.add_bool_parameter('generate_outer', generate_outer)
-	editor.add_bool_parameter('generate_bottom', generate_bottom)
+	editor.add_bool_parameter('generate_base', generate_base)
 	
 	
 
