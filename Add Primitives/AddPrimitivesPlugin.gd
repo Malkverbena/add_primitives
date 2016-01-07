@@ -368,8 +368,7 @@ class AddPrimitives extends HBoxContainer:
 		get_tree().disconnect("node_removed", self, "_node_removed")
 		
 	func _init():
-		var separator = VSeparator.new()
-		add_child(separator)
+		add_child( VSeparator.new() )
 		
 		var spatial_menu = MenuButton.new()
 		spatial_menu.set_button_icon(preload('icon_mesh_instance_add.png'))

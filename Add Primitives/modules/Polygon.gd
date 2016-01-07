@@ -38,19 +38,24 @@ class PolygonDialog extends AcceptDialog:
 		GENERATE_TOP = 3,
 		GENERATE_SIDES = 4,
 		GENERATE_BOTTOM = 5,
-		INVERT = 6
+		FLIP_NORMALS = 6
 	}
 	
+	# Editor variables
 	var mode = Mode.DRAW
-	var edit = -1
+	var edit_handle = -1
 	var pressed = false
 	var snap = false
 	var show_grid = false
 	var grid_step = Vector2(10, 10)
 	
-	# Knife Tool
+	# Knife tool
 	var knife_start = Vector2()
 	var knife_end = Vector2()
+	
+	# Polygon handle
+	var handle
+	var handle_offset
 	
 	# Default Values
 	var data = {
@@ -60,20 +65,20 @@ class PolygonDialog extends AcceptDialog:
 		generate_top = true,
 		generate_sides = true,
 		generate_bottom = true,
-		invert = false
+		flip_normals = false
 	}
 	
-	var handle
-	var handle_offset
-	
-	var canvas
-	var snap_popup
+	# Editor Widgets
+	var axis
+	var depth
+	var radius
 	var toolbar_top
+	var options
+	var canvas
 	var toolbar_bottom
 	var mode_display
 	var text_display
-	var options
-	var tools
+	var snap_popup
 	
 	var mesh
 	var mesh_instance
@@ -101,20 +106,6 @@ class PolygonDialog extends AcceptDialog:
 			sum -= polygon[j].x * polygon[i].y;
 			
 		return sum > 0
-		
-	static func get_range_config(size, clockwise):
-		var config = {
-			min_ = 0,
-			max_ = size - 1,
-			step = 1
-		}
-		
-		if clockwise:
-			config.min_ = size - 1
-			config.max_ = 0
-			config.step = -1
-			
-		return config
 		
 	static func knife_polygon(polygon, start, end):
 		if start == end:
@@ -166,6 +157,8 @@ class PolygonDialog extends AcceptDialog:
 		
 		mesh_instance.set_mesh(mesh)
 		
+		_default()
+		
 	func set_mode(mode):
 		self.mode = mode 
 		
@@ -205,7 +198,7 @@ class PolygonDialog extends AcceptDialog:
 		update_mesh()
 		
 	func set_grid_step(val, axis):
-		grid_step[axis] = ceil(val)
+		grid_step[axis] = floor(val)
 		
 		redraw()
 		
@@ -224,9 +217,7 @@ class PolygonDialog extends AcceptDialog:
 		
 	func show_dialog():
 		var s = Vector2(324, 390)
-		
 		s.y += toolbar_top.get_size().y + toolbar_bottom.get_size().y
-		s.y += text_display.get_line_height() * 1.5
 		
 		popup_centered(s)
 		
@@ -241,9 +232,9 @@ class PolygonDialog extends AcceptDialog:
 		if mesh.get_surface_count():
 			mesh.surface_remove(0)
 			
-		var index = Array(Geometry.triangulate_polygon(Vector2Array(polygon)))
+		var indices = Array(Geometry.triangulate_polygon(Vector2Array(polygon)))
 		
-		if index.empty():
+		if indices.empty():
 			return
 			
 		var s = canvas.get_size()
@@ -260,61 +251,72 @@ class PolygonDialog extends AcceptDialog:
 		
 		st.add_smooth_group(false)
 		
-		if data.invert:
-			index.invert()
+		if data.flip_normals:
+			indices.invert()
 			
 		if data.generate_top:
-			for i in index:
+			for i in indices:
 				st.add_uv(polygon[i]/s)
 				st.add_vertex(to_vec3(polygon[i]/s, data.radius, axis_x, axis_y) + ofs)
 				
-		if data.depth:
+		if data.depth > 0:
 			if data.generate_sides:
 				polygon.push_back(polygon[0])
 				
 				var clockwise = is_clockwise(polygon)
 				
-				if data.invert:
+				if data.flip_normals:
 					clockwise = not clockwise
 					
-				var cfg = get_range_config(polygon.size(), clockwise)
+				var cfg = {
+					min_ = polygon.size() - 1,
+					max_ = 0,
+					step = -1
+				}
 				
-				var h = Vector2(0, data.depth/data.radius)
+				if not clockwise:
+					cfg.min_ = 0
+					cfg.max_ = polygon.size() - 1
+					cfg.step = 1
+					
+				var uv_ofs = 0
+				var uv_h = Vector2(0, data.depth/data.radius)
+				
 				var u1 = Vector2()
-				var b = 0
+				
+				var v1 = to_vec3(polygon[cfg.min_]/s, data.radius, axis_x, axis_y)
 				
 				for i in range(cfg.min_, cfg.max_, cfg.step):
-					var v1 = to_vec3(polygon[i]/s, data.radius, axis_x, axis_y)
+					uv_ofs += polygon[i].distance_to(polygon[i + cfg.step])
+					
+					var u2 = Vector2(uv_ofs, 0)/s
 					var v2 = to_vec3(polygon[i + cfg.step]/s, data.radius, axis_x, axis_y)
 					
-					b += polygon[i].distance_to(polygon[i + cfg.step])
-					
-					var u2 = Vector2(b, 0)/s
-					
-					st.add_uv(u1 + h)
+					st.add_uv(u1 + uv_h)
 					st.add_vertex(v1 + ofs)
-					st.add_uv(u2 + h)
+					st.add_uv(u2 + uv_h)
 					st.add_vertex(v2 + ofs)
 					st.add_uv(u2)
 					st.add_vertex(v2 - ofs)
 					st.add_vertex(v2 - ofs)
 					st.add_uv(u1)
 					st.add_vertex(v1 - ofs)
-					st.add_uv(u1 + h)
+					st.add_uv(u1 + uv_h)
 					st.add_vertex(v1 + ofs)
 					
 					u1 = u2
+					v1 = v2
 					
 				polygon.remove(polygon.size() - 1)
 				
 			if data.generate_bottom:
-				for i in range(index.size() -1, -1, -1):
-					i = index[i]
+				for i in range(indices.size() -1, -1, -1):
+					i = indices[i]
 					
 					st.add_uv(polygon[i]/s)
 					st.add_vertex(to_vec3(polygon[i]/s, data.radius, axis_x, axis_y) - ofs)
 					
-		index.clear()
+		indices.clear()
 		
 		st.generate_normals()
 		st.index()
@@ -323,33 +325,31 @@ class PolygonDialog extends AcceptDialog:
 		st.clear()
 		
 		var exec_time = OS.get_ticks_msec() - start
-		text_display.set_text("Generation time: " + str(exec_time) + " ms")
+		text_display.set_text("Generation time: %d ms" % exec_time)
 		
-	func default():
+	func _default():
+		snap = false
+		show_grid = false
+		
 		data.axis = Vector3.AXIS_X
 		data.radius = 1.0
 		data.depth = 1.0
 		data.generate_top = true
 		data.generate_sides = true
 		data.generate_bottom = true
-		data.invert = false
+		data.flip_normals = false
 		
-		snap = false
-		show_grid = false
+		axis.select(data.axis)
+		depth.set_val(data.depth)
+		radius.set_val(data.radius) 
 		
-		tools[0].select(data.axis)
-		tools[1].set_val(data.depth)
-		tools[2].set_val(data.radius) 
+		options.set_item_checked(options.get_item_index(Options.SNAP), false)
+		options.set_item_checked(options.get_item_index(Options.GRID), false)
+		options.set_item_checked(options.get_item_index(Options.GENERATE_TOP), true)
+		options.set_item_checked(options.get_item_index(Options.GENERATE_SIDES), true)
+		options.set_item_checked(options.get_item_index(Options.GENERATE_BOTTOM), true)
+		options.set_item_checked(options.get_item_index(Options.FLIP_NORMALS), false)
 		
-		for i in range(options.get_item_count()):
-			if options.is_item_checkable(i):
-				options.set_item_checked(i, false)
-				
-		for i in range(Options.GENERATE_TOP, Options.GENERATE_BOTTOM + 1):
-			var idx = options.get_item_index(i)
-			
-			options.set_item_checked(idx, true)
-			
 		_clear_canvas()
 		
 	func redraw():
@@ -412,9 +412,9 @@ class PolygonDialog extends AcceptDialog:
 			
 			_update()
 			
-		elif id == Options.INVERT:
-			data.invert = not data.invert
-			options.set_item_checked(idx, data.invert)
+		elif id == Options.FLIP_NORMALS:
+			data.flip_normals = not data.flip_normals
+			options.set_item_checked(idx, data.flip_normals)
 			
 			_update()
 			
@@ -425,9 +425,9 @@ class PolygonDialog extends AcceptDialog:
 					pressed = true
 					
 					if ev.shift:
-						edit = get_handle(ev.pos)
+						edit_handle = get_handle(ev.pos)
 						
-						if edit >= 0:
+						if edit_handle >= 0:
 							set_mode(Mode.EDIT)
 							
 					elif ev.control:
@@ -441,12 +441,12 @@ class PolygonDialog extends AcceptDialog:
 					elif mode == Mode.DRAW:
 						polygon.push_back(snap_point(ev.pos))
 						
-						edit = polygon.size() - 1
+						edit_handle = polygon.size() - 1
 						
 						_update()
 				else:
 					pressed = false
-					edit = -1
+					edit_handle = -1
 					
 					if mode == Mode.KNIFE:
 						knife_polygon(polygon, knife_start, knife_end)
@@ -459,21 +459,21 @@ class PolygonDialog extends AcceptDialog:
 				if ev.pressed and mode == Mode.DRAW:
 					pressed = false
 					
-					edit = get_handle(ev.pos)
+					edit_handle = get_handle(ev.pos)
 					
-					if edit >= 0:
-						polygon.remove(edit)
+					if edit_handle >= 0:
+						polygon.remove(edit_handle)
 						
 					_update()
 					
 		elif ev.type == InputEvent.MOUSE_MOTION and pressed:
-			if edit == -1 and mode != Mode.KNIFE:
+			if edit_handle == -1 and mode != Mode.KNIFE:
 				return
 				
 			var edit_pos = snap_point(ev.pos)
 			
 			if mode == Mode.EDIT:
-				polygon[edit] = vector_to_local(canvas, edit_pos)
+				polygon[edit_handle] = vector_to_local(canvas, edit_pos)
 				
 				_update()
 				
@@ -481,9 +481,9 @@ class PolygonDialog extends AcceptDialog:
 				if polygon.size() == 1:
 					polygon.push_back(edit_pos)
 					
-					edit = 1
+					edit_handle = 1
 					
-				polygon[edit] = vector_to_local(canvas, edit_pos)
+				polygon[edit_handle] = vector_to_local(canvas, edit_pos)
 				
 				_update()
 				
@@ -541,11 +541,11 @@ class PolygonDialog extends AcceptDialog:
 		clear()
 		
 	func _init(base):
-		handle = base.get_icon("EditorHandle", "EditorIcons")
-		handle_offset = Vector2(handle.get_width(), handle.get_height())/2
-		
 		set_title("New Polygon")
 		set_exclusive(true)
+		
+		handle = base.get_icon("EditorHandle", "EditorIcons")
+		handle_offset = handle.get_size()/2
 		
 		var main_vbox = VBoxContainer.new()
 		add_child(main_vbox)
@@ -555,39 +555,34 @@ class PolygonDialog extends AcceptDialog:
 		var hb = HBoxContainer.new()
 		main_vbox.add_child(hb)
 		
-		var ob = OptionButton.new()
-		ob.add_item('X')
-		ob.add_item('Y')
-		ob.add_item('Z')
-		hb.add_child(ob)
-		
-		ob.connect("item_selected", self, "set_axis")
+		axis = OptionButton.new()
+		axis.add_item('X')
+		axis.add_item('Y')
+		axis.add_item('Z')
+		hb.add_child(axis)
+		axis.connect("item_selected", self, "set_axis")
 		
 		var l = Label.new()
 		l.set_text("Depth:")
 		hb.add_child(l)
 		
-		var d_spin = SpinBox.new()
-		d_spin.set_min(0)
-		d_spin.set_max(100)
-		d_spin.set_step(0.001)
-		hb.add_child(d_spin)
-		
-		d_spin.connect("value_changed", self, "set_depth")
+		depth = SpinBox.new()
+		depth.set_min(0)
+		depth.set_max(100)
+		depth.set_step(0.001)
+		hb.add_child(depth)
+		depth.connect("value_changed", self, "set_depth")
 		
 		l = Label.new()
 		l.set_text("Radius:")
 		hb.add_child(l)
 		
-		var r_spin = SpinBox.new()
-		r_spin.set_min(0.001)
-		r_spin.set_max(100)
-		r_spin.set_step(0.001)
-		hb.add_child(r_spin)
-		
-		r_spin.connect("value_changed", self, "set_radius")
-		
-		tools = [ob, d_spin, r_spin]
+		radius = SpinBox.new()
+		radius.set_min(0.001)
+		radius.set_max(100)
+		radius.set_step(0.001)
+		hb.add_child(radius)
+		radius.connect("value_changed", self, "set_radius")
 		
 		var panel = PanelContainer.new()
 		panel.set_v_size_flags(SIZE_EXPAND_FILL)
@@ -600,11 +595,12 @@ class PolygonDialog extends AcceptDialog:
 		toolbar_top.set_h_size_flags(SIZE_EXPAND_FILL)
 		vb.add_child(toolbar_top)
 		
-		var m_button = MenuButton.new()
-		m_button.set_flat(true)
-		m_button.set_text("Edit")
+		var menu = MenuButton.new()
+		menu.set_flat(true)
+		menu.set_text("Edit")
+		toolbar_top.add_child(menu)
 		
-		options = m_button.get_popup()
+		options = menu.get_popup()
 		
 		options.add_icon_check_item(base.get_icon("Snap", "EditorIcons"), "Snap", Options.SNAP)
 		options.add_icon_check_item(base.get_icon("Grid", "EditorIcons"), "Grid", Options.GRID)
@@ -614,9 +610,7 @@ class PolygonDialog extends AcceptDialog:
 		options.add_check_item("Generate Sides", Options.GENERATE_SIDES)
 		options.add_check_item("Generate Bottom", Options.GENERATE_BOTTOM)
 		options.add_separator()
-		options.add_check_item("Invert", Options.INVERT)
-		
-		toolbar_top.add_child(m_button)
+		options.add_check_item("Flip Normals", Options.FLIP_NORMALS)
 		
 		options.connect("item_pressed", self, "_options")
 		
@@ -625,16 +619,15 @@ class PolygonDialog extends AcceptDialog:
 		s.set_h_size_flags(SIZE_EXPAND_FILL)
 		toolbar_top.add_child(s)
 		
-		var clear = Button.new()
-		clear.set_flat(true)
+		var clear = ToolButton.new()
 		clear.set_button_icon(base.get_icon("Remove", "EditorIcons"))
 		toolbar_top.add_child(clear)
 		clear.connect("pressed", self, "_clear_canvas")
 		
 		canvas = Control.new()
-		vb.add_child(canvas)
 		canvas.set_custom_minimum_size(Vector2(300, 300))
 		canvas.set_focus_mode(FOCUS_ALL)
+		vb.add_child(canvas)
 		
 		canvas.connect("input_event", self, "_canvas_input_event")
 		canvas.connect("draw", self, "_canvas_draw")
@@ -651,16 +644,18 @@ class PolygonDialog extends AcceptDialog:
 		s.set_h_size_flags(SIZE_EXPAND_FILL)
 		toolbar_bottom.add_child(s)
 		
-		var help = TextureButton.new()
-		help.set_normal_texture(base.get_icon("Help", "EditorIcons"))
-		help.set_tooltip("Actions:\n  - Left-Click => Add Vertex\n  - Shift + Left-Click + Drag => Edit Vertex\n  - Right-Click => Delete Vertex\n  - Control + Left-Click + Drag => Knife Tool")
-		toolbar_bottom.add_child(help)
-		
 		text_display = Label.new()
 		text_display.set_text("Generation time: 0 ms")
 		text_display.set_align(text_display.ALIGN_CENTER)
 		text_display.set_valign(text_display.VALIGN_CENTER)
-		main_vbox.add_child(text_display)
+		toolbar_bottom.add_child(text_display)
+		
+		toolbar_bottom.add_child( VSeparator.new() )
+		
+		var help = TextureButton.new()
+		help.set_normal_texture(base.get_icon("Help", "EditorIcons"))
+		help.set_tooltip("Actions:\n  - Left-Click => Add Vertex\n  - Shift + Left-Click + Drag => Edit Vertex\n  - Right-Click => Delete Vertex\n  - Control + Left-Click + Drag => Knife Tool")
+		toolbar_bottom.add_child(help)
 		
 		# Snap Popup
 		snap_popup = PopupPanel.new()
@@ -677,8 +672,6 @@ class PolygonDialog extends AcceptDialog:
 		
 		var x = SpinBox.new()
 		x.set_val(grid_step.x)
-		x.set_min(1)
-		x.set_max(100)
 		x.set_suffix('px')
 		x.set_h_size_flags(SIZE_EXPAND_FILL)
 		
@@ -692,8 +685,6 @@ class PolygonDialog extends AcceptDialog:
 		
 		var y = SpinBox.new()
 		y.set_val(grid_step.y)
-		y.set_min(1)
-		y.set_max(100)
 		y.set_suffix('px')
 		y.set_h_size_flags(SIZE_EXPAND_FILL)
 		
@@ -716,7 +707,6 @@ func create(mesh_instance):
 	mesh_instance.set_name("Polygon")
 	
 	polygon_dialog.edit(mesh_instance)
-	polygon_dialog.default()
 	polygon_dialog.show_dialog()
 	
 func edit_primitive():
