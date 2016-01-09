@@ -15,7 +15,7 @@ static func build_circle_rot(pos, segments, radius = 1, rotation = 0):
 	var circle = []
 	circle.resize(segments + 1)
 	
-	var s_angle = PI * 2/segments
+	var s_angle = Utils.TWO_PI/segments
 	
 	var matrix = Matrix3(Vector3(0, 1, 0), rotation)
 	
@@ -32,7 +32,7 @@ static func build_circle_rot(pos, segments, radius = 1, rotation = 0):
 	return circle
 	
 func update():
-	var slice_angle = PI * 2 - deg2rad(slice_to)
+	var slice_angle = Utils.TWO_PI - deg2rad(slice_to)
 	var start = deg2rad(slice_from)
 	var angle = slice_angle/torus_segments
 	

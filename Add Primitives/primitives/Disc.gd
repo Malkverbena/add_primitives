@@ -13,7 +13,7 @@ static func get_container():
 	return "Extra Objects"
 	
 func update():
-	var slice_angle = PI * 2 - deg2rad(slice_to)
+	var slice_angle = Utils.TWO_PI - deg2rad(slice_to)
 	
 	var circle = Utils.build_circle(Vector3(), segments, 1, deg2rad(slice_from), slice_angle)
 	var uv = Utils.ellipse_uv(Vector2(), segments, Vector2(1, 1), slice_angle)

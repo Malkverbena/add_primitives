@@ -15,7 +15,7 @@ static func get_container():
 	return "Stair"
 	
 func update():
-	var angle = PI * 2
+	var angle = Utils.TWO_PI
 	
 	var inner = inner_radius
 	var outer = inner + step_width

@@ -54,10 +54,10 @@ class DirectoryUtilities extends Directory:
 			
 			while next:
 				if not current_is_dir():
-					if not extension:
+					if extension != "" and next.extension() == extension:
 						list.push_back(next)
 						
-					elif next.extension() == extension:
+					else:
 						list.push_back(next)
 						
 				next = get_next()

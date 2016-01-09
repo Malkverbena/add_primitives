@@ -9,7 +9,7 @@ static func get_name():
 	return "Circle"
 	
 func update():
-	var slice_angle = PI * 2 - deg2rad(slice_to)
+	var slice_angle = Utils.TWO_PI - deg2rad(slice_to)
 	
 	var center = Vector3()
 	var center_uv = Vector2(0.5, 0.5)

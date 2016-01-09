@@ -13,7 +13,7 @@ static func get_name():
 	
 func update():
 	var angle = PI/height_segments
-	var slice_angle = PI * 2 - deg2rad(slice_to)
+	var slice_angle = Utils.TWO_PI - deg2rad(slice_to)
 	
 	var r = Vector3(sin(angle), 0, sin(angle))
 	var p = Vector3(0, cos(angle) * radius + height, 0)

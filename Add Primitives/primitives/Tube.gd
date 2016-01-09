@@ -14,7 +14,7 @@ static func get_name():
 	return "Tube"
 	
 func update():
-	var slice_angle = PI * 2 - deg2rad(slice_to)
+	var slice_angle = Utils.TWO_PI - deg2rad(slice_to)
 	
 	var ofs = Vector3(0, height, 0)
 	

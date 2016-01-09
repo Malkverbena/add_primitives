@@ -23,6 +23,8 @@
 
 extends Reference
 
+const TWO_PI = PI * 2
+
 static func build_plane(dir1, dir2, offset = Vector3()):
 	var plane = []
 	plane.resize(4)
@@ -34,7 +36,7 @@ static func build_plane(dir1, dir2, offset = Vector3()):
 	
 	return plane
 	
-static func build_circle(pos, segments, radius = 1, start = 0, angle = PI * 2):
+static func build_circle(pos, segments, radius = 1, start = 0, angle = TWO_PI):
 	var circle = []
 	circle.resize(segments + 1)
 	
@@ -45,7 +47,7 @@ static func build_circle(pos, segments, radius = 1, start = 0, angle = PI * 2):
 		
 		circle[i] = Vector3(cos(a), 0, sin(a)) * radius + pos
 		
-	if rad2deg(angle) != 360:
+	if angle != TWO_PI:
 		angle += start
 		
 		circle[segments] = Vector3(cos(angle), 0, sin(angle)) * radius + pos
@@ -55,7 +57,7 @@ static func build_circle(pos, segments, radius = 1, start = 0, angle = PI * 2):
 		
 	return circle
 	
-static func build_ellipse(pos, segments, radius = Vector2(1, 1), start = 0, angle = PI * 2):
+static func build_ellipse(pos, segments, radius = Vector2(1, 1), start = 0, angle = TWO_PI):
 	var ellipse = []
 	ellipse.resize(segments + 1)
 	
@@ -66,7 +68,7 @@ static func build_ellipse(pos, segments, radius = Vector2(1, 1), start = 0, angl
 		
 		ellipse[i] = Vector3(sin(a) * radius.x, 0, cos(a) * radius.y) + pos
 		
-	if rad2deg(angle) != 360:
+	if angle != TWO_PI:
 		angle += start
 		
 		ellipse[segments] = Vector3(sin(angle) * radius.x, 0, cos(angle) * radius.y) + pos
@@ -76,7 +78,7 @@ static func build_ellipse(pos, segments, radius = Vector2(1, 1), start = 0, angl
 		
 	return ellipse
 	
-static func ellipse_uv(pos, segments, radius = Vector2(1, 1), angle = PI * 2):
+static func ellipse_uv(pos, segments, radius = Vector2(1, 1), angle = TWO_PI):
 	var ellipse = []
 	ellipse.resize(segments + 1)
 	
@@ -87,7 +89,7 @@ static func ellipse_uv(pos, segments, radius = Vector2(1, 1), angle = PI * 2):
 		
 		ellipse[i] = Vector2(sin(a) * radius.x, cos(a) * radius.y) + pos
 		
-	if rad2deg(angle) != 360:
+	if angle != TWO_PI:
 		ellipse[segments] = Vector2(sin(angle) * radius.x, cos(angle) * radius.y) + pos
 		
 	else:

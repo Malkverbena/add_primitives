@@ -12,7 +12,7 @@ static func get_name():
 	return "Cone"
 	
 func update():
-	var slice_angle = PI * 2 - deg2rad(slice_to)
+	var slice_angle = Utils.TWO_PI - deg2rad(slice_to)
 	
 	var top = Vector3(0, height/2, 0)
 	var bottom = Vector3(0, -height/2, 0)
@@ -32,7 +32,7 @@ func update():
 	
 	if generate_ends and slice_to > 0:
 		var uv = [Vector2(radius, height), Vector2(), Vector2(0, height)]
-		
+	
 		add_tri([circle[0], top, bottom], uv)
 		
 		if not flip_normals:
