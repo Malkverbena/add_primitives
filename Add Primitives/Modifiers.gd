@@ -25,6 +25,8 @@ extends Reference
 
 class Modifier extends MeshDataTool:
 	
+	var enabled = true
+	
 	var mesh = null
 	var aabb = AABB()
 	
@@ -34,6 +36,9 @@ class Modifier extends MeshDataTool:
 	
 	static func get_name():
 		return ""
+		
+	func is_enabled():
+		return enabled
 		
 	func set_mesh(mesh):
 		self.mesh = mesh

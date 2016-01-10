@@ -106,18 +106,15 @@ class AddPrimitives extends HBoxContainer:
 		return mesh
 		
 	func modify_mesh():
-		var modifier = mesh_dialog.get_editor("modifiers")
-		
 		var new_mesh = base_mesh.duplicate()
-		
 		mesh_instance.set_mesh(new_mesh)
 		
-		for item in modifier.tree_items():
-			if not item.is_checked(1):
+		var modifiers = mesh_dialog.get_editor("modifiers").get_modifiers()
+		
+		for mod in modifiers:
+			if not mod.is_enabled():
 				continue
 				
-			var mod = instance_from_id(item.get_metadata(0))
-			
 			mod.set_mesh(new_mesh)
 			mod.set_aabb(mesh_instance.get_aabb())
 			

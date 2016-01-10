@@ -61,6 +61,9 @@ func get_editor(name):
 	return editor
 	
 func set_current_editor(id):
+	if id >= main_panel.get_child_count():
+		return
+		
 	var selected = main_panel.get_child(id)
 	
 	for c in main_panel.get_children():
@@ -85,8 +88,8 @@ func connect_editor(name, obj, method):
 		
 	editor.connect(signal_, obj, method)
 	
-func edit(instance, builder):
-	mesh_instance = instance
+func edit(node, builder):
+	mesh_instance = node
 	
 	if not mesh_instance:
 		return
@@ -94,7 +97,7 @@ func edit(instance, builder):
 	set_title("New " + builder.get_name())
 	
 	parameter_editor.edit(builder)
-	modifier_editor.create_modifiers()
+	modifier_editor.setup()
 	
 	color_picker.set_color(Color(0, 1, 0))
 	

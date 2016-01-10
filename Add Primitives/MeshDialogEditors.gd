@@ -56,26 +56,6 @@ class TreeEditor extends VBoxContainer:
 			
 		return value
 		
-	func tree_items(parent = null):
-		var iterable = []
-		
-		var root = tree.get_root()
-		
-		if not root:
-			return iterable
-			
-		if not parent:
-			parent = root
-			
-		var item = parent.get_children()
-		
-		while item:
-			iterable.push_back(item)
-			
-			item = item.get_next()
-			
-		return iterable
-		
 	func add_empty():
 		var item = tree.create_item(current)
 		
@@ -148,8 +128,6 @@ class ModifierEditor extends TreeEditor:
 		MOVE_DOWN = 2
 	}
 	
-	var edited_modifier = null
-	
 	var menu
 	var remove
 	var move_up
@@ -164,16 +142,10 @@ class ModifierEditor extends TreeEditor:
 	static func get_signal():
 		return "modifier_edited"
 		
-	func get_items():
+	func get_modifiers():
 		return items
 		
-	func get_edited_modifier():
-		if not edited_modifier:
-			return null
-			
-		return instance_from_id(edited_modifier)
-		
-	func create_modifiers():
+	func setup():
 		items.clear()
 		
 		menu.clear()
@@ -245,9 +217,6 @@ class ModifierEditor extends TreeEditor:
 		if what == Tool.ERASE:
 			var id = item.get_metadata(0)
 			
-			if id == edited_modifier:
-				edited_modifier = null
-				
 			items.erase(instance_from_id(id))
 			
 			item.get_parent().remove_child(item)
@@ -329,18 +298,19 @@ class ModifierEditor extends TreeEditor:
 		var parent = item.get_parent()
 		
 		if parent == tree.get_root():
-			edited_modifier = item.get_metadata(0)
+			var mod = instance_from_id(item.get_metadata(0))
 			
+			if mod:
+				mod.enabled = item.is_checked(1)
+				
 			emit_signal("modifier_edited")
 			
 			return
 			
-		edited_modifier = parent.get_metadata(0)
-		
 		var name = get_parameter_name(item)
 		var value = get_parameter_value(item)
 		
-		var mod = instance_from_id(edited_modifier)
+		var mod = instance_from_id(parent.get_metadata(0))
 		
 		if mod:
 			mod.set(name, value)
