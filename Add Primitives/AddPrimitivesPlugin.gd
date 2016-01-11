@@ -95,6 +95,15 @@ class AddPrimitives extends HBoxContainer:
 			
 		return null
 		
+	func set_state(state):
+		mesh_dialog.set_state(state)
+		
+	func get_state(state):
+		mesh_dialog.get_state(state)
+		
+	func clear_state():
+		mesh_dialog.clear_state()
+		
 	func edit(object):
 		node = object
 		
@@ -380,6 +389,19 @@ var add_primitives
 
 static func get_name():
 	return "add_primitives"
+	
+func set_state(state):
+	add_primitives.set_state(state)
+	
+func get_state():
+	var state = {}
+	
+	add_primitives.get_state(state)
+	
+	return state
+	
+func clear():
+	add_primitives.clear_state()
 	
 func edit(object):
 	add_primitives.edit(object)

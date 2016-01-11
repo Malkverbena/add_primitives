@@ -41,6 +41,7 @@ var text_display
 var parameter_editor
 var modifier_editor
 
+const DEFAULT_COLOR = Color(0, 1, 0)
 const DIALOG_SIZE = Vector2(260, 275)
 
 static func create_display_material(instance, color):
@@ -51,6 +52,16 @@ static func create_display_material(instance, color):
 	instance.set_material_override(fixed_material)
 	
 	return fixed_material
+	
+func set_state(state):
+	if state.has("display_color"):
+		color_picker.set_color(state["display_color"])
+		
+func get_state(state):
+	state["display_color"] = color_picker.get_color()
+	
+func clear_state():
+	color_picker.set_color(DEFAULT_COLOR)
 	
 func get_editor(name):
 	if not main_panel.has_node(name):
@@ -98,8 +109,6 @@ func edit(node, builder):
 	
 	parameter_editor.edit(builder)
 	modifier_editor.setup()
-	
-	color_picker.set_color(Color(0, 1, 0))
 	
 	set_current_editor(0)
 	
@@ -168,7 +177,7 @@ func _init(base):
 	color_hb.add_child(l)
 	
 	color_picker = ColorPickerButton.new()
-	color_picker.set_color(Color(0, 1, 0))
+	color_picker.set_color(DEFAULT_COLOR)
 	color_picker.set_edit_alpha(false)
 	color_hb.add_child(color_picker)
 	
