@@ -1,5 +1,7 @@
 #Add Primitives
+A plugin for the Godot Game Engine, capable of generating simple meshes for your game
 
+***
 ###Features
 **Primitives**:
   * Box
@@ -62,7 +64,3 @@ After enabling the plugin:
 
 ###License
 This plugin is licensed under the [MIT license](https://github.com/TheHX/add_primitives/blob/master/LICENSE.md).
-
-###Contributing
-If you want contribute to this plugin, read [CONTRIBUTING.md](https://github.com/TheHX/add_primitives/blob/master/CONTRIBUTING.md).
-
