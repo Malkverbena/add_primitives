@@ -57,10 +57,9 @@ right folder. Else you can open a issue to see what's is wrong.
 
 After enabling the plugin:
 
-1. Add, or select, any node.
-2. Select any primitive from the plugin menu on 3D editor toolbar, it'll be added to the selected node.
-3. A window will appear, where you can edit the primitive parameters.
-4. You can reopen this window by selecting "Edit Primitive" in the plugin menu, or by pressing ```Ctrl+E```.
+1. Select any primitive from the plugin menu on 3D editor toolbar, it'll be added to the selected node or become the scene root if the scene is empty.
+2. A window will appear, where you can edit the primitive parameters.
+3. You can reopen this window by selecting "Edit Primitive" in the plugin menu, or by pressing ```Ctrl+E```.
 
 ###License
 This plugin is licensed under the [MIT license](https://github.com/TheHX/add_primitives/blob/master/LICENSE.md).

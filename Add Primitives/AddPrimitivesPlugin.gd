@@ -254,22 +254,30 @@ class AddPrimitives extends HBoxContainer:
 			
 	func _create_primitive(name):
 		var node = get_selected.call_func()
+		var edited_scene = get_tree().get_edited_scene_root()
 		
-		if not node:
+		if not node and edited_scene:
 			return
 			
 		mesh_instance = MeshInstance.new()
 		
-		var edited_scene = get_tree().get_edited_scene_root()
-		
 		undo_redo.create_action("Create " + name)
 		
-		undo_redo.add_do_method(node, "add_child", mesh_instance)
-		undo_redo.add_do_method(mesh_instance, "set_owner", edited_scene)
-		undo_redo.add_do_reference(mesh_instance)
-		
-		undo_redo.add_undo_method(node, "remove_child", mesh_instance)
-		
+		if edited_scene:
+			undo_redo.add_do_method(node, "add_child", mesh_instance)
+			undo_redo.add_do_method(mesh_instance, "set_owner", edited_scene)
+			undo_redo.add_do_reference(mesh_instance)
+			
+			undo_redo.add_undo_method(node, "remove_child", mesh_instance)
+			
+		else:
+			var editor = get_tree().get_root().get_node("EditorNode")
+			
+			undo_redo.add_do_method(editor, "set_edited_scene", mesh_instance)
+			undo_redo.add_do_reference(mesh_instance)
+			
+			undo_redo.add_undo_method(editor, "set_edited_scene", Object(null))
+			
 		undo_redo.commit_action()
 		
 		if modules.has(name):
@@ -332,7 +340,7 @@ class AddPrimitives extends HBoxContainer:
 			if key_event.scancode == KEY_E and key_event.shift:
 				_edit_primitive()
 				
-				get_tree().set_input_as_handled()
+				accept_event()
 				
 	func _node_removed(node):
 		if node == mesh_instance:
