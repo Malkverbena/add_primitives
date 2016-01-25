@@ -54,11 +54,11 @@ static func create_display_material(instance, color):
 	return fixed_material
 	
 func set_state(state):
-	if state.has("display_color"):
-		color_picker.set_color(state["display_color"])
+	if state.has('display_color'):
+		color_picker.set_color(state['display_color'])
 		
 func get_state(state):
-	state["display_color"] = color_picker.get_color()
+	state['display_color'] = color_picker.get_color()
 	
 func clear_state():
 	color_picker.set_color(DEFAULT_COLOR)

@@ -31,11 +31,7 @@ class TreeEditor extends VBoxContainer:
 	var tree
 	
 	static func get_parameter_name(item):
-		var name = item.get_text(0)
-		
-		name = name.replace(' ', '_').to_lower()
-		
-		return name
+		return item.get_text(0).replace(' ', '_').to_lower()
 		
 	static func get_parameter_value(item):
 		var value
@@ -410,6 +406,7 @@ class ParameterEditor extends TreeEditor:
 			
 		current = tree.create_item()
 		
+		# Reset tree vertical scrollbar
 		for child in tree.get_children():
 			if child extends VScrollBar:
 				child.set_value(0)

@@ -73,15 +73,14 @@ class AddPrimitives extends HBoxContainer:
 	var current_module = ""
 	
 	var undo_redo
+	var get_selected
 	
 	var popup_menu
 	var mesh_dialog
 	
-	var node
-	var mesh_instance
-	
 	var builder
 	var base_mesh
+	var mesh_instance
 	
 	var primitives = {}
 	var modules = {}
@@ -103,9 +102,6 @@ class AddPrimitives extends HBoxContainer:
 		
 	func clear_state():
 		mesh_dialog.clear_state()
-		
-	func edit(object):
-		node = object
 		
 	func update_mesh():
 		builder.update()
@@ -257,6 +253,11 @@ class AddPrimitives extends HBoxContainer:
 			popup_menu.connect("item_pressed", self, "_popup_signal", [popup_menu])
 			
 	func _create_primitive(name):
+		var node = get_selected.call_func()
+		
+		if not node:
+			return
+			
 		mesh_instance = MeshInstance.new()
 		
 		var edited_scene = get_tree().get_edited_scene_root()
@@ -387,6 +388,8 @@ class AddPrimitives extends HBoxContainer:
 
 var add_primitives
 
+var tree
+
 static func get_name():
 	return "add_primitives"
 	
@@ -403,29 +406,42 @@ func get_state():
 func clear():
 	add_primitives.clear_state()
 	
-func edit(object):
-	add_primitives.edit(object)
-	
-func handles(object):
-	return object extends CollisionObject or object.get_type() == 'Spatial'
-	
-func make_visible(visible):
-	if visible:
-		add_primitives.show()
+func _find_node(type, node):
+	if (node.is_type(type)):
+		return node
 		
-	else:
-		add_primitives.hide()
-		add_primitives.edit(null)
+	for i in range(node.get_child_count()):
+		var n = _find_node(type, node.get_child(i))
 		
+		if n:
+			return n
+			
+	return null
+	
+func _get_selected():
+	var item = tree.get_selected()
+	
+	if not item:
+		return
+		
+	var path = item.get_metadata(0)
+	
+	if has_node(path):
+		return get_node(path)
+		
+	return null
+	
 func _enter_tree():
 	add_primitives = AddPrimitives.new()
 	add_primitives.undo_redo = get_undo_redo()
+	add_primitives.get_selected = funcref(self, "_get_selected")
 	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, add_primitives)
-	add_primitives.hide()
+	
+	add_primitives.get_parent().move_child(add_primitives, 5)
+	
+	var scene_editor = _find_node("SceneTreeEditor", _find_node("SceneTreeDock", get_parent()))
+	tree = _find_node("Tree", scene_editor)
 	
 	print("ADD PRIMITIVES INIT")
-	
-func _exit_tree():
-	edit(null)
 	
 
