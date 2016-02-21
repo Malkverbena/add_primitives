@@ -103,13 +103,6 @@ class AddPrimitives extends HBoxContainer:
 	func clear_state():
 		mesh_dialog.clear_state()
 		
-	func update_mesh():
-		builder.update()
-		
-		var mesh = modify_mesh()
-		
-		return mesh
-		
 	func modify_mesh():
 		var new_mesh = base_mesh.duplicate()
 		mesh_instance.set_mesh(new_mesh)
@@ -131,7 +124,10 @@ class AddPrimitives extends HBoxContainer:
 		
 	func _update_mesh():
 		var start = OS.get_ticks_msec()
-		_display_info(update_mesh(), start)
+		
+		builder.update()
+		
+		_display_info(modify_mesh(), start)
 		
 	func _modify_mesh():
 		var start = OS.get_ticks_msec()

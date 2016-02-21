@@ -13,6 +13,8 @@ static func get_container():
 	return "Extra Objects"
 	
 func update():
+	var ofs = Vector3(side_length, height, front_length)/2
+	
 	var h = Vector3(0, height, 0)
 	
 	var t = Vector2()
@@ -20,13 +22,13 @@ func update():
 	var w = Vector2()
 	
 	var v = [
-	    Vector3(),
-	    Vector3(front_width, 0, side_width),
-	    Vector3(front_width, 0, front_length),
-	    Vector3(0, 0, front_length),
-	    Vector3(side_length, 0, 0),
-	    Vector3(side_length, 0, side_width),
-	    Vector3(front_width, 0, side_width)
+	    -ofs,
+	    Vector3(front_width, 0, side_width) - ofs,
+	    Vector3(front_width, 0, front_length) - ofs,
+	    Vector3(0, 0, front_length) - ofs,
+	    Vector3(side_length, 0, 0) - ofs,
+	    Vector3(side_length, 0, side_width) - ofs,
+	    Vector3(front_width, 0, side_width) - ofs
 	]
 	
 	var uv = [
