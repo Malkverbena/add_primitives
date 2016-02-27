@@ -719,10 +719,8 @@ func clear():
 	
 func node_removed():
 	polygon_dialog.edit(null)
+	polygon_dialog.hide()
 	
-	if polygon_dialog.is_visible():
-		polygon_dialog.hide()
-		
 func _init(base):
 	var gui_base = base.get_node("/root/EditorNode").get_gui_base()
 	

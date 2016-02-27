@@ -23,12 +23,11 @@
 
 extends WindowDialog
 
-var index = 0
+var current_editor = 0
 
 var mesh_instance
 
 # Containers
-var main_vbox
 var main_panel
 var color_hb
 
@@ -47,7 +46,7 @@ const DIALOG_SIZE = Vector2(260, 275)
 static func create_display_material(instance, color):
 	var fixed_material = FixedMaterial.new()
 	fixed_material.set_name('__display_material__')
-	fixed_material.set_parameter(fixed_material.PARAM_DIFFUSE, color)
+	fixed_material.set_parameter(FixedMaterial.PARAM_DIFFUSE, color)
 	
 	instance.set_material_override(fixed_material)
 	
@@ -64,27 +63,23 @@ func clear_state():
 	color_picker.set_color(DEFAULT_COLOR)
 	
 func get_editor(name):
-	if not main_panel.has_node(name):
-		return null
+	if main_panel.has_node(name):
+		return main_panel.get_node(name)
 		
-	var editor = main_panel.get_node(name)
+	return null
 	
-	return editor
-	
-func set_current_editor(id):
-	if id >= main_panel.get_child_count():
+func set_current_editor(index):
+	if index >= main_panel.get_child_count():
 		return
 		
-	var selected = main_panel.get_child(id)
+	var selected = main_panel.get_child(index)
 	
 	for c in main_panel.get_children():
 		c.hide()
 		
 	selected.show()
 	
-	options.select(id)
-	
-	index = id
+	current_editor = index
 	
 func connect_editor(name, obj, method):
 	var editor = get_editor(name)
@@ -92,8 +87,11 @@ func connect_editor(name, obj, method):
 	if not editor:
 		return
 		
-	var signal_ = editor.get_signal()
+	var signal_ = ""
 	
+	if editor.has_method('get_signal'):
+		signal_ = editor.get_signal()
+		
 	if not signal_:
 		return
 		
@@ -124,7 +122,12 @@ func show_dialog():
 		
 		color_hb.show()
 		
-	popup_centered(DIALOG_SIZE)
+	var rect_size = get_viewport_rect().size
+	
+	set_pos((rect_size - DIALOG_SIZE)/2)
+	set_size(DIALOG_SIZE)
+	
+	show()
 	
 func display_text(text):
 	text_display.set_text(text)
@@ -144,7 +147,7 @@ func _color_changed(color):
 	if mat:
 		mat.set_parameter(FixedMaterial.PARAM_DIFFUSE, color)
 		
-func _popup_hide():
+func _dialog_hide():
 	if mesh_instance:
 		var mat = mesh_instance.get_material_override()
 		
@@ -152,13 +155,13 @@ func _popup_hide():
 			mesh_instance.set_material_override(null)
 			
 func _init(base):
-	main_vbox = VBoxContainer.new()
-	add_child(main_vbox)
-	main_vbox.set_area_as_parent_rect(get_constant('margin', 'Dialogs'))
+	var vbc = VBoxContainer.new()
+	add_child(vbc)
+	vbc.set_area_as_parent_rect(get_constant('margin', 'Dialogs'))
 	
 	var hb = HBoxContainer.new()
 	hb.set_h_size_flags(SIZE_EXPAND_FILL)
-	main_vbox.add_child(hb)
+	vbc.add_child(hb)
 	
 	options = OptionButton.new()
 	options.set_custom_minimum_size(Vector2(120, 0))
@@ -188,7 +191,7 @@ func _init(base):
 	
 	main_panel = PanelContainer.new()
 	main_panel.set_v_size_flags(SIZE_EXPAND_FILL)
-	main_vbox.add_child(main_panel)
+	vbc.add_child(main_panel)
 	
 	var editors = preload("MeshDialogEditors.gd")
 	
@@ -202,9 +205,9 @@ func _init(base):
 	options.add_item(modifier_editor.get_name().capitalize())
 	
 	text_display = Label.new()
-	text_display.set_align(text_display.ALIGN_CENTER)
-	main_vbox.add_child(text_display)
+	text_display.set_align(Label.ALIGN_CENTER)
+	vbc.add_child(text_display)
 	
-	connect("popup_hide", self, "_popup_hide")
+	connect("hide", self, "_dialog_hide")
 	
 

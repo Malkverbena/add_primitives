@@ -31,7 +31,6 @@ class Modifier extends MeshDataTool:
 	var aabb = AABB()
 	
 	var remove_surface = false
-	var current_surface = -1
 	var surface_count = 0
 	
 	static func get_name():
@@ -63,22 +62,13 @@ class Modifier extends MeshDataTool:
 		
 		remove_surface = true
 		
-		if current_surface >= 0:
-			current_surface += 1
-			
-		else:
-			current_surface = 0
-			
 	func commit():
 		if surface_count == 0:
 			return
 			
 		commit_to_surface(mesh)
 		
-		if not remove_surface:
-			return
-			
-		if current_surface >= 0 and current_surface < surface_count:
+		if remove_surface:
 			mesh.surface_remove(0)
 			
 			remove_surface = false
@@ -88,7 +78,6 @@ class Modifier extends MeshDataTool:
 		aabb = AABB()
 		
 		remove_surface = false
-		current_surface = -1
 		surface_count = 0
 		
 		.clear()
@@ -116,9 +105,7 @@ class TaperModifier extends Modifier:
 		return vec
 		
 	func modify():
-		var c = aabb.size.y/2
-		
-		var m3 = Matrix3()
+		var height = aabb.size.y/2
 		
 		var axis = []
 		
@@ -134,9 +121,7 @@ class TaperModifier extends Modifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v = m3.scaled(taper(v, value, c, axis)).xform(v)
-				
-				set_vertex(i, v)
+				set_vertex(i, v * taper(v, value, height, axis))
 				
 			commit()
 			
@@ -157,7 +142,7 @@ class ShearModifier extends Modifier:
 		return "Shear"
 		
 	func modify():
-		var c = aabb.size[axis]/2
+		var size = aabb.size[axis]/2
 		
 		for surf in range(surface_count):
 			create_data()
@@ -165,7 +150,7 @@ class ShearModifier extends Modifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v[shear_axis] += v[axis]/c * value
+				v[shear_axis] += v[axis]/size * value
 				
 				set_vertex(i, v)
 				
@@ -188,7 +173,7 @@ class TwistModifier extends Modifier:
 		
 	func modify():
 		var a = deg2rad(angle)
-		var c = aabb.size[axis]/2
+		var size = aabb.size[axis]/2
 		
 		var r_axis = Vector3()
 		r_axis[axis] = 1
@@ -199,7 +184,7 @@ class TwistModifier extends Modifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v = v.rotated(r_axis, v[axis]/c * a)
+				v = v.rotated(r_axis, v[axis]/size * a)
 				
 				set_vertex(i, v)
 				

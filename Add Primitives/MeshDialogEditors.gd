@@ -34,24 +34,20 @@ class TreeEditor extends VBoxContainer:
 		return item.get_text(0).replace(' ', '_').to_lower()
 		
 	static func get_parameter_value(item):
-		var value
-		
 		var cell = item.get_cell_mode(1)
 		
 		if cell == TreeItem.CELL_MODE_CHECK:
-			value = item.is_checked(1)
+			return item.is_checked(1)
 			
 		elif cell == TreeItem.CELL_MODE_STRING:
-			value = item.get_text(1)
+			return item.get_text(1)
 			
 		elif cell == TreeItem.CELL_MODE_RANGE:
-			value = item.get_range(1)
+			return item.get_range(1)
 			
 		elif cell == TreeItem.CELL_MODE_CUSTOM:
-			value = item.get_metadata(1)
+			return item.get_metadata(1)
 			
-		return value
-		
 	func add_empty():
 		var item = tree.create_item(current)
 		
@@ -59,60 +55,71 @@ class TreeEditor extends VBoxContainer:
 		item.set_selectable(1, false)
 		
 	func add_numeric_parameter(text, value, min_ = 0.001, max_ = 100, step = 0.001):
-		var item = tree.create_item(current)
+		var item
 		
-		item.set_text(0, text.capitalize())
-		
-		if typeof(value) == TYPE_INT:
-			item.set_icon(0, get_icon('Integer', 'EditorIcons'))
+		if typeof(value) == TYPE_REAL:
+			item = _create_item(text, 'Real')
 			
 		else:
-			item.set_icon(0, get_icon('Real', 'EditorIcons'))
+			item = _create_item(text, 'Integer')
 			
-		item.set_selectable(0, false)
-		
 		item.set_cell_mode(1, TreeItem.CELL_MODE_RANGE)
 		item.set_range_config(1, min_, max_, step)
 		item.set_range(1, value)
-		item.set_editable(1, true)
 		
 	func add_enum_parameter(text, selected, items):
-		var item = tree.create_item(current)
-		
-		item.set_text(0, text.capitalize())
-		item.set_icon(0, get_icon('Enum', 'EditorIcons'))
-		item.set_selectable(0, false)
+		var item = _create_item(text, 'Enum')
 		
 		item.set_cell_mode(1, TreeItem.CELL_MODE_RANGE)
 		item.set_text(1, items)
 		item.set_range(1, selected)
-		item.set_editable(1, true)
 		
 	func add_bool_parameter(text, checked = false):
-		var item = tree.create_item(current)
-		
-		item.set_text(0, text.capitalize())
-		item.set_icon(0, get_icon('Bool', 'EditorIcons'))
-		item.set_selectable(0, false)
+		var item = _create_item(text, 'Bool')
 		
 		item.set_cell_mode(1, TreeItem.CELL_MODE_CHECK)
 		item.set_checked(1, checked)
 		item.set_text(1, 'On')
-		item.set_editable(1, true)
 		
 	func add_string_parameter(text, string = ''):
-		var item = tree.create_item(current)
-		
-		item.set_text(0, text.capitalize())
-		item.set_icon(0, get_icon('String', 'EditorIcons'))
-		item.set_selectable(0, false)
+		var item = _create_item(text, 'String')
 		
 		item.set_cell_mode(1, TreeItem.CELL_MODE_STRING)
 		item.set_text(1, string)
+		
+	func item_edited():
+		if has_method('_item_edited'):
+			_item_edited(tree.get_edited())
+			
+	func item_selected():
+		if has_method('_item_selected'):
+			_item_selected(tree.get_selected())
+			
+	func _create_item(text, type):
+		var item = tree.create_item(current)
+		
+		item.set_text(0, text.capitalize())
+		item.set_icon(0, get_icon(type, 'EditorIcons'))
+		item.set_selectable(0, false)
+		
 		item.set_editable(1, true)
+		
+		return item
 		
 	func _init():
 		tree = Tree.new()
+		
+		tree.set_hide_root(true)
+		tree.set_columns(2)
+		tree.set_column_expand(0, true)
+		tree.set_column_min_width(0, 30)
+		tree.set_column_expand(1, true)
+		tree.set_column_min_width(1, 15)
+		
+		tree.set_v_size_flags(SIZE_EXPAND_FILL)
+		
+		tree.connect("item_edited", self, "item_edited")
+		tree.connect("cell_selected", self, "item_selected")
 		
 # End TreeEditor
 
@@ -188,8 +195,6 @@ class ModifierEditor extends TreeEditor:
 		
 		while item:
 			var item_state = {
-				name = item.get_text(0),
-				metadata = item.get_metadata(0),
 				selected = item.is_selected(0),
 				checked = item.is_checked(1),
 				collapsed = item.is_collapsed()
@@ -221,7 +226,7 @@ class ModifierEditor extends TreeEditor:
 			move_up.set_disabled(true)
 			move_down.set_disabled(true)
 			
-		if what == Tool.MOVE_UP or what == Tool.MOVE_DOWN:
+		elif what == Tool.MOVE_UP or what == Tool.MOVE_DOWN:
 			var mod = instance_from_id(item.get_metadata(0))
 			
 			var first = items.find(mod)
@@ -233,18 +238,18 @@ class ModifierEditor extends TreeEditor:
 			elif what == Tool.MOVE_DOWN:
 				second += 1
 				
-			var temp = items[first]
+			var aux = items[first]
 			items[first] = items[second]
-			items[second] = temp
+			items[second] = aux
 			
 			var state = generate_state()
 			
-			temp = state[first]
+			aux = state[first]
 			state[first] = state[second]
-			state[second] = temp
+			state[second] = aux
 			
 			_rebuild_tree(state)
-			_item_selected()
+			_item_selected(tree.get_selected())
 			
 			state.clear()
 			
@@ -269,7 +274,7 @@ class ModifierEditor extends TreeEditor:
 			current.set_collapsed(state[i].collapsed)
 			
 			current.set_cell_mode(0, TreeItem.CELL_MODE_STRING)
-			current.set_text(0, state[i].name)
+			current.set_text(0, items[i].get_name())
 			
 			if state[i].selected:
 				current.select(0)
@@ -283,14 +288,11 @@ class ModifierEditor extends TreeEditor:
 			current.set_custom_bg_color(0, get_color('prop_category', 'Editor'))
 			current.set_custom_bg_color(1, get_color('prop_category', 'Editor'))
 			
-			current.set_metadata(0, state[i].metadata)
+			current.set_metadata(0, items[i].get_instance_ID())
+
+			items[i].modifier_parameters(self)
 			
-			if items[i].has_method('modifier_parameters'):
-				items[i].modifier_parameters(self)
-				
-	func _item_edited():
-		var item = tree.get_edited()
-		
+	func _item_edited(item):
 		var parent = item.get_parent()
 		
 		if parent == tree.get_root():
@@ -313,9 +315,7 @@ class ModifierEditor extends TreeEditor:
 			
 		emit_signal("modifier_edited")
 		
-	func _item_selected():
-		var item = tree.get_selected()
-		
+	func _item_selected(item):
 		if item.get_parent() == tree.get_root():
 			remove.set_disabled(false)
 			move_up.set_disabled(item.get_prev() == null)
@@ -330,15 +330,14 @@ class ModifierEditor extends TreeEditor:
 		set_name("modifiers")
 		
 		# Load modifiers
-		var temp = preload("Modifiers.gd")
-		modifiers = temp.get_modifiers()
+		modifiers = preload("Modifiers.gd").get_modifiers()
 		
 		var hbox_tools = HBoxContainer.new()
 		hbox_tools.set_h_size_flags(SIZE_EXPAND_FILL)
 		add_child(hbox_tools)
 		
 		var add = MenuButton.new()
-		add.set_button_icon(base.get_icon('Add', 'EditorIcons'))
+		add.set_button_icon(base.get_icon('New', 'EditorIcons'))
 		add.set_tooltip("Add New Modifier")
 		hbox_tools.add_child(add)
 		
@@ -369,18 +368,7 @@ class ModifierEditor extends TreeEditor:
 		hbox_tools.add_child(move_down)
 		move_down.connect("pressed", self, "_modifier_tools", [Tool.MOVE_DOWN])
 		
-		tree.set_hide_root(true)
-		tree.set_columns(2)
-		tree.set_column_expand(0, true)
-		tree.set_column_min_width(0, 30)
-		tree.set_column_expand(1, true)
-		tree.set_column_min_width(1, 15)
-		
-		tree.set_v_size_flags(SIZE_EXPAND_FILL)
 		add_child(tree)
-		
-		tree.connect("item_edited", self, "_item_edited")
-		tree.connect("cell_selected", self, "_item_selected")
 		
 # End ModifierEditor
 
@@ -415,8 +403,8 @@ class ParameterEditor extends TreeEditor:
 				
 		builder.mesh_parameters(self)
 		
-		smooth_button.set_pressed(false)
-		flip_button.set_pressed(false)
+		smooth_button.set_pressed(builder.smooth)
+		flip_button.set_pressed(builder.flip_normals)
 		
 	func clear():
 		tree.clear()
@@ -426,31 +414,21 @@ class ParameterEditor extends TreeEditor:
 		
 		emit_signal("parameter_edited")
 		
-	func _item_edited():
-		var item = tree.get_edited()
-		
+	func _item_edited(item):
+		if not builder:
+			return
+			
 		var name = get_parameter_name(item)
 		var value = get_parameter_value(item)
 		
-		if builder:
-			builder.set(name, value)
-			
+		builder.set(name, value)
+		
 		emit_signal("parameter_edited")
 		
 	func _init():
 		set_name("parameters")
 		
-		tree.set_hide_root(true)
-		tree.set_columns(2)
-		tree.set_column_expand(0, true)
-		tree.set_column_min_width(0, 30)
-		tree.set_column_expand(1, true)
-		tree.set_column_min_width(1, 15)
-		
-		tree.set_v_size_flags(SIZE_EXPAND_FILL)
 		add_child(tree)
-		
-		tree.connect("item_edited", self, "_item_edited")
 		
 		var hb = HBoxContainer.new()
 		hb.set_h_size_flags(SIZE_EXPAND_FILL)

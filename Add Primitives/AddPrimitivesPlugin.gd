@@ -54,7 +54,7 @@ class DirectoryUtilities extends Directory:
 			
 			while next:
 				if not current_is_dir():
-					if extension != "" and next.extension() == extension:
+					if extension != '' and next.extension() == extension:
 						list.push_back(next)
 						
 					else:
@@ -73,7 +73,6 @@ class AddPrimitives extends HBoxContainer:
 	var current_module = ""
 	
 	var undo_redo
-	var get_selected
 	
 	var popup_menu
 	var mesh_dialog
@@ -84,6 +83,9 @@ class AddPrimitives extends HBoxContainer:
 	
 	var primitives = {}
 	var modules = {}
+	
+	# Function reference
+	var get_selected
 	
 	# Utilites
 	var Dir = DirectoryUtilities.new()
@@ -120,20 +122,24 @@ class AddPrimitives extends HBoxContainer:
 			
 			mod.clear()
 			
-		return new_mesh
-		
 	func _update_mesh():
 		var start = OS.get_ticks_msec()
 		
 		builder.update()
+		modify_mesh()
 		
-		_display_info(modify_mesh(), start)
+		_display_info(start)
 		
 	func _modify_mesh():
 		var start = OS.get_ticks_msec()
-		_display_info(modify_mesh(), start)
 		
-	func _display_info(mesh, start = 0):
+		modify_mesh()
+		
+		_display_info(start)
+		
+	func _display_info(start = 0):
+		var mesh = mesh_instance.get_mesh()
+		
 		var exec_time = OS.get_ticks_msec() - start
 		
 		var vertex_count = 0
@@ -301,7 +307,7 @@ class AddPrimitives extends HBoxContainer:
 		
 		mesh_instance.set_mesh(base_mesh)
 		
-		_display_info(base_mesh, start)
+		_display_info(start)
 		
 		if builder.has_method('mesh_parameters'):
 			mesh_dialog.edit(mesh_instance, builder)
@@ -333,7 +339,12 @@ class AddPrimitives extends HBoxContainer:
 			
 	func _unhandled_key_input(key_event):
 		if key_event.pressed and not key_event.echo:
-			if key_event.scancode == KEY_E and key_event.shift:
+			if key_event.scancode == KEY_ESCAPE and mesh_dialog.is_visible():
+				mesh_dialog.hide()
+				
+				accept_event()
+				
+			elif key_event.scancode == KEY_E and key_event.shift:
 				_edit_primitive()
 				
 				accept_event()
@@ -349,8 +360,17 @@ class AddPrimitives extends HBoxContainer:
 				
 			if mesh_dialog.is_visible():
 				mesh_dialog.hide()
-				
+			
 			mesh_instance = null
+			
+	func _visibility_changed():
+		if is_visible():
+			_set_edit_disabled(mesh_instance == null)
+			
+		else:
+			_set_edit_disabled(true)
+			
+			mesh_dialog.hide()
 			
 	func _enter_tree():
 		_load_modules()
@@ -365,6 +385,8 @@ class AddPrimitives extends HBoxContainer:
 		mesh_dialog.connect_editor("modifiers", self, "_modify_mesh")
 		
 		get_tree().connect("node_removed", self, "_node_removed")
+		
+		connect("visibility_changed", self, "_visibility_changed")
 		
 	func _exit_tree():
 		popup_menu.clear()
@@ -411,7 +433,7 @@ func clear():
 	add_primitives.clear_state()
 	
 func _find_node(type, node):
-	if (node.is_type(type)):
+	if node.is_type(type):
 		return node
 		
 	for i in range(node.get_child_count()):
