@@ -89,31 +89,36 @@ class Modifier extends MeshDataTool:
 
 class TaperModifier extends Modifier:
 	
+	var axis = Vector3.AXIS_Y
 	var value = -0.5
 	var lock_x_axis = false
+	var lock_y_axis = false
 	var lock_z_axis = false
 	
 	static func get_name():
 		return "Taper"
 		
-	static func taper(vector, value, height, axis):
+	static func taper(scale, unlocked_axis):
 		var vec = Vector3(1, 1, 1)
 		
-		for i in axis:
-			vec[i] += vector.y/height * value
+		for i in unlocked_axis:
+			vec[i] += scale
 			
 		return vec
 		
 	func modify():
-		var height = aabb.size.y/2
+		var size = aabb.size[axis]/2
 		
-		var axis = []
+		var unlocked_axis = []
 		
-		if not lock_x_axis:
-			axis.push_back(Vector3.AXIS_X)
+		if not lock_x_axis and axis != Vector3.AXIS_X:
+			unlocked_axis.push_back(Vector3.AXIS_X)
 			
-		if not lock_z_axis:
-			axis.push_back(Vector3.AXIS_Z)
+		if not lock_y_axis and axis != Vector3.AXIS_Y:
+			unlocked_axis.push_back(Vector3.AXIS_Y)
+			
+		if not lock_z_axis and axis != Vector3.AXIS_Z:
+			unlocked_axis.push_back(Vector3.AXIS_Z)
 			
 		for surf in range(surface_count):
 			create_data()
@@ -121,13 +126,15 @@ class TaperModifier extends Modifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				set_vertex(i, v * taper(v, value, height, axis))
+				set_vertex(i, v * taper(v[axis]/size * value, unlocked_axis))
 				
 			commit()
 			
 	func modifier_parameters(editor):
+		editor.add_enum_parameter('axis', axis, 'X,Y,Z')
 		editor.add_numeric_parameter('value', value, -100, 100, 0.001)
 		editor.add_bool_parameter('lock_x_axis', lock_x_axis)
+		editor.add_bool_parameter('lock_y_axis', lock_y_axis)
 		editor.add_bool_parameter('lock_z_axis', lock_z_axis)
 		
 # End TaperModifer
@@ -184,9 +191,7 @@ class TwistModifier extends Modifier:
 			for i in range(get_vertex_count()):
 				var v = get_vertex(i)
 				
-				v = v.rotated(r_axis, v[axis]/size * a)
-				
-				set_vertex(i, v)
+				set_vertex(i, v.rotated(r_axis, v[axis]/size * a))
 				
 			commit()
 			
@@ -280,8 +285,9 @@ class RandomModifier extends Modifier:
 			seed(get_meta(idx))
 			
 		else:
-			randomize()
-			
+			if random_seed == 0:
+				randomize()
+				
 			var r = randi() % 0xFFFFFF
 			set_meta(idx, r)
 			
@@ -354,13 +360,13 @@ class UVTransformModifier extends Modifier:
 
 static func get_modifiers():
 	var modifiers = {
-		"Taper" : TaperModifier,
-		"Shear" : ShearModifier,
-		"Twist" : TwistModifier,
-		"Array" : ArrayModifier, 
-		"Offset" : OffsetModifier,
-		"Random" : RandomModifier,
-		"UV Transform" : UVTransformModifier 
+		'Taper' : TaperModifier,
+		'Shear' : ShearModifier,
+		'Twist' : TwistModifier,
+		'Array' : ArrayModifier, 
+		'Offset' : OffsetModifier,
+		'Random' : RandomModifier,
+		'UV Transform' : UVTransformModifier 
 	}
 	
 	return modifiers

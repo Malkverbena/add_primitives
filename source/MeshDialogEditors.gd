@@ -26,9 +26,12 @@ extends Reference
 # Base class for ParameterEditor and ModifierEditor
 class TreeEditor extends VBoxContainer:
 	
+	var _updating = false
+	
 	var current = null
 	
 	var tree
+	var slider
 	
 	static func get_parameter_name(item):
 		return item.get_text(0).replace(' ', '_').to_lower()
@@ -48,6 +51,9 @@ class TreeEditor extends VBoxContainer:
 		elif cell == TreeItem.CELL_MODE_CUSTOM:
 			return item.get_metadata(1)
 			
+	func reset_scrollbar():
+		tree.find_node('VScrollBar', true, false).set_value(0)
+		
 	func add_empty():
 		var item = tree.create_item(current)
 		
@@ -106,6 +112,17 @@ class TreeEditor extends VBoxContainer:
 		
 		return item
 		
+	func _slider_settings_changed(val, slider):
+		if _updating:
+			return
+			
+		_updating = true
+		
+		if slider.get_step() < 0.1:
+			slider.set_step(0.1)
+			
+		_updating = false
+		
 	func _init():
 		tree = Tree.new()
 		
@@ -121,6 +138,9 @@ class TreeEditor extends VBoxContainer:
 		tree.connect("item_edited", self, "item_edited")
 		tree.connect("cell_selected", self, "item_selected")
 		
+		var slider = tree.find_node('HSlider', true, false)
+		slider.connect("changed", self, "_slider_settings_changed", [slider])
+		
 # End TreeEditor
 
 class ModifierEditor extends TreeEditor:
@@ -131,14 +151,14 @@ class ModifierEditor extends TreeEditor:
 		MOVE_DOWN = 2
 	}
 	
+	var modifiers
+	
 	var menu
 	var remove
 	var move_up
 	var move_down
 	
 	var items = []
-	
-	var modifiers = {}
 	
 	signal modifier_edited
 	
@@ -153,6 +173,8 @@ class ModifierEditor extends TreeEditor:
 		
 		menu.clear()
 		tree.clear()
+		
+		reset_scrollbar()
 		
 		var keys = modifiers.keys()
 		keys.sort()
@@ -189,9 +211,7 @@ class ModifierEditor extends TreeEditor:
 	func generate_state():
 		var state = []
 		
-		var root = tree.get_root()
-		
-		var item = root.get_children()
+		var item = tree.get_root().get_children()
 		
 		while item:
 			var item_state = {
@@ -216,9 +236,7 @@ class ModifierEditor extends TreeEditor:
 		var item = tree.get_selected()
 		
 		if what == Tool.ERASE:
-			var id = item.get_metadata(0)
-			
-			items.erase(instance_from_id(id))
+			items.erase(instance_from_id(item.get_metadata(0)))
 			
 			item.get_parent().remove_child(item)
 			
@@ -289,7 +307,7 @@ class ModifierEditor extends TreeEditor:
 			current.set_custom_bg_color(1, get_color('prop_category', 'Editor'))
 			
 			current.set_metadata(0, items[i].get_instance_ID())
-
+			
 			items[i].modifier_parameters(self)
 			
 	func _item_edited(item):
@@ -330,7 +348,7 @@ class ModifierEditor extends TreeEditor:
 		set_name("modifiers")
 		
 		# Load modifiers
-		modifiers = preload("Modifiers.gd").get_modifiers()
+		modifiers = preload('Modifiers.gd').get_modifiers()
 		
 		var hbox_tools = HBoxContainer.new()
 		hbox_tools.set_h_size_flags(SIZE_EXPAND_FILL)
@@ -389,18 +407,13 @@ class ParameterEditor extends TreeEditor:
 		
 		tree.clear()
 		
+		reset_scrollbar()
+		
 		if not builder:
 			return
 			
 		current = tree.create_item()
 		
-		# Reset tree vertical scrollbar
-		for child in tree.get_children():
-			if child extends VScrollBar:
-				child.set_value(0)
-				
-				break
-				
 		builder.mesh_parameters(self)
 		
 		smooth_button.set_pressed(builder.smooth)
@@ -410,8 +423,9 @@ class ParameterEditor extends TreeEditor:
 		tree.clear()
 		
 	func _check_box_pressed(pressed, name):
-		builder.set(name, pressed)
-		
+		if builder:
+			builder.set(name, pressed)
+			
 		emit_signal("parameter_edited")
 		
 	func _item_edited(item):

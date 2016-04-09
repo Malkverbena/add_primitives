@@ -717,13 +717,10 @@ func clear():
 	polygon_dialog.edit(null)
 	polygon_dialog.clear()
 	
-func node_removed():
-	polygon_dialog.edit(null)
+func hide_dialog():
 	polygon_dialog.hide()
 	
-func _init(base):
-	var gui_base = base.get_node("/root/EditorNode").get_gui_base()
-	
-	polygon_dialog = PolygonDialog.new(gui_base)
-	gui_base.add_child(polygon_dialog)
+func _init(plugin):
+	polygon_dialog = PolygonDialog.new(plugin.get_base_control())
+	plugin.get_base_control().add_child(polygon_dialog)
 	

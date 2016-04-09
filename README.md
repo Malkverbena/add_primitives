@@ -2,6 +2,7 @@
 A plugin for the Godot Game Engine, capable of generating simple meshes for your game
 
 ***
+
 ###Features
 **Primitives**:
   * Box
@@ -34,20 +35,28 @@ A plugin for the Godot Game Engine, capable of generating simple meshes for your
   * Random
   * UV Transform
 
+***
+
 ###Install
 
-#####Using install.py (Linux and OSX)
-```
-git clone https://github.com/TheHX/add_primitives.git
-cd add_primitives
-python install.py
-```
+#####Compatible Godot versions
+  * 2.0
+  * 2.0.1
+  * 2.0.2
 
-#####Manual Install
-Just copy and paste the 'Add Primitives' folder into godot plugins folder:
-
+#####Godot Plugins Folder
 * Windows: **%APPDATA%\Godot\plugins**
 * Linux/OSX: **~/.godot/plugins/**
+
+#####Using Git
+Run the following command, remember to change the PLUGINS_FOLDER to Godot plugins folder on your OS:
+```
+git clone https://github.com/TheHX/add_primitives.git PLUGINS_FOLDER
+```
+#####Manual
+Download the repository ZIP, and unpack in the Godot plugins folder on your OS.
+
+***
 
 ###Usage
 Open Godot, and in editor go to Settings->Editor Settings, and select "Plugins" tab, and enable the plugin. 
@@ -60,6 +69,8 @@ After enabling the plugin:
 1. Select any primitive from the plugin menu on 3D editor toolbar, it'll be added to the selected node or become the scene root if the scene is empty.
 2. A window will appear, where you can edit the primitive parameters.
 3. You can reopen this window by selecting "Edit Primitive" in the plugin menu, or by pressing ```Ctrl+E```.
+
+***
 
 ###License
 This plugin is licensed under the [MIT license](https://github.com/TheHX/add_primitives/blob/master/LICENSE.md).

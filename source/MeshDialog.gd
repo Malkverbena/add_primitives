@@ -41,7 +41,7 @@ var parameter_editor
 var modifier_editor
 
 const DEFAULT_COLOR = Color(0, 1, 0)
-const DIALOG_SIZE = Vector2(260, 275)
+const DIALOG_SIZE = Vector2(260, 280)
 
 static func create_display_material(instance, color):
 	var fixed_material = FixedMaterial.new()
@@ -72,12 +72,10 @@ func set_current_editor(index):
 	if index >= main_panel.get_child_count():
 		return
 		
-	var selected = main_panel.get_child(index)
-	
 	for c in main_panel.get_children():
 		c.hide()
 		
-	selected.show()
+	main_panel.get_child(index).show()
 	
 	current_editor = index
 	
@@ -154,7 +152,9 @@ func _dialog_hide():
 		if mat and mat.get_name() == '__display_material__':
 			mesh_instance.set_material_override(null)
 			
-func _init(base):
+			mesh_instance.property_list_changed_notify()
+			
+func _init(plugin):
 	var vbc = VBoxContainer.new()
 	add_child(vbc)
 	vbc.set_area_as_parent_rect(get_constant('margin', 'Dialogs'))
@@ -168,11 +168,9 @@ func _init(base):
 	hb.add_child(options)
 	options.connect("item_selected", self, "set_current_editor")
 	
-	var s = Control.new()
-	s.set_h_size_flags(SIZE_EXPAND_FILL)
-	hb.add_child(s)
-	
 	color_hb = HBoxContainer.new()
+	color_hb.set_h_size_flags(SIZE_EXPAND_FILL)
+	color_hb.set_alignment(HBoxContainer.ALIGN_END)
 	hb.add_child(color_hb)
 	
 	var l = Label.new()
@@ -193,12 +191,12 @@ func _init(base):
 	main_panel.set_v_size_flags(SIZE_EXPAND_FILL)
 	vbc.add_child(main_panel)
 	
-	var editors = preload("MeshDialogEditors.gd")
+	var editors = preload('MeshDialogEditors.gd')
 	
 	parameter_editor = editors.ParameterEditor.new()
 	main_panel.add_child(parameter_editor)
 	
-	modifier_editor = editors.ModifierEditor.new(base)
+	modifier_editor = editors.ModifierEditor.new(plugin.get_base_control())
 	main_panel.add_child(modifier_editor)
 	
 	options.add_item(parameter_editor.get_name().capitalize())

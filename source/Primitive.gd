@@ -23,7 +23,7 @@
 
 extends SurfaceTool
 
-const Utils = preload("Utils.gd")
+const Utils = preload('Utils.gd')
 
 var smooth = false
 var flip_normals = false

@@ -27,7 +27,7 @@ extends EditorPlugin
 class DirectoryUtilities extends Directory:
 	
 	# Get plugin folder path
-	func get_data_dir():
+	func get_data_dir(extra_file = ''):
 		var path
 		
 		# X11 and OSX
@@ -38,9 +38,7 @@ class DirectoryUtilities extends Directory:
 		elif OS.has_environment('APPDATA'):
 			path = OS.get_environment('APPDATA').plus_file('Godot')
 			
-		path = path.plus_file('plugins/Add Primitives')
-		
-		return path
+		return path.plus_file('plugins/add_primitives/source'.plus_file(extra_file))
 		
 	func get_file_list(path, extension = ''):
 		var list = []
@@ -72,20 +70,16 @@ class AddPrimitives extends HBoxContainer:
 	
 	var current_module = ""
 	
-	var undo_redo
+	var plugin
 	
 	var popup_menu
 	var mesh_dialog
 	
 	var builder
-	var base_mesh
 	var mesh_instance
 	
 	var primitives = {}
 	var modules = {}
-	
-	# Function reference
-	var get_selected
 	
 	# Utilites
 	var Dir = DirectoryUtilities.new()
@@ -106,7 +100,7 @@ class AddPrimitives extends HBoxContainer:
 		mesh_dialog.clear_state()
 		
 	func modify_mesh():
-		var new_mesh = base_mesh.duplicate()
+		var new_mesh = builder.get_mesh().duplicate()
 		mesh_instance.set_mesh(new_mesh)
 		
 		var modifiers = mesh_dialog.get_editor("modifiers").get_modifiers()
@@ -138,28 +132,26 @@ class AddPrimitives extends HBoxContainer:
 		_display_info(start)
 		
 	func _display_info(start = 0):
-		var mesh = mesh_instance.get_mesh()
-		
 		var exec_time = OS.get_ticks_msec() - start
 		
-		var vertex_count = 0
-		var triangle_count = 0
+		var mesh = mesh_instance.get_mesh()
+		
+		var verts = 0
+		var tris = 0
 		
 		for i in range(mesh.get_surface_count()):
 			var surf_v = mesh.surface_get_array_len(i)
 			
-			vertex_count += surf_v
+			verts += surf_v
 			
 			var surf_idx = mesh.surface_get_array_index_len(i)
 			
 			if surf_idx == Mesh.NO_INDEX_ARRAY:
 				surf_idx = surf_v
 				
-			triangle_count += surf_idx/3
+			tris += surf_idx/3
 			
-		var text = "Verts: %d | Triangles: %d\nGeneration time: %d ms" % [vertex_count, triangle_count, exec_time]
-		
-		mesh_dialog.display_text(text)
+		mesh_dialog.display_text("Verts: %d | Triangles: %d\nGeneration time: %d ms" % [verts, tris, exec_time])
 		
 	func _popup_signal(index, menu):
 		var command = menu.get_item_text(index)
@@ -173,13 +165,13 @@ class AddPrimitives extends HBoxContainer:
 	func _load_modules():
 		modules.clear()
 		
-		var path = Dir.get_data_dir().plus_file('modules')
+		var path = Dir.get_data_dir('modules')
 		var mods = Dir.get_file_list(path, 'gd')
 		
 		for m in mods:
 			var module = load(path.plus_file(m))
 			
-			modules[module.get_name()] = module.new(self)
+			modules[module.get_name()] = module.new(plugin)
 			
 	func _update_menu():
 		builder = null
@@ -193,18 +185,16 @@ class AddPrimitives extends HBoxContainer:
 				
 		var submenus = {}
 		
-		var path = Dir.get_data_dir()
+		var path = Dir.get_data_dir('primitives')
 		
-		var scripts = Dir.get_file_list(path.plus_file('primitives'), 'gd')
+		var scripts = Dir.get_file_list(path, 'gd')
 		scripts.sort()
 		
 		for f_name in scripts:
-			var p = path.plus_file('primitives'.plus_file(f_name))
-			
-			var script = load(p)
+			var script = load(path.plus_file(f_name))
 			var name = script.get_name()
 			
-			if not name:
+			if name == '':
 				continue
 				
 			var container = script.get_container()
@@ -225,16 +215,13 @@ class AddPrimitives extends HBoxContainer:
 		if not submenus.empty():
 			popup_menu.add_separator()
 			
-			for sub in submenus.keys():
+			for sub in submenus:
 				var submenu = PopupMenu.new()
 				submenu.set_name(sub)
 				popup_menu.add_child(submenu)
-				
 				submenu.connect("item_pressed", self, "_popup_signal", [submenu])
 				
-				var n = sub.capitalize()
-				
-				popup_menu.add_submenu_item(n, sub)
+				popup_menu.add_submenu_item(sub.capitalize(), sub)
 				
 				for name in submenus[sub]:
 					submenu.add_item(name)
@@ -246,42 +233,46 @@ class AddPrimitives extends HBoxContainer:
 				popup_menu.add_item(m)
 				
 		popup_menu.add_separator()
-		
 		popup_menu.add_icon_item(get_icon('Edit', 'EditorIcons'), 'Edit Primitive', -1, KEY_MASK_SHIFT + KEY_E)
 		
 		_set_edit_disabled(true)
 		
-		if not popup_menu.is_connected("item_pressed", self, "_popup_signal"):
-			popup_menu.connect("item_pressed", self, "_popup_signal", [popup_menu])
-			
 	func _create_primitive(name):
-		var node = get_selected.call_func()
+		var node = plugin.get_selected()
 		var edited_scene = get_tree().get_edited_scene_root()
 		
+		# There's no node selected, and the scene is not empty
 		if not node and edited_scene:
 			return
 			
 		mesh_instance = MeshInstance.new()
 		
-		undo_redo.create_action("Create " + name)
+		var ur = plugin.get_undo_redo()
+		
+		ur.create_action("Create " + name)
 		
 		if edited_scene:
-			undo_redo.add_do_method(node, "add_child", mesh_instance)
-			undo_redo.add_do_method(mesh_instance, "set_owner", edited_scene)
-			undo_redo.add_do_reference(mesh_instance)
+			ur.add_do_method(node, "add_child", mesh_instance)
+			ur.add_do_method(mesh_instance, "set_owner", edited_scene)
+			ur.add_do_reference(mesh_instance)
 			
-			undo_redo.add_undo_method(node, "remove_child", mesh_instance)
+			ur.add_undo_method(node, "remove_child", mesh_instance)
 			
 		else:
-			var editor = get_tree().get_root().get_node("EditorNode")
+			var editor = plugin.get_parent()
 			
-			undo_redo.add_do_method(editor, "set_edited_scene", mesh_instance)
-			undo_redo.add_do_reference(mesh_instance)
+			ur.add_do_method(editor, "set_edited_scene", mesh_instance)
+			ur.add_do_reference(mesh_instance)
 			
-			undo_redo.add_undo_method(editor, "set_edited_scene", Object(null))
+			ur.add_undo_method(editor, "set_edited_scene", Object(null))
 			
-		undo_redo.commit_action()
+		ur.commit_action()
 		
+		if current_module:
+			safe_call(modules[current_module], "clear")
+			
+			current_module = ''
+			
 		if modules.has(name):
 			current_module = name
 			
@@ -291,11 +282,6 @@ class AddPrimitives extends HBoxContainer:
 			
 			return
 			
-		if current_module:
-			safe_call(modules[current_module], "clear")
-			
-			current_module = ""
-			
 		mesh_instance.set_name(name)
 		
 		var start = OS.get_ticks_msec()
@@ -303,17 +289,15 @@ class AddPrimitives extends HBoxContainer:
 		builder = primitives[name].new()
 		builder.update()
 		
-		base_mesh = builder.get_mesh()
-		
-		mesh_instance.set_mesh(base_mesh)
+		mesh_instance.set_mesh(builder.get_mesh())
 		
 		_display_info(start)
 		
 		if builder.has_method('mesh_parameters'):
 			mesh_dialog.edit(mesh_instance, builder)
-			_set_edit_disabled(false)
-			
 			mesh_dialog.show_dialog()
+			
+			_set_edit_disabled(false)
 			
 	func _set_edit_disabled(disable):
 		set_process_unhandled_key_input(not disable)
@@ -332,19 +316,20 @@ class AddPrimitives extends HBoxContainer:
 		if current_module:
 			safe_call(modules[current_module], "edit_primitive")
 			
-			return
-			
-		if mesh_dialog.is_hidden():
+		elif mesh_dialog.is_hidden():
 			mesh_dialog.show_dialog()
 			
 	func _unhandled_key_input(key_event):
 		if key_event.pressed and not key_event.echo:
-			if key_event.scancode == KEY_ESCAPE and mesh_dialog.is_visible():
+			if (key_event.scancode == KEY_ESCAPE and
+				mesh_dialog.is_visible() and
+				not get_viewport().gui_has_modal_stack()):
+				
 				mesh_dialog.hide()
 				
 				accept_event()
 				
-			elif key_event.scancode == KEY_E and key_event.shift:
+			if key_event.scancode == KEY_E and key_event.shift:
 				_edit_primitive()
 				
 				accept_event()
@@ -354,13 +339,14 @@ class AddPrimitives extends HBoxContainer:
 			_set_edit_disabled(true)
 			
 			if current_module:
-				safe_call(modules[current_module], "node_removed")
+				safe_call(modules[current_module], "clear")
+				safe_call(modules[current_module], "hide_dialog")
 				
 				current_module = ""
 				
-			if mesh_dialog.is_visible():
+			elif mesh_dialog.is_visible():
 				mesh_dialog.hide()
-			
+				
 			mesh_instance = null
 			
 	func _visibility_changed():
@@ -370,37 +356,38 @@ class AddPrimitives extends HBoxContainer:
 		else:
 			_set_edit_disabled(true)
 			
-			mesh_dialog.hide()
-			
+			if current_module:
+				safe_call(modules[current_module], "hide_dialog")
+				
+			elif mesh_dialog.is_visible():
+				mesh_dialog.hide()
+				
 	func _enter_tree():
 		_load_modules()
 		_update_menu()
 		
-		var base = get_node("/root/EditorNode").get_gui_base()
-		
-		mesh_dialog = preload("MeshDialog.gd").new(base)
-		base.add_child(mesh_dialog)
+		mesh_dialog = preload("MeshDialog.gd").new(plugin)
+		plugin.get_base_control().add_child(mesh_dialog)
 		
 		mesh_dialog.connect_editor("parameters", self, "_update_mesh")
 		mesh_dialog.connect_editor("modifiers", self, "_modify_mesh")
 		
 		get_tree().connect("node_removed", self, "_node_removed")
 		
-		connect("visibility_changed", self, "_visibility_changed")
-		
 	func _exit_tree():
+		builder = null
+		
 		popup_menu.clear()
 		mesh_dialog.clear()
-		
-		builder = null
-		base_mesh = null
 		
 		primitives.clear()
 		modules.clear()
 		
 		get_tree().disconnect("node_removed", self, "_node_removed")
 		
-	func _init():
+	func _init(plugin):
+		self.plugin = plugin
+		
 		add_child( VSeparator.new() )
 		
 		var spatial_menu = MenuButton.new()
@@ -409,6 +396,9 @@ class AddPrimitives extends HBoxContainer:
 		add_child(spatial_menu)
 		
 		popup_menu = spatial_menu.get_popup()
+		popup_menu.connect("item_pressed", self, "_popup_signal", [popup_menu])
+		
+		connect("visibility_changed", self, "_visibility_changed")
 		
 # End AddPrimitives
 
@@ -432,19 +422,10 @@ func get_state():
 func clear():
 	add_primitives.clear_state()
 	
-func _find_node(type, node):
-	if node.is_type(type):
-		return node
-		
-	for i in range(node.get_child_count()):
-		var n = _find_node(type, node.get_child(i))
-		
-		if n:
-			return n
-			
-	return null
+func get_base_control():
+	return get_parent().get_gui_base()
 	
-func _get_selected():
+func get_selected():
 	var item = tree.get_selected()
 	
 	if not item:
@@ -457,17 +438,30 @@ func _get_selected():
 		
 	return null
 	
+func _find_node(type, node):
+	if node.is_type(type):
+		return node
+		
+	for i in range(node.get_child_count()):
+		var n = _find_node(type, node.get_child(i))
+		
+		if n:
+			return n
+			
+	return null
+	
 func _enter_tree():
-	add_primitives = AddPrimitives.new()
-	add_primitives.undo_redo = get_undo_redo()
-	add_primitives.get_selected = funcref(self, "_get_selected")
+	add_primitives = AddPrimitives.new(self)
 	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU, add_primitives)
 	
 	add_primitives.get_parent().move_child(add_primitives, 5)
 	
-	var scene_editor = _find_node("SceneTreeEditor", _find_node("SceneTreeDock", get_parent()))
-	tree = _find_node("Tree", scene_editor)
+	var scene_editor = _find_node('SceneTreeEditor', get_parent().find_node('Scene', true, false))
+	tree = _find_node('Tree', scene_editor)
 	
 	print("ADD PRIMITIVES INIT")
+	
+func _exit_tree():
+	add_primitives.queue_free()
 	
 
