@@ -54,7 +54,7 @@ Run the following command, remember to change the PLUGINS_FOLDER to Godot plugin
 git clone https://github.com/TheHX/add_primitives.git PLUGINS_FOLDER
 ```
 #####Manual
-Download the repository ZIP, and unpack in the Godot plugins folder on your OS.
+Download the repository ZIP, unpack in the Godot plugins folder on your OS and rename the ```add_primitives-master``` folder to ```add_primitives```.
 
 ***
 
