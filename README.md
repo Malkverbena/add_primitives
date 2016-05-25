@@ -40,6 +40,7 @@ A plugin for the Godot Game Engine, capable of generating simple meshes for your
 ###Install
 
 #####Compatible Godot versions
+This plugin is incompatible with Godot development version.
   * 2.0
   * 2.0.1
   * 2.0.2
