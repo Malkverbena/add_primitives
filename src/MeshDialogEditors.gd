@@ -64,24 +64,24 @@ class TreeEditor extends VBoxContainer:
 		var item
 		
 		if typeof(value) == TYPE_REAL:
-			item = _create_item(text, 'Real')
+			item = _create_item(text)
 			
 		else:
-			item = _create_item(text, 'Integer')
+			item = _create_item(text)
 			
 		item.set_cell_mode(1, TreeItem.CELL_MODE_RANGE)
 		item.set_range_config(1, min_, max_, step)
 		item.set_range(1, value)
 		
 	func add_enum_parameter(text, selected, items):
-		var item = _create_item(text, 'Enum')
+		var item = _create_item(text)
 		
 		item.set_cell_mode(1, TreeItem.CELL_MODE_RANGE)
 		item.set_text(1, items)
 		item.set_range(1, selected)
 		
 	func add_bool_parameter(text, checked = false):
-		var item = _create_item(text, 'Bool')
+		var item = _create_item(text)
 		
 		item.set_cell_mode(1, TreeItem.CELL_MODE_CHECK)
 		item.set_checked(1, checked)
@@ -101,11 +101,10 @@ class TreeEditor extends VBoxContainer:
 		if has_method('_item_selected'):
 			_item_selected(tree.get_selected())
 			
-	func _create_item(text, type):
+	func _create_item(text):
 		var item = tree.create_item(current)
 		
 		item.set_text(0, text.capitalize())
-		item.set_icon(0, get_icon(type, 'EditorIcons'))
 		item.set_selectable(0, false)
 		
 		item.set_editable(1, true)

@@ -39,30 +39,20 @@ A plugin for the Godot Game Engine, capable of generating simple meshes for your
 
 ###Install
 
-#####Compatible Godot versions
-This plugin is incompatible with Godot development version.
-  * 2.0
-  * 2.0.1
-  * 2.0.2
-
-#####Godot Plugins Folder
-* Windows: **%APPDATA%\Godot\plugins**
-* Linux/OSX: **~/.godot/plugins/**
-
 #####Using Git
-Run the following command, remember to change the PLUGINS_FOLDER to Godot plugins folder on your OS:
+Run the following command, remember to change the PLUGINS_FOLDER to Godot `addons` folder on your project:
 ```
 git clone https://github.com/TheHX/add_primitives.git PLUGINS_FOLDER
 ```
 #####Manual
-Download the repository ZIP, unpack in the Godot plugins folder on your OS and rename the ```add_primitives-master``` folder to ```add_primitives```.
+Download the repository ZIP, unpack in the Godot `addons` on your project and rename the `add_primitives-master` folder to ```add_primitives```.
 
 ***
 
 ###Usage
-Open Godot, and in editor go to Settings->Editor Settings, and select "Plugins" tab, and enable the plugin. 
+Open Godot, and in editor go to `Scene->Project Settings`, and select "Plugins" tab, and enable the plugin. 
 
-If you don't see the plugin, click on reload button. If it don't appear, check if the plugin is in the 
+If you don't see the plugin, click on the `Update` button. If it don't appear, check if the plugin is in the 
 right folder. Else you can open a issue to see what's is wrong.
 
 After enabling the plugin:
