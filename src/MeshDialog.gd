@@ -25,6 +25,7 @@ extends WindowDialog
 
 var current_editor = 0
 
+var plugin
 var mesh_instance
 
 # Containers
@@ -120,10 +121,11 @@ func show_dialog():
 		
 		color_hb.show()
 		
+	var window_size = DIALOG_SIZE * plugin.get_editor_dpi_scale()
 	var rect_size = get_viewport_rect().size
 	
-	set_pos((rect_size - DIALOG_SIZE)/2)
-	set_size(DIALOG_SIZE)
+	set_pos((rect_size - window_size)/2)
+	set_size(window_size)
 	
 	show()
 	
@@ -155,6 +157,10 @@ func _dialog_hide():
 			mesh_instance.property_list_changed_notify()
 			
 func _init(plugin):
+	self.plugin = plugin
+
+	var edscale = plugin.get_editor_dpi_scale()
+
 	var vbc = VBoxContainer.new()
 	add_child(vbc)
 	vbc.set_area_as_parent_rect(get_constant('margin', 'Dialogs'))
@@ -164,7 +170,7 @@ func _init(plugin):
 	vbc.add_child(hb)
 	
 	options = OptionButton.new()
-	options.set_custom_minimum_size(Vector2(120, 0))
+	options.set_custom_minimum_size(Vector2(120, 0) * edscale)
 	hb.add_child(options)
 	options.connect("item_selected", self, "set_current_editor")
 	
@@ -183,7 +189,7 @@ func _init(plugin):
 	color_hb.add_child(color_picker)
 	
 	var sy = color_picker.get_minimum_size().y
-	color_picker.set_custom_minimum_size(Vector2(sy * 1.5, sy))
+	color_picker.set_custom_minimum_size(Vector2(sy * 1.5, sy) * edscale)
 	
 	color_picker.connect("color_changed", self, "_color_changed")
 	

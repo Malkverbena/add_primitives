@@ -44,9 +44,16 @@ func get_state():
 func clear():
 	add_primitives.clear_state()
 	
-func get_base_control():
-	return get_parent().get_gui_base()
+func get_editor_dpi_scale():
+	var dpi = get_editor_settings().get("global/hidpi_mode")
 	
+	# Auto detect screen dpi
+	if dpi == 0:
+		return int(OS.get_screen_dpi() > 150) + 1
+	
+	else:
+		return dpi
+
 func get_selected():
 	var item = tree.get_selected()
 	
